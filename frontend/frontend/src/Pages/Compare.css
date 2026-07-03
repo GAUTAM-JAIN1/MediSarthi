@@ -1,0 +1,1006 @@
+/* Compare.css — MediSarthi price comparison page
+   Original per-site detail styles below are UNCHANGED (still used by
+   SiteResultCard / MedicineComparisonBlock inside a row's expanded detail
+   panel). New redesign styles are appended at the end, scoped under
+   `.ms-compare-page` so they can't leak onto any other page. */
+
+.ms-cmp-search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.ms-cmp-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1.5px solid #E8DDD4;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  background: var(--ms-bg-primary);
+}
+
+.ms-cmp-input-row .ms-icon {
+  color: var(--ms-text-secondary);
+  flex-shrink: 0;
+}
+
+.ms-cmp-input-row input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: var(--ms-text-primary);
+  padding: 0.4rem 0;
+}
+
+.ms-cmp-add-btn {
+  flex-shrink: 0;
+  padding: 0.45rem 1rem !important;
+  font-size: 0.85rem !important;
+}
+
+/* Medicine chips */
+.ms-cmp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ms-cmp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--ms-bg-secondary);
+  border: 1px solid var(--ms-soft-gold);
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem 0.35rem 0.85rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--ms-text-primary);
+}
+
+.ms-cmp-chip-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ms-text-secondary);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.ms-cmp-chip-remove:hover {
+  color: #C0392B;
+}
+
+.ms-cmp-warn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--ms-text-secondary);
+  background: rgba(215, 184, 149, 0.15);
+  border: 1px solid var(--ms-soft-gold);
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  margin: 0;
+}
+
+.ms-cmp-warn a {
+  color: var(--ms-luxury-brown);
+  font-weight: 600;
+}
+
+.ms-cmp-error {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: #C0392B;
+  background: #FDF0EE;
+  border: 1px solid #F5C6C1;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  margin: 0;
+}
+
+.ms-cmp-search-btn {
+  align-self: flex-start;
+}
+
+.ms-cmp-loading-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  color: var(--ms-text-secondary);
+  background: var(--ms-bg-secondary);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  line-height: 1.4;
+}
+
+.ms-cmp-loading-hint svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--ms-luxury-brown);
+}
+
+@keyframes ms-cmp-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ms-cmp-spin {
+  animation: ms-cmp-spin 0.75s linear infinite;
+}
+
+/* All results wrapper */
+.ms-cmp-all-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ms-cmp-medicine-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ms-cmp-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* Per-site result row (inside expanded detail panel) */
+.ms-cmp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.ms-cmp-row--unavailable {
+  opacity: 0.6;
+}
+
+.ms-cmp-row-main {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ms-cmp-pharmacy {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ms-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.ms-cmp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ms-cmp-tag--price {
+  background: rgba(46, 125, 79, 0.12);
+  color: #2E7D4F;
+}
+
+.ms-cmp-tag--delivery {
+  background: rgba(156, 107, 69, 0.12);
+  color: var(--ms-luxury-brown);
+}
+
+.ms-cmp-product-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: var(--ms-text-primary);
+}
+
+.ms-cmp-quantity {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  color: var(--ms-text-secondary);
+}
+
+.ms-cmp-delivery {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  color: var(--ms-text-secondary);
+}
+
+.ms-cmp-notes {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: var(--ms-text-secondary);
+  font-style: italic;
+}
+
+.ms-cmp-unavailable {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--ms-text-secondary);
+}
+
+.ms-cmp-price {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ms-luxury-brown);
+  flex-shrink: 0;
+}
+
+.ms-cmp-row-actions {
+  flex-shrink: 0;
+}
+
+.ms-cmp-buy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .ms-cmp-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ms-cmp-price {
+    font-size: 1.3rem;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   REDESIGN — everything below is NEW, scoped under `.ms-compare-page`
+   so it cannot affect any other page (FindMedicine, LabReport, etc.)
+
+   Colors reuse the project's real design tokens (--ms-luxury-brown,
+   --ms-btn, --ms-soft-gold) — no new palette introduced, per the
+   "visual design system must not change" rule in CLAUDE.md.
+   ════════════════════════════════════════════════════════════════════ */
+
+.ms-compare-page {
+  --cmp-accent: var(--ms-luxury-brown);
+  --cmp-accent-dark: var(--ms-btn);
+  --cmp-accent-soft: rgba(156, 107, 69, 0.10);
+  --cmp-gold: var(--ms-soft-gold);
+  --cmp-gold-soft: rgba(215, 184, 149, 0.22);
+  --cmp-blue: #3B6FA0;
+  --cmp-blue-soft: #EAF1F8;
+  --cmp-red: #C0392B;
+  --cmp-red-soft: #FCEBEA;
+  --cmp-card-radius: 20px;
+  --cmp-text-primary: var(--ms-text-primary);
+  --cmp-text-secondary: var(--ms-text-secondary);
+  --cmp-bg-secondary: var(--ms-bg-secondary);
+}
+
+/* ── Hero: 3-column (text / scale / winner card) ── */
+.ms-compare-page .ms-page-header.ms-cmp-hero {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 2rem;
+  text-align: left;
+  flex-wrap: wrap;
+}
+
+.ms-cmp-hero-left {
+  flex: 1 1 380px;
+  min-width: 260px;
+}
+
+.ms-compare-page .ms-cmp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--cmp-accent-soft);
+  color: var(--cmp-accent);
+  font-weight: 600;
+  font-size: 0.82rem;
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+}
+
+.ms-compare-page .ms-cmp-eyebrow svg { width: 14px; height: 14px; }
+
+.ms-compare-page .ms-cmp-accent { color: var(--cmp-accent); }
+
+.ms-cmp-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.ms-cmp-trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #fff;
+  border: 1px solid var(--cmp-bg-secondary);
+  color: var(--cmp-text-primary);
+  font-size: 0.84rem;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 0.5rem 0.95rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.ms-cmp-trust-badge svg { width: 15px; height: 15px; color: var(--cmp-accent); }
+.ms-cmp-trust-badge--gold svg { color: #B07D2B; }
+.ms-cmp-trust-badge--blue svg { color: var(--cmp-blue); }
+
+/* ── Balance scale column ── */
+.ms-cmp-hero-scale {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.ms-cmp-scale-svg {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  overflow: visible;
+}
+
+.ms-cmp-scale-chip-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--cmp-text-primary);
+}
+
+.ms-cmp-scale-check {
+  animation: ms-cmp-check-in 0.4s ease-out;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes ms-cmp-check-in {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Beam pivots around (160, 108) — the pivot point defined in the SVG */
+.ms-cmp-scale-beam {
+  transform-origin: 160px 108px;
+  transition: transform 1.1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ms-cmp-scale-beam--idle {
+  animation: ms-cmp-scale-idle 4.5s ease-in-out infinite;
+}
+
+.ms-cmp-scale-beam--loading {
+  animation: ms-cmp-scale-weigh 1.3s ease-in-out infinite;
+}
+
+@keyframes ms-cmp-scale-idle {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes ms-cmp-scale-weigh {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+.ms-cmp-winner-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.55rem 1.4rem;
+  border-radius: 14px;
+  background: var(--cmp-bg-secondary);
+  color: var(--cmp-text-secondary);
+  box-shadow: 0 6px 18px rgba(58, 36, 17, 0.08);
+  transition: background 0.3s, color 0.3s;
+  min-width: 150px;
+  text-align: center;
+}
+
+.ms-cmp-winner-tag--settled {
+  background: #fff;
+}
+
+.ms-cmp-winner-tag-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--cmp-text-secondary);
+}
+
+.ms-cmp-winner-tag-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #D9601C;
+}
+
+/* ── Cheapest overall card ── */
+.ms-cmp-winner-card {
+  flex: 0 0 240px;
+  background: #fff;
+  border: 1px solid var(--cmp-bg-secondary);
+  border-radius: var(--cmp-card-radius);
+  padding: 1.4rem;
+  box-shadow: 0 8px 30px rgba(20, 20, 20, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.ms-cmp-winner-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ms-cmp-winner-card-label {
+  font-size: 0.76rem;
+  color: var(--cmp-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.ms-cmp-winner-card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--cmp-text-primary);
+  margin-top: 0.15rem;
+}
+
+.ms-cmp-winner-card-icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--cmp-gold-soft);
+  color: #B07D2B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ms-cmp-winner-card-icon svg { width: 19px; height: 19px; }
+
+.ms-cmp-winner-card-sub {
+  font-size: 0.82rem;
+  color: var(--cmp-text-secondary);
+}
+
+.ms-cmp-winner-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cmp-bg-secondary);
+  overflow: hidden;
+}
+
+.ms-cmp-winner-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--cmp-accent);
+  transition: width 0.8s ease-out;
+}
+
+.ms-cmp-winner-percent {
+  align-self: flex-end;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--cmp-accent-dark);
+  margin-top: -0.35rem;
+}
+
+.ms-cmp-winner-save-box {
+  margin-top: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--cmp-bg-secondary);
+}
+
+.ms-cmp-winner-save-label {
+  font-size: 0.76rem;
+  color: var(--cmp-text-secondary);
+}
+
+.ms-cmp-winner-save-amount {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cmp-accent);
+  margin-top: 0.1rem;
+}
+
+.ms-cmp-winner-save-sub {
+  font-size: 0.75rem;
+  color: var(--cmp-text-secondary);
+  margin-top: 0.1rem;
+}
+
+.ms-cmp-winner-card-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  color: var(--cmp-text-secondary);
+  font-size: 0.85rem;
+  padding: 0.5rem 0;
+}
+
+.ms-cmp-winner-card-placeholder svg {
+  width: 26px; height: 26px;
+  color: var(--cmp-gold);
+  opacity: 0.7;
+}
+
+@media (max-width: 960px) {
+  .ms-compare-page .ms-page-header.ms-cmp-hero { flex-direction: column; align-items: center; }
+  .ms-cmp-hero-left { text-align: center; }
+  .ms-cmp-trust-row { justify-content: center; }
+  .ms-cmp-hero-scale, .ms-cmp-winner-card { width: 100%; max-width: 320px; }
+}
+
+/* ── Search card ── */
+.ms-compare-page .ms-cmp-search {
+  border-radius: var(--cmp-card-radius);
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid var(--cmp-bg-secondary);
+  margin-top: 2rem;
+}
+
+.ms-cmp-search-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.ms-cmp-search-icon {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--cmp-accent-soft);
+  color: var(--cmp-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ms-cmp-search-icon svg { width: 19px; height: 19px; }
+
+.ms-cmp-search-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.08rem;
+  color: var(--cmp-text-primary);
+}
+
+.ms-cmp-search-sub {
+  font-size: 0.82rem;
+  color: var(--cmp-text-secondary);
+  margin-top: 0.15rem;
+}
+
+.ms-cmp-search-sparkle {
+  margin-left: auto;
+  width: 16px; height: 16px;
+  color: var(--cmp-gold);
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.ms-compare-page .ms-cmp-input-row {
+  border-radius: 14px;
+  background: var(--cmp-bg-secondary);
+  border-color: transparent;
+}
+
+.ms-compare-page .ms-cmp-input-row:focus-within {
+  border-color: var(--cmp-accent);
+  background: #fff;
+}
+
+.ms-compare-page .ms-cmp-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px !important;
+}
+
+.ms-compare-page .ms-cmp-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.65rem 1.3rem;
+}
+
+/* ── Empty state ── */
+.ms-compare-page .ms-cmp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+  padding: 2.5rem 1.5rem;
+  color: var(--cmp-text-secondary);
+}
+
+.ms-cmp-empty-icon {
+  width: 34px; height: 34px;
+  color: var(--cmp-gold);
+  opacity: 0.8;
+}
+
+/* ── Meta row (count / time / legend) ── */
+.ms-cmp-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.75rem 0 0.9rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--cmp-text-secondary);
+}
+
+.ms-cmp-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ms-cmp-meta-left strong { color: var(--cmp-text-primary); }
+
+.ms-cmp-meta-dot { opacity: 0.5; }
+
+.ms-cmp-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--cmp-accent-soft);
+  color: var(--cmp-accent-dark);
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ms-cmp-live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--cmp-accent-dark);
+  animation: ms-cmp-live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes ms-cmp-live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.ms-cmp-legend {
+  display: flex;
+  gap: 1rem;
+}
+
+.ms-cmp-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ms-cmp-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.ms-cmp-legend-dot--low { background: var(--cmp-blue); }
+.ms-cmp-legend-dot--high { background: var(--cmp-red); }
+
+/* ── Compact comparison rows ── */
+.ms-cmp-compact-card {
+  background: #fff;
+  border: 1px solid var(--cmp-bg-secondary);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.ms-cmp-compact-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.ms-cmp-compact-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--cmp-blue-soft);
+  color: var(--cmp-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ms-cmp-compact-icon svg { width: 17px; height: 17px; }
+
+.ms-cmp-compact-name-col {
+  flex: 0 0 170px;
+  min-width: 130px;
+}
+
+.ms-cmp-compact-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--cmp-text-primary);
+}
+
+.ms-cmp-compact-sites {
+  font-size: 0.75rem;
+  color: var(--cmp-text-secondary);
+  margin-top: 0.1rem;
+}
+
+.ms-cmp-compact-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 140px;
+}
+
+.ms-cmp-compact-bar-track {
+  position: relative;
+  height: 20px;
+  background: var(--cmp-bg-secondary);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ms-cmp-compact-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  border-radius: 999px;
+  transition: width 0.6s ease-out;
+}
+
+.ms-cmp-compact-bar--low { background: var(--cmp-blue); }
+.ms-cmp-compact-bar--high { background: var(--cmp-red); }
+
+.ms-cmp-compact-bar-price {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--cmp-text-primary);
+}
+
+.ms-cmp-compact-saved {
+  flex: 0 0 70px;
+  text-align: center;
+}
+
+.ms-cmp-compact-saved-amount {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--cmp-blue);
+  font-size: 0.95rem;
+}
+
+.ms-cmp-compact-saved-label {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--cmp-text-secondary);
+}
+
+.ms-cmp-compact-winner-pill {
+  flex: 0 0 auto;
+  background: var(--cmp-accent-soft);
+  color: var(--cmp-accent-dark);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  white-space: nowrap;
+}
+
+.ms-cmp-compact-unavailable {
+  flex: 1;
+  font-size: 0.82rem;
+  color: var(--cmp-text-secondary);
+  font-style: italic;
+}
+
+.ms-cmp-compact-chevron {
+  flex-shrink: 0;
+  width: 16px; height: 16px;
+  color: var(--cmp-text-secondary);
+  transition: transform 0.2s;
+}
+
+.ms-cmp-compact-chevron--open {
+  transform: rotate(180deg);
+}
+
+.ms-cmp-compact-detail {
+  padding: 0 1.1rem 1.1rem;
+  border-top: 1px solid var(--cmp-bg-secondary);
+  padding-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .ms-cmp-compact-row {
+    flex-wrap: wrap;
+  }
+  .ms-cmp-compact-name-col { flex: 1 1 100%; }
+  .ms-cmp-compact-bars { flex: 1 1 100%; order: 3; }
+  .ms-cmp-compact-saved { order: 4; }
+}
+
+/* ── Stats row (totals footer) ── */
+.ms-cmp-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.ms-cmp-stat-card {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #fff;
+  border: 1px solid var(--cmp-bg-secondary);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+}
+
+.ms-cmp-stat-card--accent {
+  background: var(--cmp-accent-soft);
+  border-color: transparent;
+}
+
+.ms-cmp-stat-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--cmp-gold-soft);
+  color: #B07D2B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ms-cmp-stat-icon svg { width: 17px; height: 17px; }
+
+.ms-cmp-stat-label {
+  font-size: 0.76rem;
+  color: var(--cmp-text-secondary);
+}
+
+.ms-cmp-stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--cmp-text-primary);
+  margin-top: 0.1rem;
+}
+
+/* ── Pharmacy icon in expanded detail rows ── */
+.ms-cmp-pharmacy-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--cmp-blue-soft);
+  color: var(--cmp-blue);
+  flex-shrink: 0;
+}
+
+.ms-cmp-pharmacy-icon svg { width: 13px; height: 13px; }
+
+/* ── Footer feature strip ── */
+.ms-cmp-footer-strip {
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--cmp-bg-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ms-cmp-footer-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+
+.ms-cmp-footer-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ms-cmp-footer-icon svg { width: 17px; height: 17px; }
+.ms-cmp-footer-icon--green { background: var(--cmp-accent-soft); color: var(--cmp-accent); }
+.ms-cmp-footer-icon--gold { background: var(--cmp-gold-soft); color: #B07D2B; }
+.ms-cmp-footer-icon--blue { background: var(--cmp-blue-soft); color: var(--cmp-blue); }
+
+.ms-cmp-footer-feature-title { font-weight: 600; font-size: 0.88rem; color: var(--cmp-text-primary); }
+.ms-cmp-footer-feature-sub { font-size: 0.78rem; color: var(--cmp-text-secondary); margin-top: 0.15rem; }
+
+.ms-cmp-privacy-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--cmp-accent-soft);
+  color: var(--cmp-accent-dark);
+  font-size: 0.82rem;
+  font-weight: 500;
+  border-radius: 14px;
+  padding: 0.85rem 1.1rem;
+  flex: 1 1 280px;
+}
+
+.ms-cmp-privacy-card svg { width: 18px; height: 18px; flex-shrink: 0; }

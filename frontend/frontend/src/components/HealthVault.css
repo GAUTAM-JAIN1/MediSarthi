@@ -1,0 +1,165 @@
+/* HealthVault.css */
+
+.vault-outer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.vault-glow {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  width: 70%;
+  height: 60%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(215, 184, 149, 0.35), transparent 70%);
+  filter: blur(40px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.vault-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  z-index: 1;
+}
+
+.vault-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 30px 40px rgba(59, 36, 18, 0.28));
+}
+
+.vault-wheel {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wheelIdle 9s ease-in-out infinite;
+}
+
+@keyframes wheelIdle {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+
+.vault-wrap:hover .vault-wheel {
+  animation-duration: 3.2s;
+}
+
+.vault-door {
+  transition: filter 0.3s ease;
+}
+
+.vault-wrap:hover .vault-door {
+  filter: brightness(1.04);
+}
+
+/* Interior clickable drawers — positioned to match the SVG interior recess
+   (interior recess is x:410-830 / y:60-580 inside a 900x640 viewBox) */
+.vault-drawers {
+  position: absolute;
+  left: 45.6%;
+  top: 9.4%;
+  width: 46.6%;
+  height: 81.2%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.55rem;
+  padding: 0.4rem;
+}
+
+.vault-drawer-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.9rem;
+  background: linear-gradient(180deg, rgba(238, 230, 220, 0.96), rgba(215, 184, 149, 0.85));
+  border: 1px solid rgba(111, 71, 45, 0.45);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.5) inset,
+    0 6px 14px rgba(0, 0, 0, 0.28);
+  transition: box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.vault-drawer-btn:hover {
+  background: linear-gradient(180deg, #fffdf9, #ead9be);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.6) inset,
+    0 0 0 2px rgba(215, 184, 149, 0.7),
+    0 8px 18px rgba(0, 0, 0, 0.32);
+}
+
+.vault-drawer-btn.is-active {
+  background: linear-gradient(180deg, #fff8ec, #f0dcb9);
+  border-color: var(--ms-luxury-brown);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.6) inset,
+    0 0 0 2px var(--ms-luxury-brown),
+    0 8px 18px rgba(0, 0, 0, 0.32);
+}
+
+.vault-drawer-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(111, 71, 45, 0.12);
+  color: var(--ms-btn);
+  flex-shrink: 0;
+}
+
+.vault-drawer-label {
+  flex: 1;
+  text-align: left;
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+  color: var(--ms-text-primary);
+}
+
+.vault-drawer-count {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--ms-text-secondary);
+  min-width: 24px;
+  text-align: right;
+}
+
+.vault-drawer-chevron {
+  display: flex;
+  color: var(--ms-luxury-brown);
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+
+.vault-drawer-btn:hover .vault-drawer-chevron {
+  transform: translateX(3px);
+  opacity: 1;
+}
+
+.vault-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.82rem;
+  color: var(--ms-text-secondary);
+  z-index: 1;
+}
+
+@media (max-width: 560px) {
+  .vault-drawer-label { font-size: 0.78rem; }
+  .vault-drawer-icon  { width: 26px; height: 26px; }
+}

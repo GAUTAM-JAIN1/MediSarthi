@@ -1,0 +1,61 @@
+interaction_check_task:
+  description: >
+    You have been given the following list of medicines to check for interactions:
+
+    {medicines_list}
+
+    The patient's known allergies are in the knowledge profile under
+    "Known Allergies (for analysis)".
+
+    Your task:
+
+    Step 1 — Check every pair:
+      For EVERY unique pair of medicines in the list, assess whether a known drug interaction
+      exists. A list of 3 medicines means 3 pairs (A-B, A-C, B-C). A list of 4 means 6 pairs.
+      Check them all.
+
+      For each pair, provide:
+        - medicine_a and medicine_b: the two medicine names.
+        - severity: EXACTLY one of: "None", "Minor", "Moderate", "Major", "Contraindicated".
+          - None: No known interaction.
+          - Minor: Interaction exists but unlikely to cause significant problems.
+          - Moderate: Interaction may cause problems — worth being aware of, mention to doctor.
+          - Major: Interaction can cause serious harm — consult doctor before continuing.
+          - Contraindicated: These two medicines should NOT be taken together under any circumstances.
+        - description: Plain-language explanation of what the interaction is. Why does it happen?
+          What effect can it cause in the body? Keep it clear and non-technical.
+        - recommendation: What should the patient do specifically?
+          Examples: "Safe to take together — no action needed.",
+          "Take these at least 2 hours apart to reduce absorption interference.",
+          "Do not take together. Contact your doctor immediately to discuss alternatives.",
+          "This combination may increase bleeding risk — your doctor should know you are taking both."
+
+    Step 2 — Allergy check:
+      Look at "Known Allergies (for analysis)" in the knowledge profile.
+      For each medicine in the list, check if it is the same as, closely related to, or in the
+      same drug family as a listed allergy. If so, note it as a Contraindicated interaction with
+      medicine_b = "ALLERGY ALERT" and explain the conflict in description.
+
+    Step 3 — Overall summary:
+      - has_major_interaction: true if ANY pair is "Major" or "Contraindicated".
+      - overall_safety_summary: 2-3 sentences describing the overall safety picture for
+        taking all these medicines together.
+      - recommendation: What should the patient do overall? Be specific and actionable.
+      - disclaimer: Short reminder that this is AI-generated and a pharmacist's review is
+        always the best approach, especially for Major or Contraindicated findings.
+
+    IMPORTANT:
+      - If the list has only one medicine, still check it against the allergy profile.
+        Set interactions to empty list if no pairs exist.
+      - Never invent interactions that are not well-established. If you are unsure about
+        a pair, classify it as "None" and note uncertainty in description.
+      - Keep all language plain, calm, and actionable.
+
+  expected_output: >
+    A structured MedicineInteractionOutput object with: medicines_checked (the input list),
+    interactions (list of InteractionDetail — one per pair that has any finding, including
+    allergy flags), has_major_interaction (bool), overall_safety_summary, recommendation,
+    and disclaimer. Pairs with severity "None" can be omitted from the interactions list to
+    keep the output clean.
+
+  agent: interaction_checker

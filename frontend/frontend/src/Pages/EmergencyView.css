@@ -1,0 +1,136 @@
+.ms-ev-page {
+  min-height: 100vh;
+  width: 100%;
+  background: var(--ms-bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.ms-ev-card {
+  background: var(--ms-white-card);
+  border-radius: 16px;
+  max-width: 480px;
+  width: 100%;
+  padding: 2rem 1.75rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.ms-ev-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.ms-ev-badge {
+  background: var(--ms-dark-navy);
+  color: var(--ms-soft-gold);
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+}
+
+.ms-ev-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 0;
+  color: var(--ms-text-secondary);
+}
+
+.ms-ev-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--ms-bg-secondary);
+  border-top-color: var(--ms-luxury-brown);
+  border-radius: 50%;
+  animation: ms-ev-spin 0.8s linear infinite;
+}
+
+@keyframes ms-ev-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ms-ev-error {
+  text-align: center;
+  color: var(--ms-text-secondary);
+  padding: 1.5rem 0;
+  font-family: "Inter", sans-serif;
+}
+
+.ms-ev-name-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--ms-bg-secondary);
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.ms-ev-name {
+  font-family: "Playfair Display", serif;
+  font-size: 1.6rem;
+  color: var(--ms-text-primary);
+  margin: 0;
+}
+
+.ms-ev-bloodgroup {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ms-luxury-brown);
+  background: var(--ms-bg-secondary);
+  padding: 0.25rem 0.7rem;
+  border-radius: 8px;
+}
+
+.ms-ev-section {
+  margin-bottom: 1.1rem;
+}
+
+.ms-ev-label {
+  display: block;
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ms-text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.ms-ev-section p {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  font-size: 0.98rem;
+  color: var(--ms-text-primary);
+  line-height: 1.5;
+}
+
+.ms-ev-critical p {
+  color: #b3261e;
+  font-weight: 600;
+}
+
+.ms-ev-contact a {
+  color: var(--ms-luxury-brown);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ms-ev-footer-note {
+  margin-top: 1.5rem;
+  font-size: 0.78rem;
+  color: var(--ms-text-secondary);
+  text-align: center;
+  border-top: 1px solid var(--ms-bg-secondary);
+  padding-top: 1rem;
+}

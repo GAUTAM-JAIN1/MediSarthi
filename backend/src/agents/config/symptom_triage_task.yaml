@@ -1,0 +1,74 @@
+triage_task:
+  description: >
+    A patient has described the following symptoms:
+
+    {symptoms}
+
+    Additional context from patient profile (age, gender, known conditions, allergies)
+    may be available in the knowledge source — use it if present to personalise the assessment.
+
+    Your task is to produce a triage assessment following this exact structure:
+
+    Step 1 — Assess urgency level:
+      Assign EXACTLY ONE of these three levels:
+        - "Home Care" — symptoms are mild, no red flags, patient can manage safely at home.
+        - "See a Doctor Soon" — symptoms need professional evaluation but are not an
+          immediate emergency. Patient should see a doctor within 24-48 hours.
+        - "Visit Emergency / Go Now" — patient needs emergency care immediately.
+          Do not delay. Common triggers: chest pain, difficulty breathing, stroke symptoms,
+          severe abdominal pain, high fever in infant, altered consciousness, heavy bleeding,
+          signs of poisoning or allergic reaction (anaphylaxis).
+
+    Step 2 — Assign urgency_color:
+      - "green" for Home Care
+      - "yellow" for See a Doctor Soon
+      - "red" for Visit Emergency / Go Now
+
+    Step 3 — Write a headline:
+      One clear sentence summarising your assessment.
+      Example: "Your symptoms suggest a mild viral fever — rest at home and monitor closely."
+      Example: "These symptoms need a doctor's evaluation — please visit a clinic today or tomorrow."
+      Example: "Call an ambulance or go to the emergency room now — do not wait."
+
+    Step 4 — Write explanation (3-5 sentences):
+      Explain WHY you assigned this urgency level. What in the symptom description influenced
+      your decision? Be honest and clear. Do not use unexplained medical terms.
+
+    Step 5 — List flags:
+      List the specific symptoms or details that raised or lowered urgency. For each:
+        - symptom: the specific thing noted.
+        - reason: why it influenced the urgency level (raised concern or provided reassurance).
+
+    Step 6 — Home care tips (if applicable):
+      If urgency is "Home Care" or "See a Doctor Soon", give 3-5 practical, India-relevant
+      home care tips. Examples: "Stay hydrated — ORS or nimbu paani if feeling weak.",
+      "Rest — avoid school/work for 1-2 days.", "Paracetamol for fever/pain as per dosage
+      on pack.", "Avoid cold drinks and outside food if stomach is upset."
+      Leave empty list for "Visit Emergency / Go Now".
+
+    Step 7 — Warning signs (ALWAYS required):
+      Give 3-5 specific symptoms that would require the patient to upgrade their urgency
+      level immediately. Always populated regardless of current urgency level.
+      Examples: "Fever rises above 103°F / 39.4°C", "Difficulty breathing or chest tightness",
+      "Rash spreads or patient becomes confused", "Blood in vomit or stool."
+
+    Step 8 — Disclaimer:
+      Short, warm reminder that this is an AI triage tool and not a medical diagnosis.
+      Patient should always follow their own judgement and consult a real healthcare
+      professional, especially if symptoms worsen or they feel unsure.
+
+    IMPORTANT:
+      - Never diagnose a specific disease. Triage and advise — do not diagnose.
+      - When in doubt, assign the higher urgency level. It is better to recommend
+        seeing a doctor than to miss something serious.
+      - Be India-aware: mention PHC/clinic/government hospital as options where relevant,
+        not just "see a specialist" which may not be accessible.
+      - Keep all language warm, plain, and actionable.
+
+  expected_output: >
+    A structured SymptomTriageOutput object with: urgency_level (exactly one of the three
+    strings), urgency_color (green/yellow/red), headline, explanation, flags (list of
+    SymptomFlag), home_care_tips (list of strings), warning_signs (list of strings),
+    disclaimer. All text in plain, warm, direct language — no jargon.
+
+  agent: triage_nurse

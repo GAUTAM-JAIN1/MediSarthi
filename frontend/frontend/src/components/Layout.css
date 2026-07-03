@@ -1,0 +1,456 @@
+/* ═══════════════════════════════════════════════════════════════
+   Layout.css — MediSarthi shared design system
+   All CSS variables + shared utility classes live here.
+   Page-specific styles go in co-located CSS files.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Design tokens ─────────────────────────────────────────────── */
+:root {
+  --ms-bg-primary: #F6F1EA;
+  --ms-bg-secondary: #EEE6DC;
+  --ms-white-card: #FFFFFF;
+  --ms-text-primary: #111111;
+  --ms-text-secondary: #6B625D;
+  --ms-luxury-brown: #9C6B45;
+  --ms-soft-gold: #D7B895;
+  --ms-dark-navy: #0F1720;
+  --ms-btn: #6F472D;
+  --ms-nav-h: 68px;
+}
+
+/* ── Reset / Base ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--ms-bg-primary);
+  color: var(--ms-text-primary);
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Root shell ─────────────────────────────────────────────────── */
+.ms-root {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.ms-main {
+  padding-top: var(--ms-nav-h);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Ambient background ─────────────────────────────────────────── */
+.ms-ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ms-ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.18;
+}
+
+.ms-ambient-orb--1 {
+  width: 600px;
+  height: 600px;
+  background: var(--ms-soft-gold);
+  top: -200px;
+  right: -150px;
+}
+
+.ms-ambient-orb--2 {
+  width: 400px;
+  height: 400px;
+  background: var(--ms-luxury-brown);
+  bottom: -100px;
+  left: -100px;
+}
+
+/* ── Gold particles ─────────────────────────────────────────────── */
+.ms-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ms-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--ms-soft-gold);
+  opacity: 0;
+  animation: ms-float linear infinite;
+}
+
+@keyframes ms-float {
+  0%   { opacity: 0;    transform: translateY(0)    scale(1); }
+  20%  { opacity: 0.45; }
+  80%  { opacity: 0.3;  }
+  100% { opacity: 0;    transform: translateY(-40px) scale(0.6); }
+}
+
+/* ── Nav ────────────────────────────────────────────────────────── */
+.ms-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--ms-nav-h);
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  gap: 1rem;
+  background: rgba(246, 241, 234, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(215, 184, 149, 0.35);
+  z-index: 100;
+}
+
+.ms-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.ms-nav-brand-name {
+  font-family: "Playfair Display", serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ms-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.ms-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.ms-nav-link {
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--ms-text-secondary);
+  transition: color 0.18s, background 0.18s;
+}
+
+.ms-nav-link:hover,
+.ms-nav-link.active {
+  color: var(--ms-luxury-brown);
+  background: var(--ms-bg-secondary);
+}
+
+/* ── Nav auth area ──────────────────────────────────────────────── */
+.ms-nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+}
+
+.ms-nav-username {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ms-luxury-brown);
+  white-space: nowrap;
+}
+
+.ms-nav-logout {
+  padding: 0.38rem 0.85rem;
+  border: 1.5px solid var(--ms-soft-gold);
+  border-radius: 6px;
+  background: transparent;
+  font-family: "Inter", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ms-text-secondary);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.ms-nav-logout:hover {
+  background: var(--ms-bg-secondary);
+  color: var(--ms-luxury-brown);
+  border-color: var(--ms-luxury-brown);
+}
+
+.ms-nav-login-btn {
+  padding: 0.42rem 1rem !important;
+  font-size: 0.85rem !important;
+  text-decoration: none;
+}
+
+/* ── Hamburger (mobile) ─────────────────────────────────────────── */
+.ms-nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: auto;
+}
+
+.ms-nav-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--ms-text-primary);
+  border-radius: 2px;
+}
+
+/* ── Mobile menu ────────────────────────────────────────────────── */
+.ms-mobile-menu {
+  position: fixed;
+  top: var(--ms-nav-h);
+  left: 0; right: 0;
+  background: var(--ms-bg-primary);
+  border-bottom: 1px solid var(--ms-soft-gold);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 99;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.ms-mobile-link {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  color: var(--ms-text-primary);
+  transition: background 0.15s;
+}
+
+.ms-mobile-link:hover {
+  background: var(--ms-bg-secondary);
+}
+
+.ms-mobile-auth {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem 0.25rem;
+  border-top: 1px solid var(--ms-bg-secondary);
+  margin-top: 0.25rem;
+}
+
+/* ── Shared utility classes ─────────────────────────────────────── */
+
+/* Page header block */
+.ms-page-header {
+  padding: 2.5rem 2rem 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.ms-page-title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  color: var(--ms-text-primary);
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+}
+
+.ms-page-subtitle {
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  color: var(--ms-text-secondary);
+  line-height: 1.6;
+}
+
+/* Card */
+.ms-card {
+  background: var(--ms-white-card);
+  border: 1px solid rgba(215, 184, 149, 0.4);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 16px rgba(156, 107, 69, 0.06);
+}
+
+/* Buttons */
+.ms-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.5rem;
+  background: var(--ms-btn);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.18s, transform 0.12s;
+}
+
+.ms-btn-primary:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.ms-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.4rem;
+  background: transparent;
+  color: var(--ms-luxury-brown);
+  border: 1.5px solid var(--ms-soft-gold);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.18s, border-color 0.18s;
+}
+
+.ms-btn-secondary:hover {
+  background: var(--ms-bg-secondary);
+  border-color: var(--ms-luxury-brown);
+}
+
+/* Form inputs */
+.ms-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ms-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ms-text-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ms-input,
+.ms-textarea,
+.ms-select {
+  padding: 0.7rem 1rem;
+  border: 1.5px solid #E8DDD4;
+  border-radius: 8px;
+  background: var(--ms-bg-primary);
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  color: var(--ms-text-primary);
+  outline: none;
+  transition: border-color 0.18s;
+}
+
+.ms-input:focus,
+.ms-textarea:focus,
+.ms-select:focus {
+  border-color: var(--ms-luxury-brown);
+  background: var(--ms-white-card);
+}
+
+.ms-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Empty state */
+.ms-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--ms-text-secondary);
+  font-family: "Inter", sans-serif;
+}
+
+.ms-empty-state-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+/* Status badge */
+.ms-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.ms-badge--gold {
+  background: rgba(215, 184, 149, 0.25);
+  color: var(--ms-luxury-brown);
+  border: 1px solid var(--ms-soft-gold);
+}
+
+.ms-badge--green {
+  background: rgba(52, 168, 83, 0.12);
+  color: #1E7E34;
+  border: 1px solid rgba(52, 168, 83, 0.3);
+}
+
+.ms-badge--red {
+  background: rgba(192, 57, 43, 0.1);
+  color: #C0392B;
+  border: 1px solid rgba(192, 57, 43, 0.25);
+}
+
+/* Divider */
+.ms-divider {
+  border: none;
+  border-top: 1px solid rgba(215, 184, 149, 0.35);
+  margin: 1.5rem 0;
+}
+
+/* Loading spinner */
+.ms-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid var(--ms-soft-gold);
+  border-top-color: var(--ms-luxury-brown);
+  border-radius: 50%;
+  animation: ms-spin 0.75s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes ms-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ms-nav-links,
+  .ms-nav-auth {
+    display: none;
+  }
+
+  .ms-nav-hamburger {
+    display: flex;
+  }
+
+  .ms-page-header {
+    padding: 1.5rem 1rem 0.75rem;
+  }
+}

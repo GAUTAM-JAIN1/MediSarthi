@@ -1,0 +1,59 @@
+lab_analysis_task:
+  description: >
+    You have received the following raw text extracted from a medical lab report:
+
+    ---
+    {report_text}
+    ---
+
+    Your job is to analyse every test result present in this text and produce a
+    structured, plain-language breakdown.
+
+    For EACH test result found, provide:
+      - test_name: The name of the test exactly as it appears (or the closest clean version).
+      - value: The patient's result value with its unit (e.g. "11.2 g/dL").
+      - normal_range: The reference range from the report if present (e.g. "12.0–16.0 g/dL").
+        If not shown, write "Not provided".
+      - status: EXACTLY one of: "Normal", "Low", "High", "Critical Low", "Critical High", "Unknown".
+        Use "Critical Low" or "Critical High" only for values that are significantly outside
+        range and medically urgent. Use "Unknown" only if you genuinely cannot assess the value.
+      - plain_explanation: What this test measures and what the patient's specific result
+        means, in simple everyday language. Do not use unexplained medical terms. Write as
+        if explaining to a worried family member on the phone.
+      - action_needed: EXACTLY one of:
+          "No action needed" — value is normal.
+          "Mention to doctor at next visit" — mildly out of range but not urgent.
+          "Consult doctor soon" — noticeably out of range, needs attention within days.
+          "Seek care today" — critical value, patient should not wait.
+
+    Also produce:
+      - report_type: What kind of report is this? (e.g. "Complete Blood Count", "Lipid Profile",
+        "Thyroid Function Test", "Liver Function Test", "General Blood Work", "Urine Routine").
+        If it contains multiple panels, name the primary one.
+      - overall_summary: 3-5 sentences summarising what this report is checking and the
+        general picture — is everything mostly normal? Are there concerning values? Keep it
+        calm and honest.
+      - urgent_flags: List of test_name strings for any "Critical Low" or "Critical High"
+        values. Empty list if none.
+      - has_urgent_values: true if any test is Critical Low or Critical High, false otherwise.
+      - next_steps: A clear, plain-language recommendation of what the patient should do
+        next based on ALL results combined. Should be specific — not just "see a doctor"
+        but "Your Haemoglobin and Iron are both low, so it would be worth asking your doctor
+        about iron supplementation at your next visit."
+      - disclaimer: A short, friendly reminder that this explanation is AI-generated and
+        does not replace a doctor reviewing the actual report with full clinical context.
+
+    IMPORTANT:
+      - If the extracted text is garbled, partial, or clearly not a lab report, still do
+        your best — note in overall_summary that the text quality was poor and results may
+        be incomplete.
+      - Never invent test values. Only report what is present in the text.
+      - Never diagnose a disease. Explain what the values mean, not what disease the person has.
+
+  expected_output: >
+    A structured LabReportAnalysisOutput object with: report_type, overall_summary, a tests
+    list (one LabTestResult per test — test_name, value, normal_range, status,
+    plain_explanation, action_needed), urgent_flags (list of test names), has_urgent_values
+    (bool), next_steps, and disclaimer. All text in warm, plain, jargon-free language.
+
+  agent: lab_report_analyst

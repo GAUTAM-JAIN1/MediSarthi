@@ -1,0 +1,682 @@
+/* Donor.css — dark, dramatic blood-donor theme (page-scoped, doesn't touch
+   the global ivory design tokens used everywhere else in the app) */
+
+.donor-page {
+  --donor-bg-1: #150707;
+  --donor-bg-2: #2a0a0a;
+  --donor-red: #e23b3b;
+  --donor-red-soft: #ff8a7a;
+  --donor-text: #f5ece9;
+  --donor-text-dim: #c9a9a4;
+  --donor-card-bg: #1f0d0d;
+  --donor-card-border: rgba(226, 59, 59, 0.28);
+
+  background:
+    radial-gradient(ellipse at 15% 100%, rgba(140, 20, 20, 0.35), transparent 55%),
+    radial-gradient(ellipse at 85% 0%, rgba(140, 20, 20, 0.3), transparent 50%),
+    linear-gradient(180deg, var(--donor-bg-1), var(--donor-bg-2) 60%, var(--donor-bg-1));
+  color: var(--donor-text);
+  padding-bottom: 4rem;
+}
+
+.donor-text-secondary {
+  color: var(--donor-text-dim);
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+}
+
+/* ══════════ HERO ══════════ */
+.donor-hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 0.75fr;
+  align-items: center;
+  gap: 2rem;
+  padding: 3.5rem 3rem 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.donor-hero-title {
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  line-height: 1.12;
+  color: var(--donor-text);
+}
+
+.donor-hero-accent {
+  color: var(--donor-red);
+}
+
+.donor-hero-subtitle {
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  color: var(--donor-text-dim);
+  margin-top: 1rem;
+  max-width: 340px;
+}
+
+.donor-hero-fact {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(226, 59, 59, 0.25);
+  max-width: 360px;
+}
+
+.donor-hero-fact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(226, 59, 59, 0.5);
+  color: var(--donor-red);
+}
+
+.donor-hero-fact strong {
+  display: block;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  color: var(--donor-text);
+}
+
+.donor-hero-fact span {
+  display: block;
+  font-family: "Inter", sans-serif;
+  font-size: 0.8rem;
+  color: var(--donor-text-dim);
+  margin-top: 0.15rem;
+}
+
+.donor-hero-livebadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(226, 59, 59, 0.12);
+  border: 1px solid rgba(226, 59, 59, 0.4);
+  font-family: "Inter", sans-serif;
+  font-size: 0.82rem;
+  color: var(--donor-text);
+}
+
+.donor-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #37d67a;
+  box-shadow: 0 0 8px #37d67a;
+}
+
+/* ── Orbit zone ── */
+.donor-hero-orbit-zone {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donor-orbit-rings {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donor-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(226, 59, 59, 0.25);
+}
+
+.donor-ring--1 { width: 220px; height: 220px; }
+.donor-ring--2 { width: 340px; height: 340px; border-color: rgba(226, 59, 59, 0.15); }
+
+.donor-orbit-center {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.donor-drop-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 22px rgba(226, 59, 59, 0.55));
+  animation: dropPulse 3s ease-in-out infinite;
+}
+
+@keyframes dropPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+.donor-drop-heart {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.85);
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.donor-orbit-ring-anim {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: orbitSpin 26s linear infinite;
+}
+
+@keyframes orbitSpin {
+  to { transform: rotate(360deg); }
+}
+
+.donor-orbit-dot {
+  position: absolute;
+}
+
+.donor-orbit-avatar-inner {
+  animation: orbitCounter 26s linear infinite;
+}
+
+@keyframes orbitCounter {
+  to { transform: rotate(-360deg); }
+}
+
+.donor-orbit-avatar {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #3a1414, #1f0a0a);
+  border: 2px solid rgba(226, 59, 59, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--donor-red-soft);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.donor-online-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #37d67a;
+  border: 2px solid #1f0a0a;
+}
+
+.donor-online-dot.is-off {
+  background: #6b625d;
+}
+
+/* ── Emergency card ── */
+.donor-hero-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.donor-emergency-card {
+  width: 100%;
+  max-width: 300px;
+  background: linear-gradient(180deg, rgba(58, 15, 15, 0.9), rgba(20, 6, 6, 0.9));
+  border: 1px solid var(--donor-card-border);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.donor-emergency-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.donor-emergency-header h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 1.2rem;
+  color: var(--donor-red);
+}
+
+.donor-bell-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--donor-red);
+  color: #fff;
+  animation: bellPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes bellPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(226, 59, 59, 0.5); }
+  50%      { box-shadow: 0 0 0 8px rgba(226, 59, 59, 0); }
+}
+
+.donor-emergency-card p {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  color: var(--donor-text-dim);
+  margin: 0.75rem 0 1.1rem;
+}
+
+.donor-emergency-group-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.1rem;
+}
+
+.donor-group-pill {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 59, 59, 0.35);
+  background: transparent;
+  color: var(--donor-text-dim);
+  font-family: "Inter", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.donor-group-pill:hover {
+  border-color: var(--donor-red);
+  color: var(--donor-text);
+}
+
+.donor-group-pill.is-active {
+  background: var(--donor-red);
+  border-color: var(--donor-red);
+  color: #fff;
+}
+
+.donor-group-pill--lg {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.donor-emergency-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: rgba(226, 59, 59, 0.16);
+  border: 1px solid var(--donor-red);
+  color: var(--donor-red);
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.donor-emergency-btn:hover {
+  background: var(--donor-red);
+  color: #fff;
+}
+
+.donor-emergency-hint {
+  display: block;
+  margin-top: 0.7rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  color: var(--donor-text-dim);
+  text-align: center;
+}
+
+/* ══════════ CTA cards ══════════ */
+.donor-cta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.5rem 3rem 2.5rem;
+}
+
+.donor-cta-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.75rem 2rem;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.donor-cta-card:hover {
+  transform: translateY(-3px);
+}
+
+.donor-cta-card--gold {
+  background: linear-gradient(120deg, #e8d3ae, #cfa46b);
+}
+
+.donor-cta-card--red {
+  background: linear-gradient(120deg, #e79b90, #d1554a);
+}
+
+.donor-cta-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  color: #5b2a1a;
+  flex-shrink: 0;
+}
+
+.donor-cta-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.donor-cta-text strong {
+  font-family: "Playfair Display", serif;
+  font-size: 1.3rem;
+  color: #2a1508;
+}
+
+.donor-cta-text span {
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
+  color: #5b3c22;
+}
+
+.donor-cta-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  color: #2a1508;
+  flex-shrink: 0;
+}
+
+/* ══════════ Cards / sections ══════════ */
+.donor-card {
+  max-width: 1400px;
+  margin: 0 auto 1.75rem;
+  padding: 2rem 3rem;
+}
+
+.donor-section {
+  background: var(--donor-card-bg);
+  border: 1px solid var(--donor-card-border);
+  border-radius: 20px;
+  margin-left: 3rem;
+  margin-right: 3rem;
+  padding: 2rem;
+}
+
+.donor-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  color: var(--donor-red-soft);
+}
+
+.donor-section-header h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 1.4rem;
+  color: var(--donor-text);
+  margin: 0;
+}
+
+.donor-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.donor-field-wide { grid-column: 1 / -1; }
+
+.donor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  color: var(--donor-text-dim);
+}
+
+.donor-field input,
+.donor-field select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 59, 59, 0.3);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--donor-text);
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+}
+
+.donor-field input::placeholder { color: #8a6d68; }
+
+.donor-field input:focus,
+.donor-field select:focus {
+  outline: none;
+  border-color: var(--donor-red);
+}
+
+.donor-field select option { background: #1f0d0d; color: var(--donor-text); }
+
+.donor-form-error {
+  color: #ff9a90;
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  margin: 4px 0 12px;
+}
+
+.donor-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--donor-red);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: opacity 0.18s ease, transform 0.12s ease;
+}
+
+.donor-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.donor-btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.donor-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(226, 59, 59, 0.5);
+  background: transparent;
+  color: var(--donor-red-soft);
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.donor-btn-secondary:hover { background: rgba(226, 59, 59, 0.12); }
+.donor-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.donor-profile-card { display: flex; flex-direction: column; gap: 18px; }
+
+.donor-profile-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.donor-stat { display: flex; flex-direction: column; gap: 4px; }
+
+.donor-stat-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  color: var(--donor-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.donor-stat-value {
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  color: var(--donor-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.donor-blood-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(226, 59, 59, 0.18);
+  color: var(--donor-red-soft);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.donor-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.donor-availability-btn { display: flex; align-items: center; gap: 8px; }
+.donor-availability-btn.is-unavailable { opacity: 0.7; }
+
+.donor-search-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.donor-request-status { margin: 8px 0; }
+
+.donor-results { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+
+.donor-result-card {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--donor-card-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.donor-result-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  color: var(--donor-text);
+}
+
+.donor-result-meta {
+  display: flex;
+  gap: 16px;
+  color: var(--donor-text-dim);
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+}
+
+.donor-result-meta span { display: flex; align-items: center; gap: 4px; }
+
+/* ── Compatibility section ── */
+.donor-group-picker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.donor-compat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.donor-compat-label {
+  display: block;
+  font-family: "Inter", sans-serif;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--donor-text-dim);
+  margin-bottom: 0.6rem;
+}
+
+.donor-chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.donor-chip {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(226, 59, 59, 0.14);
+  border: 1px solid rgba(226, 59, 59, 0.4);
+  color: var(--donor-red-soft);
+  font-family: "Inter", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ══════════ Responsive ══════════ */
+@media (max-width: 1100px) {
+  .donor-hero {
+    grid-template-columns: 1fr;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+  }
+  .donor-hero-fact { margin-left: auto; margin-right: auto; }
+  .donor-hero-right { justify-content: center; }
+  .donor-hero-orbit-zone { height: 320px; }
+  .donor-orbit-dot { transform-origin: center; }
+  .donor-cta-row { grid-template-columns: 1fr; padding: 0.5rem 1.5rem 2rem; }
+  .donor-section { margin-left: 1.5rem; margin-right: 1.5rem; }
+  .donor-compat-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .donor-form-grid,
+  .donor-profile-row {
+    grid-template-columns: 1fr;
+  }
+  .donor-section { padding: 1.25rem; }
+  .donor-cta-card { flex-wrap: wrap; }
+}

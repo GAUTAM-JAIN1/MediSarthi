@@ -1,0 +1,384 @@
+/* HealthInfo.css */
+
+.ms-health-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+.ms-health-login-notice {
+  margin: 0 2rem 1rem;
+  padding: 0.75rem 1.2rem;
+  background: rgba(215, 184, 149, 0.2);
+  border: 1px solid var(--ms-soft-gold);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  color: var(--ms-text-secondary);
+}
+
+.ms-health-login-notice a {
+  color: var(--ms-luxury-brown);
+  font-weight: 600;
+}
+
+/* ── Hero row: vault + emergency card ── */
+.ms-health-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 1rem 2rem 2rem;
+  flex-wrap: wrap;
+}
+
+.ms-health-emergency-card {
+  width: 100%;
+  max-width: 360px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.ms-health-section-title {
+  font-family: "Playfair Display", serif;
+  font-size: 1.2rem;
+  color: var(--ms-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.ms-health-qr-box {
+  display: flex;
+  justify-content: center;
+}
+
+.ms-health-qr-render {
+  padding: 0.9rem;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(215, 184, 149, 0.4);
+}
+
+.ms-health-quick-info {
+  display: flex;
+  gap: 1rem;
+  padding: 0.9rem;
+  background: var(--ms-bg-primary);
+  border-radius: 10px;
+  border: 1px solid rgba(215, 184, 149, 0.3);
+}
+
+.ms-health-quick-info > div { flex: 1; }
+
+.ms-health-quick-value {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ms-text-primary);
+  margin-top: 0.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ms-health-quick-phone {
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--ms-luxury-brown);
+}
+
+.ms-health-edit-details summary {
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ms-luxury-brown);
+  padding: 0.3rem 0;
+}
+
+/* ── Shared form pieces ── */
+.ms-health-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.ms-health-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.ms-health-msg {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+}
+
+.ms-health-msg--success {
+  background: rgba(52, 168, 83, 0.1);
+  color: #1e7e34;
+  border: 1px solid rgba(52, 168, 83, 0.3);
+}
+
+.ms-health-msg--error {
+  background: #fdf0ee;
+  color: #c0392b;
+  border: 1px solid #f5c6c1;
+}
+
+.ms-health-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: var(--ms-text-secondary);
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
+}
+
+.ms-health-error {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  color: #c0392b;
+  background: #fdf0ee;
+  border: 1px solid #f5c6c1;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+}
+
+/* ── Vitals chips (used inside the Vitals drawer) ── */
+.ms-vitals-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ms-vital-chip {
+  flex: 1;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--ms-bg-primary);
+  border: 1px solid rgba(215, 184, 149, 0.4);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.ms-vital-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ms-text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.ms-vital-value {
+  font-family: "Playfair Display", serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ms-luxury-brown);
+  line-height: 1;
+}
+
+.ms-vital-unit {
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  color: var(--ms-text-secondary);
+  margin-top: 0.2rem;
+}
+
+/* ── Drawer panel (slides in from right) ── */
+.ms-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+}
+
+.ms-drawer-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(460px, 100vw);
+  background: var(--ms-bg-primary);
+  border-left: 1px solid rgba(215, 184, 149, 0.5);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.25);
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.ms-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid rgba(215, 184, 149, 0.3);
+  position: sticky;
+  top: 0;
+  background: var(--ms-bg-primary);
+  z-index: 2;
+}
+
+.ms-drawer-header h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 1.4rem;
+  color: var(--ms-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.ms-drawer-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ms-text-secondary);
+  padding: 0.4rem;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ms-drawer-close:hover {
+  background: var(--ms-bg-secondary);
+  color: var(--ms-luxury-brown);
+}
+
+.ms-drawer-body {
+  padding: 1.25rem 1.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ms-drawer-list-item {
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(215, 184, 149, 0.35);
+  border-radius: 10px;
+  background: var(--ms-white-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ms-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ms-chip {
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  background: rgba(215, 184, 149, 0.2);
+  border: 1px solid var(--ms-soft-gold);
+  color: var(--ms-luxury-brown);
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* ── Timeline (Medical History drawer) ── */
+.ms-timeline-list {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.ms-timeline-list::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: rgba(215, 184, 149, 0.4);
+}
+
+.ms-timeline-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  position: relative;
+}
+
+.ms-timeline-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ms-soft-gold);
+  border: 2.5px solid var(--ms-luxury-brown);
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.ms-timeline-content {
+  flex: 1;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(215, 184, 149, 0.2);
+}
+
+.ms-timeline-item:last-child .ms-timeline-content {
+  border-bottom: none;
+}
+
+.ms-timeline-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.ms-timeline-date {
+  font-family: "Inter", sans-serif;
+  font-size: 0.78rem;
+  color: var(--ms-text-secondary);
+}
+
+.ms-timeline-vitals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ms-timeline-vitals span {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  color: var(--ms-text-primary);
+  background: var(--ms-bg-primary);
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid rgba(215, 184, 149, 0.3);
+}
+
+.ms-timeline-summary,
+.ms-timeline-notes {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  color: var(--ms-text-secondary);
+  line-height: 1.5;
+  margin-top: 0.3rem;
+}
+
+@media (max-width: 768px) {
+  .ms-health-hero {
+    padding: 0.5rem 1rem 1.5rem;
+  }
+
+  .ms-health-form-row {
+    grid-template-columns: 1fr;
+  }
+}

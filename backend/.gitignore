@@ -1,0 +1,15 @@
+.env
+*.env
+tools/credentials.json
+src/agents/tools/credentials.json
+src/agents/tools/token_*.json
+venv/
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+medical_memory/
+knowledge/
+report.md
+*.wav
+**/*_bundle.txt

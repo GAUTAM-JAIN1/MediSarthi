@@ -1,0 +1,1018 @@
+/* ══════════════════════════════════════════════════════════════════════
+   FindMedicine.css — "AI Health Map" redesign
+   Scoped under `.ms-findmedicine-page` so nothing leaks onto other pages.
+   Uses the SAME global tokens as Layout.css (--ms-luxury-brown, --ms-soft-gold,
+   --ms-bg-secondary, --ms-dark-navy, --ms-white-card) — no new color system,
+   this page just leans into the existing ivory/brown MediSarthi identity.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ms-findmedicine-page {
+  --fm-radius: 18px;
+  --fm-radius-sm: 12px;
+  --fm-border: rgba(156, 107, 69, 0.16);
+  --fm-shadow: 0 4px 24px rgba(156, 107, 69, 0.07);
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+  position: relative;
+}
+
+/* ── entrance animation (page-load choreography, not scattered per-element) ── */
+@keyframes fm-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ms-fm-anim {
+  animation: fm-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Shell: 3-column layout ── */
+.ms-fm-shell {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  gap: 1.5rem;
+  align-items: start;
+  padding-top: 1.5rem;
+}
+
+@media (max-width: 1180px) {
+  .ms-fm-shell { grid-template-columns: 1fr; }
+  .ms-fm-left, .ms-fm-right { order: 2; }
+  .ms-fm-center { order: 1; }
+}
+
+/* ═══════════════ LEFT COLUMN ═══════════════ */
+.ms-fm-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  position: sticky;
+  top: calc(var(--ms-nav-h) + 1.5rem);
+}
+@media (max-width: 1180px) { .ms-fm-left { position: static; } }
+
+.ms-fm-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  background: rgba(156, 107, 69, 0.1);
+  color: var(--ms-luxury-brown);
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+}
+.ms-fm-eyebrow svg { width: 13px; height: 13px; }
+
+.ms-fm-headline {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 2.1rem;
+  line-height: 1.2;
+  color: var(--ms-text-primary);
+  margin: 0;
+}
+.ms-fm-headline .ms-fm-accent { color: var(--ms-luxury-brown); }
+
+.ms-fm-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--ms-text-secondary);
+  margin: 0;
+}
+
+/* mode cards (Describe / Voice / Scan) */
+.ms-fm-mode-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ms-fm-mode-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--ms-white-card);
+  border: 1.5px solid var(--fm-border);
+  border-radius: var(--fm-radius-sm);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+.ms-fm-mode-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--fm-shadow);
+}
+.ms-fm-mode-card:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.ms-fm-mode-card.active {
+  border-color: var(--ms-luxury-brown);
+  background: rgba(156, 107, 69, 0.06);
+}
+
+.ms-fm-mode-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--ms-bg-secondary);
+  color: var(--ms-luxury-brown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.ms-fm-mode-card.active .ms-fm-mode-icon {
+  background: var(--ms-luxury-brown);
+  color: #fff;
+}
+.ms-fm-mode-icon svg { width: 17px; height: 17px; }
+
+.ms-fm-mode-text { flex: 1; min-width: 0; }
+.ms-fm-mode-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ms-text-primary);
+}
+.ms-fm-mode-sub {
+  font-size: 0.76rem;
+  color: var(--ms-text-secondary);
+  margin-top: 0.1rem;
+}
+.ms-fm-mode-arrow {
+  color: var(--ms-text-secondary);
+  flex-shrink: 0;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+.ms-fm-mode-card.active .ms-fm-mode-arrow {
+  color: var(--ms-luxury-brown);
+  transform: translateX(2px);
+}
+
+/* Tip box */
+.ms-fm-tip-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: var(--ms-bg-secondary);
+  border-radius: var(--fm-radius-sm);
+  padding: 0.9rem 1rem;
+}
+.ms-fm-tip-icon {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ms-luxury-brown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ms-fm-tip-icon svg { width: 14px; height: 14px; }
+.ms-fm-tip-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ms-text-secondary);
+}
+.ms-fm-tip-text strong { color: var(--ms-text-primary); font-weight: 700; display: block; margin-bottom: 0.1rem; }
+.ms-fm-tip-shield {
+  margin-left: auto;
+  color: #2E7D4F;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+/* Medical history card */
+.ms-fm-history-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--ms-white-card);
+  border: 1.5px solid var(--fm-border);
+  border-radius: var(--fm-radius-sm);
+  padding: 0.85rem 1rem;
+  text-decoration: none;
+  transition: box-shadow 0.18s ease, transform 0.12s ease;
+}
+.ms-fm-history-card:hover {
+  box-shadow: var(--fm-shadow);
+  transform: translateY(-1px);
+}
+.ms-fm-history-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--ms-bg-secondary);
+  color: var(--ms-luxury-brown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ms-fm-history-icon svg { width: 17px; height: 17px; }
+.ms-fm-history-title { font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600; color: var(--ms-text-primary); }
+.ms-fm-history-sub { font-family: 'Inter', sans-serif; font-size: 0.76rem; color: var(--ms-text-secondary); margin-top: 0.1rem; }
+
+/* Popular searches */
+.ms-fm-popular-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ms-text-primary);
+  margin-bottom: 0.7rem;
+}
+.ms-fm-popular-head svg { width: 14px; height: 14px; color: var(--ms-luxury-brown); }
+
+.ms-fm-popular-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ms-findmedicine-page .ms-fm-pop-chip {
+  border: 1px solid var(--fm-border);
+  background: var(--ms-white-card);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  color: var(--ms-text-primary);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.ms-findmedicine-page .ms-fm-pop-chip:hover {
+  border-color: var(--ms-luxury-brown);
+  color: var(--ms-luxury-brown);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(156, 107, 69, 0.12);
+}
+.ms-findmedicine-page .ms-fm-pop-chip:active {
+  transform: translateY(0) scale(0.97);
+}
+.ms-fm-pop-viewall {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: none;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ms-luxury-brown);
+  cursor: pointer;
+  padding: 0.4rem 0.2rem;
+}
+.ms-fm-pop-viewall svg { width: 13px; height: 13px; transition: transform 0.18s ease; }
+.ms-fm-pop-viewall.open svg { transform: rotate(90deg); }
+
+/* ═══════════════ CENTER COLUMN — AI Health Map ═══════════════ */
+.ms-fm-center {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  min-width: 0;
+}
+
+.ms-fm-map-stage {
+  position: relative;
+  width: 100%;
+  max-width: 620px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ms-fm-map-rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+  transform-origin: 50% 50%;
+  animation: fm-rings-rotate 90s linear infinite;
+}
+
+@keyframes fm-rings-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* center hub */
+.ms-fm-map-center {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFDFA 0%, #F3E7D6 100%);
+  box-shadow: inset 0 2px 14px rgba(156, 107, 69, 0.12), 0 14px 30px rgba(156, 107, 69, 0.14);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.3rem;
+  z-index: 3;
+}
+
+.ms-fm-map-center-glow {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid var(--ms-soft-gold);
+  opacity: 0.55;
+  animation: fm-glow-pulse 3.2s ease-out infinite;
+}
+@keyframes fm-glow-pulse {
+  0%   { transform: scale(0.92); opacity: 0.55; }
+  70%  { transform: scale(1.28); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.ms-fm-map-center svg.ms-fm-center-icon {
+  width: 20px; height: 20px;
+  color: var(--ms-luxury-brown);
+  margin-bottom: 0.15rem;
+}
+.ms-fm-map-center-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ms-text-primary);
+}
+.ms-fm-map-center-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  color: var(--ms-text-secondary);
+  max-width: 100px;
+  line-height: 1.3;
+}
+
+/* symptom bubbles, absolutely positioned via inline style vars --x / --y */
+.ms-fm-bubble {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translate(var(--x), var(--y));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  border-radius: 50%;
+  background: var(--ms-white-card);
+  border: 1.5px solid var(--fm-border);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  color: var(--ms-text-secondary);
+  box-shadow: 0 6px 18px rgba(156, 107, 69, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  z-index: 2;
+  animation: fm-bob 6s ease-in-out infinite;
+}
+
+/* gentle organic float so the whole map feels alive, not static */
+@keyframes fm-bob {
+  0%, 100% { margin-top: 0px; }
+  50% { margin-top: -6px; }
+}
+
+.ms-fm-bubble--inner { width: 92px; height: 92px; font-size: 0.72rem; }
+.ms-fm-bubble--outer { width: 70px; height: 70px; font-size: 0.64rem; }
+
+.ms-fm-bubble svg { width: 18px; height: 18px; }
+.ms-fm-bubble--outer svg { width: 15px; height: 15px; }
+
+.ms-fm-bubble:hover {
+  transform: translate(-50%, -50%) translate(var(--x), var(--y)) scale(1.08);
+  box-shadow: 0 10px 26px rgba(156, 107, 69, 0.16);
+}
+
+.ms-fm-bubble.selected {
+  border-color: var(--ms-luxury-brown);
+  border-width: 2px;
+  background: #fff;
+  color: var(--ms-text-primary);
+  animation-play-state: paused;
+}
+.ms-fm-bubble.selected svg { color: var(--ms-luxury-brown); }
+
+/* Expanding ripple ring on selection — plays once when `.selected` is
+   freshly added (React re-render swaps the class, browser restarts the
+   animation), giving the tap a satisfying "confirmed" feel. */
+.ms-fm-bubble.selected::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ms-luxury-brown);
+  opacity: 0.7;
+  animation: fm-bubble-ripple 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+@keyframes fm-bubble-ripple {
+  from { transform: scale(0.75); opacity: 0.7; }
+  to   { transform: scale(1.4); opacity: 0; }
+}
+
+.ms-fm-bubble-check {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--ms-luxury-brown);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ms-bg-primary);
+  animation: fm-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ms-fm-bubble-check svg { width: 11px; height: 11px; }
+
+@keyframes fm-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+.ms-fm-bubble-label {
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* Selected symptoms row */
+.ms-fm-selected-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  background: var(--ms-white-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 999px;
+  padding: 0.6rem 0.7rem 0.6rem 1.1rem;
+  max-width: 100%;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.ms-fm-selected-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ms-text-primary);
+  white-space: nowrap;
+}
+
+.ms-findmedicine-page .ms-fm-sel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--ms-bg-secondary);
+  border-radius: 999px;
+  padding: 0.3rem 0.5rem 0.3rem 0.7rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.76rem;
+  color: var(--ms-text-primary);
+  animation: fm-pop 0.2s ease;
+}
+.ms-fm-sel-chip svg { width: 13px; height: 13px; color: var(--ms-luxury-brown); }
+.ms-fm-sel-chip button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--ms-text-secondary);
+  display: flex;
+  padding: 0.1rem;
+}
+.ms-fm-sel-chip button:hover { color: #C0392B; }
+
+.ms-fm-selected-add {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--ms-soft-gold);
+  background: none;
+  color: var(--ms-luxury-brown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+.ms-fm-selected-add:hover { background: var(--ms-bg-secondary); }
+
+/* ── Input drawer (Describe / Voice / Scan) ── */
+.ms-findmedicine-page .ms-fm-drawer {
+  border-radius: var(--fm-radius);
+  padding: 1.4rem;
+  background: var(--ms-white-card);
+  border: 1px solid var(--fm-border);
+  box-shadow: var(--fm-shadow);
+}
+
+.ms-fm-drawer-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ms-text-primary);
+}
+.ms-fm-drawer-head svg { width: 16px; height: 16px; color: var(--ms-luxury-brown); }
+
+.ms-fm-textarea-wrap { position: relative; }
+
+.ms-findmedicine-page .ms-fm-textarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--ms-bg-secondary);
+  background: var(--ms-bg-primary);
+  padding: 0.95rem 3rem 0.95rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  color: var(--ms-text-primary);
+  resize: vertical;
+  box-sizing: border-box;
+}
+.ms-findmedicine-page .ms-fm-textarea:focus {
+  outline: none;
+  border-color: var(--ms-luxury-brown);
+  background: #fff;
+}
+
+.ms-fm-textarea-send {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ms-luxury-brown);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.ms-fm-textarea-send:hover:not(:disabled) { transform: scale(1.05); }
+.ms-fm-textarea-send:active:not(:disabled) { transform: scale(0.92); }
+.ms-fm-textarea-send svg { width: 14px; height: 14px; }
+.ms-fm-textarea-send:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.ms-fm-drawer-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.ms-findmedicine-page .ms-fm-pill-btn {
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.83rem;
+}
+.ms-fm-lang-btn { margin-left: auto; }
+@media (max-width: 520px) { .ms-fm-lang-btn { margin-left: 0; } }
+
+/* Voice mode */
+.ms-fm-voice-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0 0.5rem;
+}
+.ms-fm-mic-btn {
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ms-luxury-brown);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(156, 107, 69, 0.28);
+  transition: transform 0.15s ease;
+}
+.ms-fm-mic-btn:hover { transform: scale(1.04); }
+.ms-fm-mic-btn:active { transform: scale(0.96); }
+.ms-fm-mic-btn.recording {
+  background: #C0392B;
+  animation: fm-mic-pulse 1.4s ease-in-out infinite;
+}
+@keyframes fm-mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.35); }
+  50% { box-shadow: 0 0 0 14px rgba(192, 57, 43, 0); }
+}
+.ms-fm-mic-btn svg { width: 30px; height: 30px; }
+.ms-fm-voice-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.84rem;
+  color: var(--ms-text-secondary);
+}
+
+/* Scan / dropzone mode */
+.ms-findmedicine-page .ms-fm-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  text-align: center;
+  border: 1.5px dashed var(--ms-soft-gold);
+  border-radius: 16px;
+  background: var(--ms-bg-primary);
+  padding: 2rem 1rem;
+  cursor: pointer;
+}
+.ms-fm-dropzone-icon { width: 32px; height: 32px; color: var(--ms-luxury-brown); margin-bottom: 0.3rem; }
+.ms-fm-dropzone-title { font-family: 'Inter', sans-serif; font-weight: 600; color: var(--ms-text-primary); font-size: 0.92rem; }
+.ms-fm-dropzone-sub { font-family: 'Inter', sans-serif; font-size: 0.78rem; color: var(--ms-text-secondary); }
+
+.ms-fm-choose-btn {
+  margin-top: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #fff;
+  border: 1px solid var(--ms-luxury-brown);
+  color: var(--ms-luxury-brown);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+}
+.ms-fm-choose-btn svg { width: 14px; height: 14px; }
+
+.ms-fm-file-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--ms-text-primary);
+}
+.ms-fm-file-remove {
+  border: none;
+  background: var(--ms-bg-secondary);
+  border-radius: 50%;
+  width: 22px; height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ms-text-secondary);
+}
+
+.ms-fm-warn { font-family: 'Inter', sans-serif; font-size: 0.82rem; color: var(--ms-luxury-brown); margin-top: 0.7rem; }
+.ms-fm-warn a { color: var(--ms-luxury-brown); font-weight: 700; }
+.ms-fm-error { font-family: 'Inter', sans-serif; font-size: 0.82rem; color: #C0392B; margin-top: 0.6rem; }
+
+/* Result entrance — plays once on mount since these boxes only render after
+   a response lands (fresh element in the DOM each time), giving results a
+   soft "arriving" feel instead of just popping in. */
+@keyframes fm-result-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Result / analysis boxes (re-uses classnames from PrescriptionAnalysisCard, unchanged) */
+.ms-findmedicine-page .ms-fm-result {
+  margin-top: 1.1rem;
+  background: var(--ms-bg-secondary);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  animation: fm-result-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.ms-fm-result-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  color: var(--ms-text-primary);
+  margin-bottom: 0.35rem;
+}
+.ms-fm-result-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  color: var(--ms-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.ms-fm-analysis {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--ms-bg-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fm-result-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.ms-fm-analysis > * {
+  animation: fm-result-in 0.4s ease both;
+}
+.ms-fm-analysis > *:nth-child(1) { animation-delay: 0.04s; }
+.ms-fm-analysis > *:nth-child(2) { animation-delay: 0.08s; }
+.ms-fm-analysis > *:nth-child(3) { animation-delay: 0.12s; }
+.ms-fm-analysis > *:nth-child(4) { animation-delay: 0.16s; }
+.ms-fm-analysis > *:nth-child(5) { animation-delay: 0.2s; }
+.ms-fm-medicines-list .ms-fm-medicine-item {
+  animation: fm-result-in 0.4s ease both;
+}
+.ms-fm-medicines-list .ms-fm-medicine-item:nth-child(1) { animation-delay: 0.1s; }
+.ms-fm-medicines-list .ms-fm-medicine-item:nth-child(2) { animation-delay: 0.16s; }
+.ms-fm-medicines-list .ms-fm-medicine-item:nth-child(3) { animation-delay: 0.22s; }
+.ms-fm-medicines-list .ms-fm-medicine-item:nth-child(4) { animation-delay: 0.28s; }
+.ms-fm-medicines-list .ms-fm-medicine-item:nth-child(5) { animation-delay: 0.34s; }
+.ms-fm-allergy-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: #FDEDEA;
+  border: 1px solid #E8B4A8;
+  color: #8A3B2C;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.ms-fm-allergy-banner svg { flex-shrink: 0; margin-top: 0.15rem; width: 18px; height: 18px; }
+.ms-fm-analysis-title { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--ms-text-primary); margin-bottom: 0.35rem; }
+.ms-fm-analysis-summary p { color: var(--ms-text-secondary); font-size: 0.9rem; line-height: 1.5; margin: 0; font-family: 'Inter', sans-serif; }
+.ms-fm-medicines-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.ms-fm-medicine-item { background: var(--ms-bg-secondary); border-radius: 10px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.ms-fm-medicine-item--warn { background: #FDEDEA; border: 1px solid #E8B4A8; }
+.ms-fm-medicine-name { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--ms-text-primary); display: flex; align-items: center; gap: 0.4rem; font-size: 0.92rem; }
+.ms-fm-warn-icon { color: #C0392B; width: 15px; height: 15px; }
+.ms-fm-medicine-row { display: flex; gap: 0.4rem; font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ms-text-secondary); line-height: 1.45; }
+.ms-fm-medicine-label { flex-shrink: 0; font-weight: 700; color: var(--ms-text-primary); }
+.ms-fm-medicine-allergy-warning { display: flex; align-items: flex-start; gap: 0.4rem; color: #8A3B2C; font-family: 'Inter', sans-serif; font-size: 0.85rem; line-height: 1.45; background: rgba(192, 57, 43, 0.08); border-radius: 8px; padding: 0.5rem 0.65rem; margin-top: 0.15rem; }
+.ms-fm-medicine-allergy-warning svg { flex-shrink: 0; width: 15px; height: 15px; margin-top: 0.1rem; }
+.ms-fm-safety-note { display: flex; align-items: flex-start; gap: 0.5rem; font-family: 'Inter', sans-serif; font-size: 0.83rem; color: var(--ms-text-secondary); background: var(--ms-bg-secondary); border-radius: 8px; padding: 0.65rem 0.85rem; line-height: 1.45; }
+.ms-fm-safety-note svg { flex-shrink: 0; width: 16px; height: 16px; margin-top: 0.1rem; color: var(--ms-luxury-brown); }
+.ms-fm-save-row { display: flex; align-items: center; gap: 0.75rem; }
+.ms-fm-saved-chip { display: inline-flex; align-items: center; gap: 0.4rem; color: #2E7D4F; background: rgba(46, 125, 79, 0.1); border-radius: 999px; padding: 0.4rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 0.86rem; font-weight: 700; }
+.ms-fm-saved-chip svg { width: 15px; height: 15px; }
+
+@keyframes ms-fm-spin { to { transform: rotate(360deg); } }
+.ms-fm-spin { animation: ms-fm-spin 0.75s linear infinite; }
+
+/* ═══════════════ Symptom Triage result (describe/bubble flow) ═══════════════
+   NEW — output of /triage/symptoms. Deliberately kept visually close to
+   .ms-fm-analysis above (same spacing rhythm, same .ms-fm-safety-note for
+   the disclaimer) so switching modes doesn't feel jarring, but uses its own
+   urgency badge instead of a medicines list since there's no prescription
+   here — just a Home Care / See Doctor Soon / Emergency assessment. */
+.ms-fm-triage {
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--ms-bg-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  animation: fm-result-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.ms-fm-triage > * {
+  animation: fm-result-in 0.4s ease both;
+}
+.ms-fm-triage > *:nth-child(1) { animation-delay: 0.02s; }
+.ms-fm-triage > *:nth-child(2) { animation-delay: 0.08s; }
+.ms-fm-triage > *:nth-child(3) { animation-delay: 0.14s; }
+.ms-fm-triage > *:nth-child(4) { animation-delay: 0.2s; }
+.ms-fm-triage > *:nth-child(5) { animation-delay: 0.26s; }
+.ms-fm-triage > *:nth-child(6) { animation-delay: 0.32s; }
+.ms-fm-triage-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  animation: fm-badge-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes fm-badge-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.ms-fm-triage--green  { background: rgba(46, 125, 79, 0.12); color: #2E7D4F; }
+.ms-fm-triage--yellow { background: rgba(191, 144, 0, 0.14); color: #8A6D00; }
+/* Emergency badge gets one slow, gentle attention pulse — noticeable
+   without being alarming or gimmicky given the seriousness of the content. */
+.ms-fm-triage--red {
+  background: #FDEDEA;
+  color: #8A3B2C;
+  animation: fm-badge-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both, fm-urgent-pulse 1.8s ease-out 0.4s 2;
+}
+@keyframes fm-urgent-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.28); }
+  70%  { box-shadow: 0 0 0 10px rgba(192, 57, 43, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0); }
+}
+
+.ms-fm-triage-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: var(--ms-text-primary);
+}
+.ms-fm-triage-explanation {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ms-text-secondary);
+  margin: 0;
+}
+.ms-fm-triage-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--ms-text-primary);
+  margin-bottom: 0.35rem;
+}
+.ms-fm-triage-section-title svg { width: 15px; height: 15px; color: #C0392B; }
+.ms-fm-triage-section--warn {
+  background: #FDEDEA;
+  border: 1px solid #E8B4A8;
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+.ms-fm-triage-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  color: var(--ms-text-secondary);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* ═══════════════ RIGHT COLUMN ═══════════════ */
+.ms-fm-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  position: sticky;
+  top: calc(var(--ms-nav-h) + 1.5rem);
+}
+@media (max-width: 1180px) { .ms-fm-right { position: static; } }
+
+.ms-findmedicine-page .ms-fm-analysis-card {
+  background: var(--ms-white-card);
+  border: 1px solid var(--fm-border);
+  border-radius: var(--fm-radius);
+  padding: 1.4rem;
+  box-shadow: var(--fm-shadow);
+}
+
+.ms-fm-analysis-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+.ms-fm-analysis-head-icon {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(156, 107, 69, 0.1);
+  color: var(--ms-luxury-brown);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: fm-icon-breathe 2.6s ease-in-out infinite;
+}
+@keyframes fm-icon-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+.ms-fm-analysis-head-icon svg { width: 15px; height: 15px; }
+.ms-fm-analysis-head-title { font-family: 'Inter', sans-serif; font-size: 0.92rem; font-weight: 700; color: var(--ms-text-primary); }
+.ms-fm-analysis-head-sub { font-family: 'Inter', sans-serif; font-size: 0.76rem; color: var(--ms-text-secondary); margin-top: 0.05rem; }
+
+/* loading state — real spinner + real elapsed time, nothing simulated */
+.ms-fm-analysis-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.65rem;
+  padding: 0.75rem 0 0.5rem;
+}
+.ms-fm-analysis-loading .ms-spinner {
+  width: 30px; height: 30px;
+  border: 3px solid var(--ms-bg-secondary);
+  border-top-color: var(--ms-luxury-brown);
+  border-radius: 50%;
+  animation: ms-fm-spin 0.8s linear infinite;
+}
+.ms-fm-analysis-loading-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.84rem;
+  color: var(--ms-text-primary);
+}
+.ms-fm-analysis-loading-time {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.74rem;
+  color: var(--ms-text-secondary);
+}
+
+/* done state */
+.ms-fm-analysis-done {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: #2E7D4F;
+  font-weight: 600;
+  background: rgba(46, 125, 79, 0.08);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+}
+.ms-fm-analysis-done svg { flex-shrink: 0; width: 17px; height: 17px; }
+
+/* Privacy bar */
+.ms-fm-privacy-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--ms-dark-navy);
+  color: var(--ms-soft-gold);
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.ms-fm-privacy-bar svg { width: 14px; height: 14px; }
+
+/* Right column only renders when analysis is loading/done — when it's
+   absent, the shell collapses to a 2-column layout so center gets the
+   freed-up width instead of leaving a gap. */
+.ms-fm-shell--wide {
+  grid-template-columns: 300px 1fr;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .ms-fm-map-stage { max-width: 440px; }
+  .ms-fm-bubble--inner { width: 74px; height: 74px; }
+  .ms-fm-bubble--outer { width: 58px; height: 58px; }
+  .ms-fm-map-center { width: 128px; height: 128px; }
+}
+
+@media (max-width: 640px) {
+  .ms-findmedicine-page { padding: 0 1rem 3rem; }
+  .ms-fm-headline { font-size: 1.7rem; }
+  .ms-fm-map-stage { max-width: 340px; }
+  .ms-fm-bubble--inner { width: 62px; height: 62px; font-size: 0.6rem; }
+  .ms-fm-bubble--outer { width: 48px; height: 48px; font-size: 0.55rem; }
+  .ms-fm-bubble svg { width: 14px; height: 14px; }
+  .ms-fm-bubble-label { display: none; } /* labels get crowded at this size — icon + tap-to-see-name via title attr */
+  .ms-fm-map-center { width: 108px; height: 108px; }
+  .ms-fm-map-center-sub { max-width: 80px; }
+  }
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .ms-fm-anim, .ms-fm-bubble, .ms-fm-map-center-glow, .ms-fm-mic-btn.recording, .ms-fm-map-rings {
+    animation: none !important;
+  }
+}

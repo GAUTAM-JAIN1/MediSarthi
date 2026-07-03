@@ -1,0 +1,100 @@
+medical_consultation:
+  description: >
+    Receive the patient's spoken or written statement about their symptoms in Hindi language: {statement}. 
+    Retrieve the user's past medical history, allergies, and profile details from Crew memory (stored via ChromaDB) 
+    to personalize the diagnosis and prescription.
+
+    Based on both:
+      (a) the reported symptoms, and 
+      (b) the user's medical history and allergies,
+    analyze the case thoroughly and generate a **safe, professional, and realistic medical prescription** in English.
+    The prescription may contain ONE OR MORE medicines — list every medicine that is genuinely appropriate for
+    this case, do not artificially limit yourself to one.
+    
+    Extract the Patient's Name from the profile text knowledge source.
+    Use the extracted Name as the 'user_id' parameter.
+
+  expected_output: >  
+    A fully structured medical prescription in a consistent English format, keeping it small and direct, containing:
+      - The patient name from the profile text knowledge source, used as the 'user_id' parameter.
+      - A 'medicines' list, where EACH medicine has:
+        - Medicine name, as exact as possible to how it appears on an e-commerce pharmacy platform.
+        - Start time in ISO 8601 format (e.g., '2025-12-08T10:00:00') at which the medicine should be taken.
+        - End time in ISO 8601 format (e.g., '2025-12-08T10:15:00'), generally 15 minutes after the start time.
+        - Dosage instructions, such as before/after meals or any other necessary detail.
+    
+  agent: doctor
+
+care_task:
+  description: >
+    You are the Medical Scheduler. Your goal is to schedule medication reminders on Google Calendar based on the doctor's prescription, which may contain multiple medicines.
+
+    Step 1: Establish Identity
+    - Extract the Patient's Name from the profile text knowledge source.
+    - Use the extracted Name as the 'user_id' parameter. This ensures events are created on their specific calendar account.
+
+    Step 2: Parse & Schedule (Iterate for EACH medicine in the 'medicines' list)
+    Analyze the prescription. For every unique medication in the list, perform the following:
+    
+    1. Calculate Timing:
+    - Read the frequency/time (e.g., 'Daily at 8:00 AM').
+    - Calculate the Next Occurrence date and time starting from tomorrow.
+    - Convert this into ISO 8601 format (e.g., '2025-12-09T08:00:00'). This is your 'start_time'.
+
+    2. Execute Tool:
+    - Use the GoogleCalendarTool.
+    - user_id: The ID extracted in Step 1.
+    - summary: 'Take [Medicine Name] - [Dosage]'.
+    - start_time: The ISO string calculated above.
+    - end_time: The ISO string calculated above.
+    - description: Any special instructions (e.g., 'Take after food').
+
+    Step 3: Verification
+    - Ensure that if Medicine A is at 9am and Medicine B is at 8pm, two separate API calls are made with different timestamps.
+    - Every medicine in the list gets its own calendar event — never skip one.
+
+  expected_output: >
+    A final report listing:
+    1. The user_id used for the file generation.
+    2. A summary of EVERY event created (one per medicine), including the specific ISO timestamps sent to the tool.
+
+  agent: care_coordinator
+
+analysis_task:
+  description: >
+    You will receive the doctor's full prescription (a list of one or more medicines, each with name, timing,
+    and dosage instructions) as context.
+
+    Your job: produce a plain-language breakdown of this prescription that any normal person — with no medical
+    background — can read and immediately understand.
+
+    For EACH medicine in the prescription, provide:
+      - purpose: what it is for / what condition it treats, in simple everyday words.
+      - how_to_take: clear instructions (timing, with/without food, anything practical).
+      - common_side_effects: the common, non-alarming side effects, briefly, in plain language.
+      - precautions: anything specific the patient should watch out for with this particular medicine.
+
+    CRITICAL — Allergy Cross-Check:
+      - Look at the "Known Allergies (for analysis)" line in the profile text knowledge source.
+      - For EVERY medicine, check carefully whether it conflicts with any listed allergy (the medicine itself,
+        its common name, or a well-known drug class it belongs to that overlaps with the allergy).
+      - If you find ANY conflict for ANY medicine, set has_allergy_conflict to true overall, and fill in that
+        medicine's allergy_warning field with a clear, direct, non-alarmist explanation of the conflict and a
+        recommendation to confirm with a doctor/pharmacist before taking it.
+      - If there is no allergy on file, or no conflict found, leave allergy_warning empty/null for that medicine
+        and set has_allergy_conflict to false overall.
+      - Never skip this check, even if it seems obvious there's no conflict — always state your reasoning.
+
+    Also produce:
+      - overall_summary: a short 3-4 line summary of what this prescription is broadly addressing, in plain language.
+      - safety_note: a short, friendly closing line reminding the patient that this explanation supports but does
+        not replace a real doctor's or pharmacist's advice — and if there's an allergy conflict, explicitly say to
+        speak to a professional before taking that medicine.
+
+  expected_output: >
+    A structured PrescriptionAnalysisOutput object with: overall_summary, a medicines list (one MedicineAnalysis
+    per medicine — name, purpose, how_to_take, common_side_effects, precautions, allergy_warning),
+    has_allergy_conflict (true/false), and safety_note. All text must be in simple, warm, plain language —
+    no unexplained medical jargon.
+
+  agent: prescription_analyst

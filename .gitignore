@@ -1,0 +1,10 @@
+frontend/frontend/node_modules/
+frontend/frontend/dist/
+frontend/frontend/dump.txt
+
+full_dump.txt
+ui_redesign_bundle.txt
+*.txt.bak
+
+.vscode/
+.DS_Store

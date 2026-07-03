@@ -1,0 +1,628 @@
+/* Appointments.css */
+
+.ms-appt-hero {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 2.5rem;
+  align-items: center;
+  padding: 2.5rem 2rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ms-appt-hero-left { display: flex; flex-direction: column; gap: 1rem; }
+
+.ms-appt-hero-title {
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 4.2vw, 2.9rem);
+  line-height: 1.12;
+  color: var(--ms-text-primary);
+}
+.ms-accent { color: var(--ms-luxury-brown); }
+
+.ms-appt-hero-desc {
+  font-family: "Inter", sans-serif;
+  font-size: 0.98rem;
+  color: var(--ms-text-secondary);
+  line-height: 1.6;
+  max-width: 46ch;
+}
+
+.ms-appt-pills { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.3rem; }
+.ms-appt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid rgba(215, 184, 149, 0.55);
+  border-radius: 30px;
+  background: var(--ms-white-card);
+  font-family: "Inter", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ms-text-secondary);
+}
+
+/* ── Hero illustration ── */
+.ms-appt-hero-right { display: flex; justify-content: center; }
+.ms-appt-illustration {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 340px;
+}
+
+.ms-appt-phone-mock {
+  width: 178px;
+  background: var(--ms-white-card);
+  border: 2px solid var(--ms-soft-gold);
+  border-radius: 26px;
+  padding: 1.6rem 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 18px 40px rgba(156, 107, 69, 0.16);
+  position: relative;
+  transition: box-shadow 0.3s;
+}
+.ms-appt-phone-mock--live {
+  box-shadow: 0 18px 46px rgba(156, 107, 69, 0.28);
+  animation: ms-appt-phone-pulse 2.2s ease-in-out infinite;
+}
+@keyframes ms-appt-phone-pulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.ms-appt-phone-notch {
+  position: absolute;
+  top: 10px;
+  width: 36px;
+  height: 5px;
+  border-radius: 4px;
+  background: var(--ms-bg-secondary);
+}
+
+.ms-appt-bot-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--ms-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.4rem;
+}
+
+.ms-appt-waveform {
+  display: flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 20px;
+  margin: 0.2rem 0;
+}
+.ms-appt-waveform span {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ms-luxury-brown);
+  animation: ms-appt-wave 1s ease-in-out infinite;
+  opacity: 0.85;
+}
+.ms-appt-waveform--sm span { background: var(--ms-btn); }
+@keyframes ms-appt-wave {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+.ms-appt-phone-label {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: var(--ms-luxury-brown);
+  text-align: center;
+}
+.ms-appt-phone-sub {
+  font-family: "Inter", sans-serif;
+  font-size: 0.72rem;
+  color: var(--ms-text-secondary);
+  text-align: center;
+  line-height: 1.4;
+}
+.ms-appt-phone-eta {
+  font-family: "Inter", sans-serif;
+  font-size: 0.68rem;
+  color: var(--ms-text-secondary);
+  opacity: 0.75;
+}
+
+.ms-appt-arrow { flex-shrink: 0; }
+
+.ms-appt-hospital-mock { position: relative; }
+.ms-appt-hospital-pin {
+  position: absolute;
+  bottom: -6px;
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ms-btn);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ms-appt-pin-bounce 2s ease-in-out infinite;
+  box-shadow: 0 4px 10px rgba(111, 71, 45, 0.35);
+}
+@keyframes ms-appt-pin-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* ── Login notice ── */
+.ms-appt-login-notice {
+  display: flex;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+  padding: 0.75rem 1.2rem;
+  background: rgba(215, 184, 149, 0.15);
+  border: 1px solid var(--ms-soft-gold);
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
+  color: var(--ms-text-secondary);
+}
+.ms-appt-login-notice a { color: var(--ms-luxury-brown); font-weight: 600; }
+
+/* ── Grid ── */
+.ms-appt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+
+.ms-appt-section { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.ms-appt-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  position: relative;
+}
+.ms-appt-step-num {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ms-btn);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.ms-appt-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "Playfair Display", serif;
+  font-size: 1.15rem;
+  color: var(--ms-text-primary);
+  margin: 0 0 0.2rem;
+}
+
+.ms-appt-section-desc {
+  font-family: "Inter", sans-serif;
+  font-size: 0.83rem;
+  color: var(--ms-text-secondary);
+  line-height: 1.5;
+}
+
+.ms-appt-live-badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  background: rgba(52, 168, 83, 0.12);
+  border: 1px solid rgba(52, 168, 83, 0.35);
+  color: #1E7E34;
+  font-family: "Inter", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.ms-appt-live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #1E7E34;
+  animation: ms-appt-live-pulse 1.4s ease-in-out infinite;
+}
+@keyframes ms-appt-live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.4); }
+}
+
+/* ── Search bar (find card) ── */
+.ms-appt-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1.5px solid #E8DDD4;
+  border-radius: 10px;
+  background: var(--ms-bg-primary);
+  padding: 0.15rem 0.9rem;
+  transition: border-color 0.18s;
+}
+.ms-appt-search-bar:focus-within { border-color: var(--ms-luxury-brown); background: var(--ms-white-card); }
+.ms-appt-search-icon { color: var(--ms-text-secondary); flex-shrink: 0; }
+.ms-appt-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0.7rem 0.2rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  color: var(--ms-text-primary);
+  flex: 1;
+  min-width: 0;
+}
+.ms-appt-search-divider { width: 1px; height: 20px; background: #E8DDD4; flex-shrink: 0; }
+.ms-appt-locate-btn {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--ms-soft-gold);
+  background: var(--ms-white-card);
+  color: var(--ms-luxury-brown);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ms-appt-locate-btn:hover { background: var(--ms-bg-secondary); }
+.ms-appt-location-msg {
+  font-family: "Inter", sans-serif;
+  font-size: 0.76rem;
+  color: var(--ms-luxury-brown);
+  margin-top: -0.4rem;
+}
+
+.ms-appt-search-btn { width: 100%; justify-content: center; height: 44px; }
+
+/* ── Map mockup ── */
+.ms-appt-map {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(215, 184, 149, 0.35);
+}
+.ms-appt-map-pin {
+  position: absolute;
+  width: 26px; height: 26px;
+  border-radius: 50% 50% 50% 0;
+  transform: translate(-50%, -100%) rotate(45deg);
+  background: var(--ms-btn);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 8px rgba(111, 71, 45, 0.3);
+}
+.ms-appt-map-pin svg { transform: rotate(-45deg); }
+
+.ms-appt-error {
+  font-family: "Inter", sans-serif;
+  font-size: 0.83rem;
+  color: #C0392B;
+  background: #FDF0EE;
+  border: 1px solid #F5C6C1;
+  border-radius: 6px;
+  padding: 0.55rem 0.85rem;
+  margin: 0;
+}
+
+.ms-hospital-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.ms-hospital-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--ms-bg-primary);
+  border: 1px solid rgba(215, 184, 149, 0.3);
+  border-radius: 10px;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.ms-hospital-card:hover { border-color: var(--ms-soft-gold); transform: translateY(-1px); }
+
+.ms-hospital-pin-box {
+  flex-shrink: 0;
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: var(--ms-bg-secondary);
+  color: var(--ms-luxury-brown);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.ms-hospital-info { flex: 1; min-width: 0; }
+.ms-hospital-name {
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ms-text-primary);
+  margin: 0 0 0.18rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ms-hospital-badge { font-size: 0.62rem; padding: 0.15rem 0.5rem; flex-shrink: 0; }
+
+.ms-hospital-addr, .ms-hospital-phone {
+  font-family: "Inter", sans-serif;
+  font-size: 0.78rem;
+  color: var(--ms-text-secondary);
+  margin: 0.1rem 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.ms-hospital-actions { display: flex; flex-direction: column; gap: 0.4rem; flex-shrink: 0; }
+.ms-hospital-btn { font-size: 0.78rem; padding: 0.35rem 0.65rem; display: flex; align-items: center; gap: 0.25rem; }
+
+.ms-appt-more-btn {
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ms-luxury-brown);
+  padding: 0.4rem 0.8rem;
+}
+.ms-appt-more-btn:hover { text-decoration: underline; }
+
+/* ── Step progress (AI Call card) ── */
+.ms-appt-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0.4rem 0.2rem 0.2rem;
+}
+.ms-appt-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  position: relative;
+  flex: 1;
+}
+.ms-appt-step-icon {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #E8DDD4;
+  color: var(--ms-text-secondary);
+  background: var(--ms-white-card);
+  transition: all 0.25s;
+  z-index: 1;
+}
+.ms-appt-step-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--ms-text-secondary);
+  text-align: center;
+}
+.ms-appt-step-connector {
+  position: absolute;
+  top: 17px;
+  left: calc(50% + 22px);
+  width: calc(100% - 22px);
+  height: 0;
+  border-top: 2px dashed #E8DDD4;
+  z-index: 0;
+}
+.ms-appt-step--active .ms-appt-step-icon {
+  border-color: var(--ms-btn);
+  background: var(--ms-btn);
+  color: #fff;
+  animation: ms-appt-step-pulse 1.4s ease-in-out infinite;
+}
+.ms-appt-step--active .ms-appt-step-label { color: var(--ms-btn); }
+@keyframes ms-appt-step-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(111, 71, 45, 0.35); }
+  50% { box-shadow: 0 0 0 6px rgba(111, 71, 45, 0); }
+}
+.ms-appt-step--done .ms-appt-step-icon {
+  border-color: #1E7E34;
+  background: #1E7E34;
+  color: #fff;
+}
+.ms-appt-step--done .ms-appt-step-label { color: #1E7E34; }
+.ms-appt-step--error .ms-appt-step-icon {
+  border-color: #C0392B;
+  background: #C0392B;
+  color: #fff;
+}
+.ms-appt-step--error .ms-appt-step-label { color: #C0392B; }
+
+/* ── Live call banner ── */
+.ms-appt-call-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(215, 184, 149, 0.14);
+  border: 1px solid var(--ms-soft-gold);
+  border-radius: 10px;
+}
+.ms-appt-call-banner-icon {
+  flex-shrink: 0;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--ms-btn);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  animation: ms-appt-ring 1s ease-in-out infinite;
+}
+@keyframes ms-appt-ring {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+.ms-appt-call-banner-title {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ms-text-primary);
+}
+.ms-appt-call-banner-sub {
+  font-family: "Inter", sans-serif;
+  font-size: 0.76rem;
+  color: var(--ms-text-secondary);
+}
+.ms-appt-call-banner .ms-appt-waveform--sm { margin-left: auto; height: 16px; }
+
+/* ── Call form ── */
+.ms-appt-form { display: flex; flex-direction: column; gap: 0.9rem; }
+.ms-appt-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+.ms-appt-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+}
+.ms-appt-msg--success { background: rgba(52, 168, 83, 0.08); color: #1E7E34; border: 1px solid rgba(52, 168, 83, 0.25); }
+.ms-appt-msg--error { background: #FDF0EE; color: #C0392B; border: 1px solid #F5C6C1; }
+
+/* ── Call summary card ── */
+.ms-appt-call-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem 1.1rem;
+  background: rgba(52, 168, 83, 0.06);
+  border: 1px solid rgba(52, 168, 83, 0.25);
+  border-radius: 10px;
+}
+.ms-appt-call-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1E7E34;
+}
+.ms-appt-call-summary-text {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  color: var(--ms-text-primary);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.ms-appt-transcript { margin-top: 0.2rem; border-top: 1px solid rgba(52, 168, 83, 0.2); padding-top: 0.6rem; }
+.ms-appt-transcript summary {
+  font-family: "Inter", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ms-luxury-brown);
+  cursor: pointer;
+  list-style: none;
+}
+.ms-appt-transcript summary::-webkit-details-marker { display: none; }
+.ms-appt-transcript summary::before { content: "▸ "; display: inline-block; transition: transform 0.15s; }
+.ms-appt-transcript[open] summary::before { transform: rotate(90deg); }
+.ms-appt-transcript-list {
+  list-style: none;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.ms-appt-transcript-list li {
+  font-family: "Inter", sans-serif;
+  font-size: 0.78rem;
+  color: var(--ms-text-secondary);
+  padding: 0.4rem 0.6rem;
+  background: var(--ms-bg-primary);
+  border-radius: 6px;
+  line-height: 1.45;
+}
+
+/* ── Confirm note + submit ── */
+.ms-appt-confirm-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  background: rgba(215, 184, 149, 0.14);
+  border: 1px solid var(--ms-soft-gold);
+  border-radius: 10px;
+  color: var(--ms-luxury-brown);
+}
+.ms-appt-confirm-title {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ms-text-primary);
+}
+.ms-appt-confirm-sub {
+  font-family: "Inter", sans-serif;
+  font-size: 0.76rem;
+  color: var(--ms-text-secondary);
+  margin-top: 0.15rem;
+}
+
+.ms-appt-call-btn {
+  width: 100%;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.85rem;
+  font-size: 0.98rem;
+}
+
+@media (max-width: 900px) {
+  .ms-appt-hero { grid-template-columns: 1fr; padding: 2rem 1.25rem 1rem; }
+  .ms-appt-hero-right { order: -1; }
+  .ms-appt-illustration { min-height: 260px; transform: scale(0.85); }
+}
+
+@media (max-width: 768px) {
+  .ms-appt-grid { grid-template-columns: 1fr; padding: 0 1rem 3rem; }
+  .ms-appt-form-row { grid-template-columns: 1fr; }
+  .ms-appt-step-label { font-size: 0.6rem; }
+  .ms-appt-transcript-list { max-height: 180px; }
+}

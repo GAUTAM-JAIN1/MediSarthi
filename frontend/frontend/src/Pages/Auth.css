@@ -1,0 +1,160 @@
+/* Auth.css — MediSarthi login/signup page */
+
+.ms-auth-wrapper {
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.ms-auth-card {
+  background: var(--ms-white-card);
+  border: 1px solid var(--ms-soft-gold);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 4px 32px rgba(156, 107, 69, 0.08);
+}
+
+/* Header */
+.ms-auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.ms-auth-logo {
+  font-size: 2rem;
+  color: var(--ms-luxury-brown);
+  margin-bottom: 0.5rem;
+}
+
+.ms-auth-title {
+  font-family: "Playfair Display", serif;
+  font-size: 1.8rem;
+  color: var(--ms-text-primary);
+  margin: 0 0 0.4rem 0;
+}
+
+.ms-auth-subtitle {
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  color: var(--ms-text-secondary);
+  margin: 0;
+}
+
+/* Tabs */
+.ms-auth-tabs {
+  display: flex;
+  background: var(--ms-bg-primary);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 1.8rem;
+  gap: 4px;
+}
+
+.ms-auth-tab {
+  flex: 1;
+  padding: 0.6rem;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  color: var(--ms-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ms-auth-tab.active {
+  background: var(--ms-white-card);
+  color: var(--ms-luxury-brown);
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(156, 107, 69, 0.15);
+}
+
+/* Form fields */
+.ms-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.ms-auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ms-auth-label {
+  font-family: "Inter", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ms-text-secondary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ms-auth-input {
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #E8DDD4;
+  border-radius: 8px;
+  background: var(--ms-bg-primary);
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  color: var(--ms-text-primary);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.ms-auth-input:focus {
+  border-color: var(--ms-luxury-brown);
+  background: var(--ms-white-card);
+}
+
+.ms-auth-input::placeholder {
+  color: #C4B5A8;
+}
+
+/* Error */
+.ms-auth-error {
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+  color: #C0392B;
+  background: #FDF0EE;
+  border: 1px solid #F5C6C1;
+  border-radius: 6px;
+  padding: 0.6rem 0.9rem;
+  margin: 0;
+}
+
+/* Submit button */
+.ms-auth-submit {
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 1rem;
+  margin-top: 0.4rem;
+}
+
+.ms-auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Switch link */
+.ms-auth-switch {
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  font-size: 0.88rem;
+  color: var(--ms-text-secondary);
+  margin: 1.5rem 0 0 0;
+}
+
+.ms-auth-switch span {
+  color: var(--ms-luxury-brown);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--ms-soft-gold);
+}
