@@ -1,254 +1,234 @@
-\# 🩺 MediSarthi
+<div align="center">
 
+# 🩺 MediSarthi
 
+### AI-powered healthcare companion for India
 
-\*\*An AI-powered healthcare companion for India\*\* — one place to describe symptoms, get prescriptions explained, compare medicine prices, book appointments via an AI voice agent, find nearby hospitals, track health records, carry an emergency-access QR medical ID, and connect with a blood-donor network.
+*Symptom triage · Prescription analysis · Medicine price comparison · AI voice appointment booking · Emergency QR Medical ID · Blood donor network*
 
+<br>
 
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
 
-<p align="center">
+<br>
 
-&#x20; <img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python\&logoColor=white">
+[![Status](https://img.shields.io/badge/status-active%20development-yellow?style=flat-square)](.)
+[![Made with CrewAI](https://img.shields.io/badge/multi--agent-CrewAI-orange?style=flat-square)](.)
+[![Last Commit](https://img.shields.io/github/last-commit/GAUTAM-JAIN1/MediSarthi?style=flat-square&color=blue)](.)
 
-&#x20; <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi\&logoColor=white">
+</div>
 
-&#x20; <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react\&logoColor=black">
+<br>
 
-&#x20; <img alt="Vite" src="https://img.shields.io/badge/Vite-7-646CFF?logo=vite\&logoColor=white">
+## 📑 Table of Contents
 
-&#x20; <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb\&logoColor=white">
+- [Overview](#-overview)
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
+- [Getting Started](#-getting-started)
+- [Project Status](#-project-status)
+- [Security](#-security)
+- [Roadmap](#-roadmap)
+- [Author](#-author)
 
-&#x20; <img alt="CrewAI" src="https://img.shields.io/badge/CrewAI-Multi--Agent-orange">
+<br>
 
-&#x20; <img alt="License" src="https://img.shields.io/badge/status-in%20development-yellow">
+## 📖 Overview
 
-</p>
+> People juggle disconnected steps when dealing with health — describing symptoms, reading confusing prescriptions, comparing medicine prices, booking appointments, finding a hospital in an emergency, and having no quick way to share critical medical info with a stranger. **MediSarthi consolidates all of this into one AI-driven flow.**
 
+MediSarthi pairs a **multi-agent AI backend** (CrewAI orchestration) with a **luxury-styled React frontend**. What started as a college collaboration has been substantially reworked — new authentication system, hardened MongoDB data model, three additional AI agents, and a complete visual redesign — into a portfolio-grade full-stack product.
 
+<br>
 
-\---
+## ✨ Features
 
+<table>
+<tr>
+<td width="50%" valign="top">
 
+### 🤖 AI Health Agents
+- 🗣️ **Symptom Consultation** — voice/text (Hindi/English), sets medicine reminders
+- 📄 **Prescription OCR** — photo → extracted text → guidance
+- 🧪 **Lab Report Analyser** — plain-language breakdown of test values
+- 💊 **Medicine Interaction Checker** — safety check across multiple medicines
+- 🚑 **Symptom Triage** — home rest, doctor visit, or emergency care
 
-\## 📖 Overview
+</td>
+<td width="50%" valign="top">
 
+### 🏥 Platform Features
+- 💰 **Medicine Price Comparison** — live pharmacy scraping, human-confirmed cart
+- 📞 **AI Voice Appointment Booking** — agent calls & books with a clinic
+- 🏥 **Nearby Hospital Finder** — OpenStreetMap-based search
+- 📊 **Health Records Dashboard** — vitals + prescriptions timeline
+- 🆘 **Emergency QR Medical ID** — public no-login emergency page
+- 🩸 **Blood Donor Network** — registration, availability, matching
 
+</td>
+</tr>
+</table>
 
-MediSarthi combines a \*\*multi-agent AI backend\*\* (CrewAI + LLM orchestration) with a \*\*luxury-styled React frontend\*\* to consolidate the scattered steps of managing personal health into a single assistant-driven flow — from symptom triage to emergency identification.
+<br>
 
-
-
-The project began as a college/personal collaboration and has since been substantially reworked — new authentication system, hardened data model, three new AI agents, and a complete visual redesign — into a portfolio-grade full-stack product.
-
-
-
-\## ✨ Features
-
-
-
-| Feature | Description |
-
-|---|---|
-
-| 🗣️ \*\*Symptom Consultation\*\* | Describe symptoms by voice/text (Hindi/English); a CrewAI-orchestrated agent provides guidance and can set medicine reminders. |
-
-| 📄 \*\*Prescription OCR\*\* | Upload a photo of a prescription — Tesseract OCR extracts the text and routes it through the same consultation flow. |
-
-| 🧪 \*\*Lab Report Analyser\*\* | Upload a lab/blood test report and get a plain-language, per-value breakdown of what's normal and what's worth a doctor's attention. |
-
-| 💊 \*\*Medicine Interaction Checker\*\* | Enter multiple medicines and check whether they're safe to take together. |
-
-| 🚑 \*\*Symptom Triage\*\* | Get an urgency read — rest at home, see a doctor, or seek emergency care. |
-
-| 💰 \*\*Medicine Price Comparison\*\* | Browser-automation agents scrape live prices across pharmacy sites in parallel, with a human-in-the-loop "confirm before cart" step. |
-
-| 📞 \*\*AI Voice Appointment Booking\*\* | An AI agent calls a clinic and attempts to book an appointment (Twilio + AssemblyAI + Deepgram stack). |
-
-| 🏥 \*\*Nearby Hospital Finder\*\* | OpenStreetMap-based search by city/state. |
-
-| 📊 \*\*Health Records Dashboard\*\* | Vitals (BP, blood sugar, weight) and prescriptions combined into a single timeline. |
-
-| 🆘 \*\*Emergency QR Medical ID\*\* | Generates a QR code linking to a public, no-login page showing blood group, allergies, and emergency contact — for use in real emergencies. |
-
-| 🩸 \*\*Blood Donor Network\*\* | Donor registration, availability toggle, and matching by blood group + location. |
-
-| 📅 \*\*Calendar Reminders\*\* | Google Calendar integration for medicine timing. |
-
-
-
-\## 🏗️ Architecture
-
-
+## 🏗️ Architecture
 
 ```
-
 MediSarthi/
-
-├── backend/     → FastAPI + CrewAI multi-agent system (Python)
-
-└── frontend/    → React 19 + Vite single-page application
-
+├── backend/      FastAPI + CrewAI multi-agent system (Python)
+│   └── src/agents/
+│       ├── main.py           → All HTTP endpoints
+│       ├── crew.py           → CrewAI agent/crew definitions
+│       ├── auth.py           → Email/password authentication
+│       ├── health_records.py → Vitals, timeline, emergency QR logic
+│       ├── donor.py          → Blood donor matching
+│       └── buying_agent.py   → Parallel pharmacy price scraping
+│
+└── frontend/     React 19 + Vite single-page application
+    └── frontend/src/Pages/   → 10 routed pages, custom design system
 ```
 
+<details>
+<summary><b>🧠 Multi-agent design details</b></summary>
+<br>
 
+Domain-specific CrewAI crews (`LabReportCrew`, `MedicineInteractionCrew`, `SymptomTriageCrew`, `SpeechCrew`, `FileCrew`) each own a narrow task, coordinated behind clean FastAPI endpoints — rather than one monolithic prompt handling everything.
 
-\*\*Multi-agent design:\*\* Domain-specific CrewAI crews (`LabReportCrew`, `MedicineInteractionCrew`, `SymptomTriageCrew`, `SpeechCrew`, `FileCrew`) each own a narrow task, coordinated behind clean FastAPI endpoints.
+**Data model:** a hybrid MongoDB approach — bounded, frequently-accessed fields live directly on the user document, while unbounded/append-only data (health timeline entries, donor requests) lives in separate collections for scalability.
 
+</details>
 
+<br>
 
-\*\*Data model:\*\* A hybrid MongoDB approach — bounded, frequently-accessed fields live directly on the user document, while unbounded/append-only data (health timeline entries, donor requests) lives in separate collections.
+## 🛠️ Tech Stack
 
+<table>
+<tr>
+<th>Layer</th>
+<th>Technologies</th>
+</tr>
+<tr>
+<td><b>Backend</b></td>
+<td>
+<img src="https://img.shields.io/badge/-FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white">
+<img src="https://img.shields.io/badge/-CrewAI-orange?style=flat-square">
+<img src="https://img.shields.io/badge/-MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white">
+<img src="https://img.shields.io/badge/-Tesseract%20OCR-black?style=flat-square">
+<img src="https://img.shields.io/badge/-Twilio-F22F46?style=flat-square&logo=twilio&logoColor=white">
+<img src="https://img.shields.io/badge/-Playwright-2EAD33?style=flat-square&logo=playwright&logoColor=white">
+</td>
+</tr>
+<tr>
+<td><b>Frontend</b></td>
+<td>
+<img src="https://img.shields.io/badge/-React%2019-61DAFB?style=flat-square&logo=react&logoColor=black">
+<img src="https://img.shields.io/badge/-Vite%207-646CFF?style=flat-square&logo=vite&logoColor=white">
+<img src="https://img.shields.io/badge/-React%20Router-CA4245?style=flat-square&logo=reactrouter&logoColor=white">
+<img src="https://img.shields.io/badge/-Custom%20CSS-1572B6?style=flat-square&logo=css3&logoColor=white">
+</td>
+</tr>
+<tr>
+<td><b>Infra & Auth</b></td>
+<td>
+<img src="https://img.shields.io/badge/-Google%20Calendar%20API-4285F4?style=flat-square&logo=googlecalendar&logoColor=white">
+<img src="https://img.shields.io/badge/-bcrypt-blue?style=flat-square">
+<img src="https://img.shields.io/badge/-Deepgram-13EF93?style=flat-square">
+</td>
+</tr>
+</table>
 
+<br>
 
-\## 🛠️ Tech Stack
+## 🚀 Getting Started
 
+### Prerequisites
+`Python 3.11` · `Node.js 18+` · `MongoDB Atlas account`
 
-
-\*\*Backend\*\*
-
-\- FastAPI · CrewAI · MongoDB (`pymongo`) · Tesseract OCR (`pytesseract`)
-
-\- Twilio + AssemblyAI + Deepgram (AI voice calling agent)
-
-\- `browser-use` (Playwright-based) — live pharmacy price scraping
-
-\- Google Calendar API (OAuth) · `bcrypt` password hashing
-
-
-
-\*\*Frontend\*\*
-
-\- React 19 + Vite 7 · `react-router-dom`
-
-\- `react-icons` (Lucide set) · `qrcode.react`
-
-\- Custom CSS design system (no framework) — Playfair Display + Inter typography
-
-
-
-\## 🚀 Getting Started
-
-
-
-\### Prerequisites
-
-\- Python 3.11 (`>=3.10,<3.14`)
-
-\- Node.js (v18+)
-
-\- MongoDB Atlas account (or local MongoDB)
-
-
-
-\### Backend
-
+### Backend
 ```bash
-
 cd backend
-
 python -m venv venv
-
-.\\venv\\Scripts\\Activate      # Windows
-
+.\venv\Scripts\Activate      # Windows
 pip install -e .
-
 cp .env.example .env         # then fill in your own keys
-
 python src/agents/main.py
-
 ```
 
-
-
-\### Frontend
-
+### Frontend
 ```bash
-
 cd frontend/frontend
-
 npm install
-
 npm run dev
-
 ```
 
+Open the printed local URL — typically `http://localhost:5173`.
 
+<details>
+<summary><b>🔑 Environment variables reference</b></summary>
+<br>
 
-Open the printed local URL (typically `http://localhost:5173`).
-
-
-
-\### Environment Variables
-
-Create a `.env` file inside `backend/` with:
-
+Create a `.env` file inside `backend/`:
+```env
+MONGO_URI=
+GEMINI_API_KEY=
+GOOGLE_API_KEY=
+GROQ_API_KEY=
+ASSEMBLY_API_KEY=
+DEEPGRAM_API_KEY=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=
 ```
+> ⚠️ None of these are included in this repository. You'll need your own API keys from each provider.
 
-MONGO\_URI=
+</details>
 
-GEMINI\_API\_KEY=
+<br>
 
-GOOGLE\_API\_KEY=
+## 📌 Project Status
 
-GROQ\_API\_KEY=
+| Module | Status |
+|---|---|
+| Auth, Health Records, Emergency QR ID, Blood Donor System | ✅ Complete & tested end-to-end |
+| Frontend routes wired to live backend | ✅ 8 / 10 |
+| Medicine Price Comparison | 🚧 UI complete, backend integration in progress |
+| Lab Report Analyser · Medicine Interaction Checker · Symptom Triage | 🚧 Code complete, pending live testing |
 
-ASSEMBLY\_API\_KEY=
+<br>
 
-DEEPGRAM\_API\_KEY=
+## 🔒 Security
 
-TWILIO\_ACCOUNT\_SID=
+- No credentials, API keys, or tokens are committed to this repository — all secrets load from a local, git-ignored `.env` file.
+- Human-in-the-loop confirmation is required before any automated purchase action.
+- Emergency QR pages expose only an explicitly opted-in safe subset of data — never full account access.
 
-TWILIO\_AUTH\_TOKEN=
+<br>
 
-TWILIO\_PHONE\_NUMBER=
+## 🗺️ Roadmap
 
-```
+- [ ] Complete live testing for the 3 newest AI agents
+- [ ] Wire Medicine Price Comparison to the real backend
+- [ ] Harden AI voice-calling agent reliability
+- [ ] Deploy to a public environment
 
-> None of these are included in this repository. You'll need your own API keys from each provider.
+<br>
 
+## 👤 Author
 
+**Gautam Jain**
+Second-year Computer Engineering student · NLP/LLMs & Deep Learning
 
-\## 📌 Project Status
+[![GitHub](https://img.shields.io/badge/GitHub-GAUTAM--JAIN1-181717?style=for-the-badge&logo=github)](https://github.com/GAUTAM-JAIN1)
 
+<br>
 
+<div align="center">
 
-\- ✅ Auth, health records, emergency QR ID, and the blood donor system are complete and tested end-to-end.
+*Built as a portfolio project — feedback and suggestions welcome.*
 
-\- ✅ 8 of 10 frontend routes are wired to the live backend.
-
-\- 🚧 Medicine price comparison is UI-complete, backend integration in progress.
-
-\- 🚧 Lab Report Analyser, Medicine Interaction Checker, and Symptom Triage agents are code-complete, pending live testing.
-
-
-
-\## 🔒 Security
-
-
-
-\- No credentials, API keys, or tokens are committed to this repository — all secrets are loaded from a local, git-ignored `.env` file.
-
-\- Human-in-the-loop confirmation is required before any automated purchase action.
-
-
-
-\## 👤 Author
-
-
-
-\*\*Gautam Jain\*\*
-
-Second-year Computer Engineering student, specializing in NLP/LLMs and Deep Learning.
-
-\[GitHub](https://github.com/GAUTAM-JAIN1)
-
-
-
-\---
-
-
-
-<p align="center"><i>Built as a portfolio project — feedback and suggestions welcome.</i></p>
-
-
-
+</div>
