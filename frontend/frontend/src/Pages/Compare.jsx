@@ -170,11 +170,6 @@ function MedicineComparisonBlock({ entry }) {
   );
 }
 
-// ── Helpers: pull a two-site (siteA vs siteB) comparison pair out of one
-//    medicine's `results` array. Backend always checks exactly 2 sites
-//    (1mg + Apollo, see buying_agent.py) so this stays generic on site
-//    *names* — it reads them from the actual API response, never hardcodes
-//    "1mg"/"Apollo" as data, only as a display fallback. ──
 function getSiteResult(entry, siteName) {
   return entry.results?.find((r) => r.site === siteName) || null;
 }
@@ -196,10 +191,6 @@ function getPair(entry, siteA, siteB) {
   };
 }
 
-// ── Balance scale — SVG + CSS animation only, no external library. ──
-// phase: 'idle' (nothing searched yet, gentle float) | 'loading' (actively
-// weighing, keeps oscillating up-down) | 'settled' (comparison done, tips
-// toward the winner and stays there).
 function BalanceScale({ phase, winnerSide, labelA, labelB }) {
   const tilt = phase === 'settled' ? (winnerSide === 'A' ? -9 : winnerSide === 'B' ? 9 : 0) : 0;
 
@@ -240,16 +231,13 @@ function BalanceScale({ phase, winnerSide, labelA, labelB }) {
         </filter>
       </defs>
 
-      {/* soft contact shadow under the base */}
       <ellipse cx="160" cy="252" rx="58" ry="9" fill="#3A2411" opacity="0.16" />
 
       <g filter="url(#cmpShadow)">
-        {/* base + post */}
         <ellipse cx="160" cy="248" rx="50" ry="9" fill="url(#cmpBronzeH)" />
         <rect x="153" y="112" width="14" height="138" rx="5" fill="url(#cmpBronzeV)" />
         <ellipse cx="160" cy="112" rx="9" ry="4" fill="#EAC886" opacity="0.8" />
 
-        {/* clock */}
         <circle cx="160" cy="52" r="34" fill="url(#cmpClockFace)" stroke="url(#cmpBronzeH)" strokeWidth="6" />
         {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => {
           const rad = (deg * Math.PI) / 180;
@@ -263,10 +251,8 @@ function BalanceScale({ phase, winnerSide, labelA, labelB }) {
         <line x1="160" y1="52" x2="173" y2="52" stroke="#54341B" strokeWidth="2.6" strokeLinecap="round" />
         <circle cx="160" cy="52" r="3" fill="#54341B" />
 
-        {/* neck connecting clock to the wing/beam */}
         <path d="M 148 84 Q 160 96 172 84 L 172 100 Q 160 108 148 100 Z" fill="url(#cmpBronzeV)" />
 
-        {/* rotating wing/beam group — pivot at (160, 108) */}
         <g
           className={`ms-cmp-scale-beam ms-cmp-scale-beam--${phase}`}
           style={phase === 'settled' ? { transform: `rotate(${tilt}deg)` } : undefined}
@@ -277,7 +263,6 @@ function BalanceScale({ phase, winnerSide, labelA, labelB }) {
           />
           <circle cx="160" cy="110" r="7" fill="#54341B" />
 
-          {/* left pan (A) */}
           <line x1="62" y1="122" x2="62" y2="168" stroke="#B4834A" strokeWidth="1.6" />
           <line x1="62" y1="122" x2="40" y2="168" stroke="#B4834A" strokeWidth="1.6" />
           <line x1="62" y1="122" x2="84" y2="168" stroke="#B4834A" strokeWidth="1.6" />
@@ -296,7 +281,6 @@ function BalanceScale({ phase, winnerSide, labelA, labelB }) {
             </g>
           )}
 
-          {/* right pan (B) */}
           <line x1="258" y1="122" x2="258" y2="168" stroke="#B4834A" strokeWidth="1.6" />
           <line x1="258" y1="122" x2="236" y2="168" stroke="#B4834A" strokeWidth="1.6" />
           <line x1="258" y1="122" x2="280" y2="168" stroke="#B4834A" strokeWidth="1.6" />
@@ -330,8 +314,6 @@ function BalanceScale({ phase, winnerSide, labelA, labelB }) {
   );
 }
 
-// ── One compact comparison row (collapsed = quick glance, expand = full
-//    per-site detail with real Buy links, via MedicineComparisonBlock). ──
 function ComparisonRow({ entry, siteA, siteB, expanded, onToggle }) {
   const pair = getPair(entry, siteA, siteB);
 
@@ -390,6 +372,12 @@ function ComparisonRow({ entry, siteA, siteB, expanded, onToggle }) {
 }
 
 export default function Compare() {
+  // NOTE (D34): /medicine/compare intentionally has NO auth on the backend
+  // — the request body has no user_id field at all (just a medicines
+  // list), so there's nothing to attach a token's identity to and no
+  // per-user data being read/written here. `authFetch` isn't used on this
+  // page's one API call for that reason; every other page in the app that
+  // touches user-owned data uses authFetch instead of plain fetch().
   const { userId, isLoggedIn } = useUser();
 
   const [medicineInput, setMedicineInput] = useState('');
@@ -400,9 +388,6 @@ export default function Compare() {
   const [error, setError] = useState('');
   const [expandedRows, setExpandedRows] = useState({});
 
-  // ── ALL handlers below are unchanged from the original file, except
-  //    handleSearch now also stamps `comparedAt` for the "Live prices from
-  //    HH:MM" label — purely cosmetic, no request/response shape touched. ──
   const addMedicine = () => {
     const trimmed = medicineInput.trim();
     if (!trimmed) return;
@@ -464,8 +449,6 @@ export default function Compare() {
     setExpandedRows((prev) => ({ ...prev, [i]: !prev[i] }));
   };
 
-  // ── Derived comparison stats — pure computation from `comparison`, never
-  //    mutates it, never touches the request/response shape. ──
   const entries = comparison?.medicines || [];
   const allSiteNames = [...new Set(entries.flatMap((e) => (e.results || []).map((r) => r.site)))];
   const siteA = allSiteNames[0] || '1mg';
@@ -494,7 +477,6 @@ export default function Compare() {
     <Layout>
       <div className="ms-compare-page">
 
-        {/* ── Hero: text + animated balance scale + cheapest-overall card ── */}
         <div className="ms-page-header ms-cmp-hero">
           <div className="ms-cmp-hero-left">
             <div className="ms-page-badge ms-cmp-eyebrow">

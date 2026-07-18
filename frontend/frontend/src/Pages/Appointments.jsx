@@ -23,14 +23,6 @@ const CALL_STATUS_MESSAGES = {
   in_call: "Call connect ho gayi — AI baat kar raha hai...",
 };
 
-// 4-step visual progress the "AI Call Agent" card shows. Backend only ever
-// reports two real in-flight states (dialing / in_call) plus a terminal
-// completed/failed — there's no distinct "confirming slot" signal from the
-// server. So dialing→step 0, in_call→step 2 (folds "checking availability"
-// and "confirming" together, since both happen inside one phone call we
-// can't see the inside of), completed→step 3. This is a UI approximation
-// of real signals, not fabricated progress — don't add a fake step 1 tick
-// independent of an actual backend state.
 const STEPS = [
   { key: "calling", label: "Calling Clinic", icon: LuPhoneCall },
   { key: "checking", label: "Checking Slots", icon: LuCalendarCheck },
@@ -41,9 +33,12 @@ const STEPS = [
 const HOSPITALS_PAGE_SIZE = 4;
 
 export default function Appointments() {
-  const { userId, isLoggedIn } = useUser();
+  // AUTH (D34): /hospitals/nearby and /call/schedule are both protected on
+  // the backend now, so both use authFetch. GET /call/status stays plain
+  // fetch — it's not protected (matches the backend's own note that it
+  // has no per-user data to check).
+  const { userId, isLoggedIn, authFetch } = useUser();
 
-  // ── Hospital search ────────────────────────────────────────────────────────
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [hospitals, setHospitals] = useState([]);
@@ -53,7 +48,6 @@ export default function Appointments() {
   const [locationMsg, setLocationMsg] = useState("");
   const cityInputRef = useRef(null);
 
-  // ── AI call booking ────────────────────────────────────────────────────────
   const [callForm, setCallForm] = useState({
     number: "",
     patient_name: "",
@@ -62,15 +56,14 @@ export default function Appointments() {
     doctor_name: "",
     availability: "",
   });
-  const [callStatus, setCallStatus] = useState("idle"); // idle | loading | success | error
+  const [callStatus, setCallStatus] = useState("idle");
   const [callMsg, setCallMsg] = useState("");
   const [callSummary, setCallSummary] = useState(null);
   const [callTranscript, setCallTranscript] = useState([]);
   const [activeStep, setActiveStep] = useState(0);
-  const [targetHospitalName, setTargetHospitalName] = useState(""); // for the "Trying: X" illustration line
+  const [targetHospitalName, setTargetHospitalName] = useState("");
   const pollRef = useRef(null);
 
-  // ── Hospital search ────────────────────────────────────────────────────────
   const searchHospitals = async () => {
     if (!isLoggedIn) { setHospitalError("Pehle login karo."); return; }
     if (!city && !state) { setHospitalError("City ya state toh daalo."); return; }
@@ -79,7 +72,7 @@ export default function Appointments() {
     setHospitals([]);
     setVisibleCount(HOSPITALS_PAGE_SIZE);
     try {
-      const res = await fetch("http://localhost:8080/hospitals/nearby", {
+      const res = await authFetch("http://localhost:8080/hospitals/nearby", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -105,10 +98,6 @@ export default function Appointments() {
     }
   };
 
-  // "Use my location" — we don't have a reverse-geocoding endpoint on the
-  // backend, so this can't auto-fill city/state. It asks the browser for
-  // permission (real signal) and then hands control back to the user
-  // honestly instead of pretending to auto-detect a city.
   const useMyLocation = () => {
     if (!navigator.geolocation) {
       setLocationMsg("Is browser mein location access nahi hai — manually daal do.");
@@ -124,7 +113,6 @@ export default function Appointments() {
     );
   };
 
-  // ── Prefill call form from hospital card ──────────────────────────────────
   const numberInputRef = useRef(null);
 
   const prefillFromHospital = (h) => {
@@ -141,7 +129,6 @@ export default function Appointments() {
     }, 400);
   };
 
-  // ── Schedule call ─────────────────────────────────────────────────────────
   const handleCallChange = (e) =>
     setCallForm({ ...callForm, [e.target.name]: e.target.value });
 
@@ -197,7 +184,7 @@ export default function Appointments() {
     setActiveStep(0);
     if (!targetHospitalName) setTargetHospitalName(callForm.number.trim());
     try {
-      const res = await fetch("http://localhost:8080/call/schedule", {
+      const res = await authFetch("http://localhost:8080/call/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -226,15 +213,12 @@ export default function Appointments() {
 
   const visibleHospitals = hospitals.slice(0, visibleCount);
   const hasMoreHospitals = hospitals.length > visibleCount;
-  // First hospital with a real phone number is the actionable one — a real
-  // signal, not a fabricated ranking, so it's fair to badge it.
   const recommendedIndex = hospitals.findIndex((h) => h.phone);
 
   const isLive = callStatus === "loading";
 
   return (
     <Layout>
-      {/* ── Hero ── */}
       <div className="ms-appt-hero">
         <div className="ms-appt-hero-left">
           <div className="ms-page-badge">Appointments</div>
@@ -322,7 +306,6 @@ export default function Appointments() {
       )}
 
       <div className="ms-appt-grid">
-        {/* ── Hospital Search ── */}
         <section className="ms-card ms-appt-section ms-appt-find-card">
           <div className="ms-appt-section-header">
             <span className="ms-appt-step-num">1</span>
@@ -365,7 +348,6 @@ export default function Appointments() {
             {hospitalLoading ? " Dhundh raha hoon..." : " Search Nearby"}
           </button>
 
-          {/* Decorative map mockup — illustrative only, no live map data */}
           <div className="ms-appt-map">
             <svg viewBox="0 0 300 160" width="100%" height="140" preserveAspectRatio="none" aria-hidden="true">
               <rect width="300" height="160" fill="var(--ms-bg-primary)" />
@@ -435,7 +417,6 @@ export default function Appointments() {
           )}
         </section>
 
-        {/* ── AI Call Booking ── */}
         <section className="ms-card ms-appt-section ms-appt-call-card">
           <div className="ms-appt-section-header">
             <span className="ms-appt-step-num">2</span>

@@ -11,6 +11,8 @@ import {
   LuFileText,
   LuTriangleAlert,
   LuHistory,
+  LuTrash2,
+  LuLoader,
 } from "react-icons/lu";
 import "./HealthInfo.css";
 
@@ -37,8 +39,31 @@ const PANEL_META = {
   medicalHistory: { title: "Medical History", icon: LuHistory },
 };
 
+// FIX: previously guessed at a route that never existed in main.py
+// (`/lab-report/history/{user_id}` — 404). The real route, same one
+// LabReport.jsx's HealthHistorySection already uses, is
+// GET /lab/analyses/{user_id} -> { analyses: [...] }. Each analysis record
+// has report_type/overall_summary/date/tests (see health_records.py's
+// save_lab_report_analysis), NOT a generic `summary` field — the Reports
+// drawer below reads `overall_summary` accordingly now.
+const LAB_ANALYSES_URL = (userId) => `http://localhost:8080/lab/analyses/${userId}`;
+
+// DELETE endpoints per section — used by the shared confirmDelete() handler
+// below. `report` reuses the same endpoint LabReport.jsx's delete flow hits
+// (DELETE /lab/analyses/{user_id}/{analysis_id}, decisions.md D30).
+const DELETE_ENDPOINTS = {
+  vital: (uid, id) => `http://localhost:8080/health/vitals/${uid}/${id}`,
+  prescription: (uid, id) => `http://localhost:8080/health/prescriptions/${uid}/${id}`,
+  report: (uid, id) => `http://localhost:8080/lab/analyses/${uid}/${id}`,
+};
+
 export default function HealthInfo() {
-  const { userId, isLoggedIn } = useUser();
+  // NEW (D34): authFetch replaces every plain fetch() call below — every
+  // endpoint this page hits is now JWT-protected on the backend, and
+  // authFetch automatically attaches the Authorization: Bearer <token>
+  // header. Signature is identical to fetch(url, options), so nothing
+  // else about these calls changed.
+  const { userId, isLoggedIn, authFetch } = useUser();
 
   const [records, setRecords] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
@@ -71,24 +96,37 @@ export default function HealthInfo() {
   const [generatingQr, setGeneratingQr] = useState(false);
   const [qrMsg, setQrMsg] = useState({ text: "", type: "" });
 
-  // ---- NEW: Lab reports (best-effort — see note in fetchLabReports) ----
+  // ---- Doctor Visit QR state (decisions.md D32) ----
+  const [doctorQrToken, setDoctorQrToken] = useState("");
+  const [doctorQrExpiresAt, setDoctorQrExpiresAt] = useState(null);
+  const [generatingDoctorQr, setGeneratingDoctorQr] = useState(false);
+  const [doctorQrMsg, setDoctorQrMsg] = useState({ text: "", type: "" });
+
+  // ---- Lab reports (Reports drawer) ----
   const [labReports, setLabReports] = useState([]);
 
-  // ---- NEW: which vault drawer is open ----
+  // ---- which vault drawer is open ----
   const [activePanel, setActivePanel] = useState(null);
+
+  // ---- generic delete confirmation state, shared across vitals /
+  // prescriptions (medications) / reports drawers. {section, id} or null.
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     if (!isLoggedIn || !userId) return;
     fetchRecords();
     fetchEmergencyProfile();
     fetchLabReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, isLoggedIn]);
 
   const fetchRecords = async () => {
     setLoadingRecords(true);
     setRecordsError("");
     try {
-      const res = await fetch(`http://localhost:8080/health/timeline/${userId}`);
+      const res = await authFetch(`http://localhost:8080/health/timeline/${userId}`);
       const data = await res.json();
       if (!res.ok) {
         setRecordsError(extractErrorMessage(data.detail, "Records load nahi ho sake."));
@@ -102,17 +140,12 @@ export default function HealthInfo() {
     }
   };
 
-  // ⚠️ Backend GET route for saved Lab Report Analyser results isn't confirmed
-  // yet in main.py (see PROJECT_CONTEXT.md §1 — the 3 new-agent endpoints are
-  // flagged unverified). Trying the most likely path here; fails silently to
-  // an empty list if it's wrong, so it never breaks the page. Once you confirm
-  // the real route in main.py, just update the URL below.
   const fetchLabReports = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/lab-report/history/${userId}`);
+      const res = await authFetch(LAB_ANALYSES_URL(userId));
       if (res.ok) {
         const data = await res.json();
-        setLabReports(data.reports || data.analyses || []);
+        setLabReports(data.analyses || []);
       }
     } catch {
       // silently ignore — Reports drawer just shows an empty state
@@ -146,7 +179,7 @@ export default function HealthInfo() {
         weight: vitalForm.weight ? parseFloat(vitalForm.weight) : null,
       };
 
-      const res = await fetch("http://localhost:8080/health/vital", {
+      const res = await authFetch("http://localhost:8080/health/vital", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -166,12 +199,78 @@ export default function HealthInfo() {
     }
   };
 
+  // ---- Generic delete handler (vitals / medications / reports) ----
+  const confirmDelete = async (section, id) => {
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const url = DELETE_ENDPOINTS[section](userId, id);
+      const res = await authFetch(url, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setDeleteError(extractErrorMessage(data.detail, "Delete nahi ho paya."));
+        setDeleting(false);
+        return;
+      }
+      if (section === "vital" || section === "prescription") {
+        setRecords((prev) => prev.filter((r) => r._id !== id));
+      } else if (section === "report") {
+        setLabReports((prev) => prev.filter((r) => r._id !== id));
+      }
+      setDeleteConfirm(null);
+    } catch {
+      setDeleteError("Backend se connect nahi ho pa raha.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm(null);
+    setDeleteError("");
+  };
+
+  // Small inline confirm row, reused across the 3 deletable drawers.
+  const DeleteConfirmRow = ({ section, id }) => (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        marginTop: "0.5rem",
+        padding: "0.5rem 0.75rem",
+        background: "rgba(192,57,43,0.06)",
+        borderRadius: "8px",
+      }}
+    >
+      <span style={{ fontSize: "0.85rem" }}>Ye record delete karna hai?</span>
+      <button
+        type="button"
+        className="ms-btn-secondary"
+        style={{ padding: "0.3rem 0.7rem", fontSize: "0.8rem" }}
+        onClick={() => confirmDelete(section, id)}
+        disabled={deleting}
+      >
+        {deleting ? <LuLoader className="ms-lr-spin" size={13} /> : "Haan, delete karo"}
+      </button>
+      <button
+        type="button"
+        className="ms-btn-secondary"
+        style={{ padding: "0.3rem 0.7rem", fontSize: "0.8rem" }}
+        onClick={cancelDelete}
+        disabled={deleting}
+      >
+        Cancel
+      </button>
+    </div>
+  );
+
   // ---- Emergency profile handlers ----
 
   const fetchEmergencyProfile = async () => {
     setLoadingEmergency(true);
     try {
-      const res = await fetch(`http://localhost:8080/health/emergency-profile/${userId}`);
+      const res = await authFetch(`http://localhost:8080/health/emergency-profile/${userId}`);
       const data = await res.json();
       if (res.ok && data) {
         setEmergencyForm({
@@ -187,7 +286,6 @@ export default function HealthInfo() {
           setQrToken(data.qr_token);
         }
       }
-      // agar profile abhi tak nahi bana (404), ye normal hai — form empty rahega
     } catch {
       // silently ignore — pehli baar profile na hona koi error nahi hai
     } finally {
@@ -219,7 +317,7 @@ export default function HealthInfo() {
         medicines: emergencyForm.medicines,
       };
 
-      const res = await fetch("http://localhost:8080/health/emergency-profile", {
+      const res = await authFetch("http://localhost:8080/health/emergency-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -242,7 +340,7 @@ export default function HealthInfo() {
     setGeneratingQr(true);
     setQrMsg({ text: "", type: "" });
     try {
-      const res = await fetch(`http://localhost:8080/health/generate-qr/${userId}`, {
+      const res = await authFetch(`http://localhost:8080/health/generate-qr/${userId}`, {
         method: "POST",
       });
       const data = await res.json();
@@ -259,14 +357,54 @@ export default function HealthInfo() {
     }
   };
 
+  // ---- Doctor Visit QR handler (decisions.md D32) ----
+  const generateDoctorQr = async () => {
+    if (!isLoggedIn) return;
+    setGeneratingDoctorQr(true);
+    setDoctorQrMsg({ text: "", type: "" });
+    try {
+      const res = await authFetch(`http://localhost:8080/health/doctor-qr/${userId}`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setDoctorQrMsg({ text: extractErrorMessage(data.detail, "QR generate nahi hua."), type: "error" });
+      } else {
+        setDoctorQrToken(data.token || "");
+        setDoctorQrExpiresAt(
+          new Date(Date.now() + (data.expires_in_hours || 24) * 60 * 60 * 1000)
+        );
+        setDoctorQrMsg({
+          text: `QR ban gaya! Agle ${data.expires_in_hours || 24} ghanton tak valid hai.`,
+          type: "success",
+        });
+      }
+    } catch {
+      setDoctorQrMsg({ text: "Backend se connect nahi ho pa raha.", type: "error" });
+    } finally {
+      setGeneratingDoctorQr(false);
+    }
+  };
+
   const emergencyUrl = qrToken
     ? `${window.location.origin}/emergency/${qrToken}`
+    : "";
+
+  const doctorVisitUrl = doctorQrToken
+    ? `${window.location.origin}/doctor-visit/${doctorQrToken}`
     : "";
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
     const d = new Date(dateStr);
     return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  };
+
+  const formatDateTime = (date) => {
+    if (!date) return "";
+    return date.toLocaleString("en-IN", {
+      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+    });
   };
 
   const typeLabel = (type) => {
@@ -300,7 +438,11 @@ export default function HealthInfo() {
     medicalHistory: records.length,
   };
 
-  const closePanel = () => setActivePanel(null);
+  const closePanel = () => {
+    setActivePanel(null);
+    setDeleteConfirm(null);
+    setDeleteError("");
+  };
   const PanelIcon = activePanel ? PANEL_META[activePanel].icon : null;
 
   return (
@@ -322,7 +464,7 @@ export default function HealthInfo() {
             <div className="ms-health-hero">
               <HealthVault counts={counts} activeKey={activePanel} onOpen={setActivePanel} />
 
-              {/* Emergency Medical ID + QR — always visible, critical for physical scanning */}
+              {/* Emergency Medical ID + QR */}
               <div className="ms-card ms-health-emergency-card">
                 <h2 className="ms-health-section-title">Emergency Medical ID</h2>
                 <p className="ms-page-subtitle" style={{ marginBottom: "1rem" }}>
@@ -465,6 +607,51 @@ export default function HealthInfo() {
                   </>
                 )}
               </div>
+
+              {/* Doctor Visit QR */}
+              <div className="ms-card ms-health-emergency-card">
+                <h2 className="ms-health-section-title">Doctor Visit QR</h2>
+                <p className="ms-page-subtitle" style={{ marginBottom: "1rem" }}>
+                  Apne agle doctor visit ke liye ek temporary QR banao — lab
+                  reports, trends aur prescriptions ka clinical summary 24
+                  ghante ke liye share hoga, login ke bina.
+                </p>
+
+                <div className="ms-health-qr-box">
+                  {doctorQrToken ? (
+                    <div className="ms-health-qr-render">
+                      <QRCodeSVG value={doctorVisitUrl} size={168} />
+                    </div>
+                  ) : (
+                    <div className="ms-empty-state" style={{ padding: "1.5rem" }}>
+                      <p>Abhi koi Doctor Visit QR nahi bana.</p>
+                    </div>
+                  )}
+                </div>
+
+                {doctorQrExpiresAt && (
+                  <p className="ms-health-quick-value" style={{ textAlign: "center", marginBottom: "0.75rem" }}>
+                    Valid until {formatDateTime(doctorQrExpiresAt)}
+                  </p>
+                )}
+
+                {doctorQrMsg.text && (
+                  <p className={`ms-health-msg ms-health-msg--${doctorQrMsg.type}`}>{doctorQrMsg.text}</p>
+                )}
+
+                <button
+                  className="ms-btn-secondary"
+                  onClick={generateDoctorQr}
+                  disabled={generatingDoctorQr}
+                  style={{ width: "100%" }}
+                >
+                  {generatingDoctorQr
+                    ? "Generate ho raha hai..."
+                    : doctorQrToken
+                    ? "Naya QR generate karo"
+                    : "Doctor Visit QR Generate karo"}
+                </button>
+              </div>
             </div>
 
             {/* ── Vault drawer panel ── */}
@@ -496,6 +683,8 @@ export default function HealthInfo() {
                     </div>
 
                     <div className="ms-drawer-body">
+                      {deleteError && <p className="ms-health-error">{deleteError}</p>}
+
                       {/* ── VITALS ── */}
                       {activePanel === "vitals" && (
                         <>
@@ -604,6 +793,18 @@ export default function HealthInfo() {
                                 <div className="ms-timeline-top">
                                   <span className="ms-badge ms-badge--green">Vitals</span>
                                   <span className="ms-timeline-date">{formatDate(r.date)}</span>
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    title="Delete"
+                                    style={{ marginLeft: "auto", cursor: "pointer", opacity: 0.7 }}
+                                    onClick={() => setDeleteConfirm({ section: "vital", id: r._id })}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") setDeleteConfirm({ section: "vital", id: r._id });
+                                    }}
+                                  >
+                                    <LuTrash2 size={15} />
+                                  </span>
                                 </div>
                                 <div className="ms-timeline-vitals">
                                   {r.data?.bp_systolic && <span>BP: {r.data.bp_systolic}/{r.data.bp_diastolic} mmHg</span>}
@@ -611,6 +812,9 @@ export default function HealthInfo() {
                                   {r.data?.weight && <span>Weight: {r.data.weight} kg</span>}
                                 </div>
                                 {r.data?.notes && <p className="ms-timeline-notes">📝 {r.data.notes}</p>}
+                                {deleteConfirm?.section === "vital" && deleteConfirm.id === r._id && (
+                                  <DeleteConfirmRow section="vital" id={r._id} />
+                                )}
                               </div>
                             ))
                           )}
@@ -634,9 +838,24 @@ export default function HealthInfo() {
                                 <div className="ms-timeline-top">
                                   <span className="ms-badge ms-badge--gold">Prescription</span>
                                   <span className="ms-timeline-date">{formatDate(r.date)}</span>
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    title="Delete"
+                                    style={{ marginLeft: "auto", cursor: "pointer", opacity: 0.7 }}
+                                    onClick={() => setDeleteConfirm({ section: "prescription", id: r._id })}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") setDeleteConfirm({ section: "prescription", id: r._id });
+                                    }}
+                                  >
+                                    <LuTrash2 size={15} />
+                                  </span>
                                 </div>
                                 {r.data?.summary && <p className="ms-timeline-summary">{r.data.summary}</p>}
                                 {r.data?.notes && <p className="ms-timeline-notes">📝 {r.data.notes}</p>}
+                                {deleteConfirm?.section === "prescription" && deleteConfirm.id === r._id && (
+                                  <DeleteConfirmRow section="prescription" id={r._id} />
+                                )}
                               </div>
                             ))
                           )}
@@ -658,10 +877,25 @@ export default function HealthInfo() {
                             labReports.map((r, i) => (
                               <div key={r._id || i} className="ms-drawer-list-item">
                                 <div className="ms-timeline-top">
-                                  <span className="ms-badge ms-badge--gold">Report</span>
+                                  <span className="ms-badge ms-badge--gold">{r.report_type || "Report"}</span>
                                   <span className="ms-timeline-date">{formatDate(r.date)}</span>
+                                  <span
+                                    role="button"
+                                    tabIndex={0}
+                                    title="Delete"
+                                    style={{ marginLeft: "auto", cursor: "pointer", opacity: 0.7 }}
+                                    onClick={() => setDeleteConfirm({ section: "report", id: r._id })}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") setDeleteConfirm({ section: "report", id: r._id });
+                                    }}
+                                  >
+                                    <LuTrash2 size={15} />
+                                  </span>
                                 </div>
-                                {r.summary && <p className="ms-timeline-summary">{r.summary}</p>}
+                                {r.overall_summary && <p className="ms-timeline-summary">{r.overall_summary}</p>}
+                                {deleteConfirm?.section === "report" && deleteConfirm.id === r._id && (
+                                  <DeleteConfirmRow section="report" id={r._id} />
+                                )}
                               </div>
                             ))
                           )}
@@ -751,6 +985,10 @@ export default function HealthInfo() {
                                 })}
                             </div>
                           )}
+                          <p style={{ fontSize: "0.78rem", opacity: 0.65, marginTop: "0.75rem" }}>
+                            Delete karne ke liye Vitals ya Medications drawer se hi delete karo — ye combined
+                            timeline view hai.
+                          </p>
                         </>
                       )}
                     </div>

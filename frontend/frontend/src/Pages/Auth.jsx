@@ -3,9 +3,20 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import "./Auth.css";
 
+const EMPTY_FORM = {
+  name: "",
+  email: "",
+  password: "",
+  age: "",
+  gender: "",
+  allergies: "",
+  city: "",
+  state: "",
+};
+
 export default function Auth() {
   const [mode, setMode] = useState("login"); // "login" | "signup"
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -39,9 +50,23 @@ export default function Auth() {
       setError("Email aur password dono zaroori hain.");
       return;
     }
-    if (mode === "signup" && !form.name) {
-      setError("Naam bhi bharo bhai.");
-      return;
+    if (mode === "signup") {
+      if (!form.name) {
+        setError("Naam bhi bharo bhai.");
+        return;
+      }
+      if (!form.age || Number(form.age) <= 0) {
+        setError("Sahi age daalo.");
+        return;
+      }
+      if (!form.gender) {
+        setError("Gender select karo.");
+        return;
+      }
+      if (!form.city || !form.state) {
+        setError("City aur State dono zaroori hain.");
+        return;
+      }
     }
 
     setLoading(true);
@@ -56,17 +81,14 @@ export default function Auth() {
         mode === "login"
           ? { email: form.email, password: form.password }
           : {
-              // signup ke liye backend ko extra fields chahiye honge
-              // (age, gender, city, state) — abhi defaults bhej rahe hain,
-              // signup form mein ye fields add karne honge baad mein.
               name: form.name,
               email: form.email,
               password: form.password,
-              age: 0,
-              gender: "",
-              allergies: "",
-              city: "",
-              state: "",
+              age: Number(form.age),
+              gender: form.gender,
+              allergies: form.allergies,
+              city: form.city,
+              state: form.state,
             };
 
       const res = await fetch(endpoint, {
@@ -82,6 +104,7 @@ export default function Auth() {
         // user_id save karo localStorage mein
         localStorage.setItem("ms_user_id", data.user_id);
         localStorage.setItem("ms_user_name", data.name || form.email);
+        localStorage.setItem("ms_token", data.access_token);
         navigate("/");
       }
     } catch {
@@ -161,6 +184,79 @@ export default function Auth() {
                 onChange={handleChange}
               />
             </div>
+
+            {mode === "signup" && (
+              <>
+                <div className="ms-auth-row">
+                  <div className="ms-auth-field">
+                    <label className="ms-auth-label">Age</label>
+                    <input
+                      className="ms-auth-input"
+                      type="number"
+                      name="age"
+                      min="1"
+                      max="120"
+                      placeholder="21"
+                      value={form.age}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="ms-auth-field">
+                    <label className="ms-auth-label">Gender</label>
+                    <select
+                      className="ms-auth-input ms-auth-select"
+                      name="gender"
+                      value={form.gender}
+                      onChange={handleChange}
+                    >
+                      <option value="">Select</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="ms-auth-row">
+                  <div className="ms-auth-field">
+                    <label className="ms-auth-label">City</label>
+                    <input
+                      className="ms-auth-input"
+                      type="text"
+                      name="city"
+                      placeholder="Faridabad"
+                      value={form.city}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="ms-auth-field">
+                    <label className="ms-auth-label">State</label>
+                    <input
+                      className="ms-auth-input"
+                      type="text"
+                      name="state"
+                      placeholder="Haryana"
+                      value={form.state}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="ms-auth-field">
+                  <label className="ms-auth-label">Allergies (optional)</label>
+                  <input
+                    className="ms-auth-input"
+                    type="text"
+                    name="allergies"
+                    placeholder="e.g. Penicillin, Dust — chhod do agar koi nahi"
+                    value={form.allergies}
+                    onChange={handleChange}
+                  />
+                </div>
+              </>
+            )}
 
             {error && <p className="ms-auth-error">{error}</p>}
 

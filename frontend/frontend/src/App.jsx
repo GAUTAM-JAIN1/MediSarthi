@@ -5,10 +5,11 @@ import Compare from "./Pages/Compare";
 import Appointments from "./Pages/Appointments";
 import HealthInfo from "./Pages/HealthInfo";
 import Auth from "./Pages/Auth";
-import Donor from "./Pages/Donor";
+import Donor from "./Pages/donor";
 import EmergencyView from "./Pages/EmergencyView";
 import LabReport from "./Pages/LabReport";
 import MedicineCheck from "./Pages/MedicineCheck";
+import DoctorVisitView from "./Pages/DoctorVisitView";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/emergency/:token" element={<EmergencyView />} />
         <Route path="/lab-report" element={<LabReport />} />
         <Route path="/medicine-check" element={<MedicineCheck />} />
+        <Route path="/doctor-visit/:token" element={<DoctorVisitView />} />
       </Routes>
     </BrowserRouter>
   );

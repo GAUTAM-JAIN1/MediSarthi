@@ -8,14 +8,14 @@ import asyncio
 import threading
 from typing import List, Optional
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-# Import existing logic
 from agents.crew import (
     SpeechCrew, FileCrew, Nearbyhospitals, general_que,
-    LabReportCrew, MedicineInteractionCrew, SymptomTriageCrew
+    LabReportCrew, MedicineInteractionCrew, SymptomTriageCrew,
+    MedicineEffectivenessCrew, ClinicalSummaryCrew,
 )
 from agents.speech_to_text import transcribe_audio
 from agents.buying_agent import run_comparison
@@ -29,19 +29,26 @@ from agents.health_records import (
     save_prescription_analysis, get_prescription_analyses,
     get_prescription_analysis_by_id,
     save_lab_report_analysis, get_lab_report_analyses,
+    get_test_trends, get_annotated_trends,
+    delete_lab_report_analysis,
+    delete_vital, delete_prescription,
+    create_doctor_qr_token, get_doctor_qr_snapshot,
 )
 from agents.donor import (
     register_donor, get_donor_by_user_id, record_donation,
     toggle_availability, create_donation_request, find_matching_donors
 )
-from PIL import Image
+from agents.safety_guardrails import check_emergency
+# NEW (D33) — TTL index setup for doctor_qr_tokens cleanup.
+from agents.db_connect import ensure_indexes
+# NEW (D34) — JWT issuance + the per-request ownership-verification dependency.
+from agents.jwt_utils import create_access_token, get_current_user_id, verify_owner
+from PIL import Image, ImageEnhance
 import pytesseract
 
 
-# Initialize FastAPI
 app = FastAPI(title="Medical Agent API", version="1.0")
 
-# Allow CORS for frontend connection
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -51,7 +58,11 @@ app.add_middleware(
 )
 
 
-# ---- Pydantic Models --------------------------------------------------------
+@app.on_event("startup")
+def on_startup():
+    """(D33) Ensures the doctor_qr_tokens TTL index exists. Idempotent."""
+    ensure_indexes()
+
 
 class SignupRequest(BaseModel):
     name: str
@@ -78,8 +89,8 @@ class CallRequest(BaseModel):
     disease: str = "General Checkup"
     doctor_name: str = "Any Doctor"
     availability: str = "Any Available Time"
-    patient_name: str = ""   # NEW - passed directly from frontend form
-    reason: str = ""     
+    patient_name: str = ""
+    reason: str = ""
 
 
 class LocationRequest(BaseModel):
@@ -131,7 +142,6 @@ class SavePrescriptionAnalysisRequest(BaseModel):
     raw_medicines: List[dict] = []
 
 
-# NEW - Save lab report analysis (permission-gated, same pattern as prescription analysis)
 class SaveLabReportAnalysisRequest(BaseModel):
     user_id: str
     report_type: str
@@ -142,18 +152,26 @@ class SaveLabReportAnalysisRequest(BaseModel):
     next_steps: str
     disclaimer: str
     raw_text: str = ""
+    report_date: str = ""
 
 
-# NEW - Medicine interaction check request
 class MedicineInteractionRequest(BaseModel):
     user_id: str
     medicines: List[str]
 
 
-# NEW - Symptom triage request
 class SymptomTriageRequest(BaseModel):
     user_id: str
     symptoms: str
+
+
+class MedicineEffectivenessRequest(BaseModel):
+    user_id: str
+    medicine_name: str
+    test_name: str
+    start_date: str
+    points: List[dict]
+    normal_range: str = ""
 
 
 class DonorRegisterRequest(BaseModel):
@@ -179,8 +197,6 @@ class FindDonorsRequest(BaseModel):
     state: str
 
 
-# ---- Helper Functions --------------------------------------------------------
-
 def save_upload_file(upload_file: UploadFile, destination: str):
     try:
         with open(destination, "wb") as buffer:
@@ -191,57 +207,64 @@ def save_upload_file(upload_file: UploadFile, destination: str):
 
 def extract_text_from_image(image_path: str) -> str:
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
     image = Image.open(image_path)
-    text = pytesseract.image_to_string(image, lang='eng')
+    image = image.convert("L")
+    scale_factor = 2
+    image = image.resize(
+        (image.width * scale_factor, image.height * scale_factor),
+        Image.LANCZOS,
+    )
+    image = ImageEnhance.Contrast(image).enhance(1.5)
+
+    custom_config = r"--oem 3 --psm 6"
+    text = pytesseract.image_to_string(image, lang="eng", config=custom_config)
     return text
 
 
+def extract_text_from_lab_document(file_path: str) -> str:
+    ext = os.path.splitext(file_path)[1].lower()
+
+    if ext != ".pdf":
+        return extract_text_from_image(file_path)
+
+    try:
+        import pdfplumber
+        pages_text = []
+        with pdfplumber.open(file_path) as pdf:
+            for page in pdf.pages:
+                pages_text.append(page.extract_text() or "")
+        text = "\n".join(pages_text).strip()
+        if text:
+            return text
+    except Exception as e:
+        print(f"[lab-report] pdfplumber text extraction failed: {e}")
+
+    try:
+        from pdf2image import convert_from_path
+
+        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+        page_images = convert_from_path(file_path)
+        ocr_text = [pytesseract.image_to_string(img, lang='eng') for img in page_images]
+        text = "\n".join(ocr_text).strip()
+        if text:
+            return text
+    except Exception as e:
+        print(f"[lab-report] PDF OCR fallback failed: {e}")
+
+    raise ValueError(
+        "PDF se koi text nahi nikal paya (na embedded text mila, na OCR chala). "
+        "File corrupted, password-protected, ya blank ho sakti hai."
+    )
+
+
 def parse_hospital_list(raw_text: str) -> List[dict]:
-    """
-    Fixes the "hospitals blank in frontend" bug.
-
-    Nearbyhospitals' crew.kickoff() returns a CrewOutput whose .raw is a
-    markdown bullet list. The frontend expects `hospitals` to be a JSON
-    array of {name, address, phone, maps_url} objects so it can `.map()`
-    over them - handing it the raw CrewOutput (or even just the markdown
-    string) makes `.map()` throw and the whole section renders blank with
-    no visible error.
-
-    IMPORTANT - the exact markdown style is NOT stable across LLM providers.
-    Formats observed from this same crew so far:
-
-      Current locked format (hospital_task.yaml now explicitly enforces this,
-      added when we wired phone numbers through from custom_tool.py):
-        * **Civil Hospital**: NH352A, Ward 17, Jind, Haryana, 126102, India | Phone: +91-9034567890
-        * **Raj Hospital**: NH709A, Bhatnagar Colony, Jind, Haryana, 126102, India | Phone: Not available
-
-      Gemini style seen before the format was locked down (bold name, inline
-      colon-separated address, no phone segment):
-        *   **Govt. Hospital**: NH352A, Ward 17, Jind, Haryana, 126100, India
-
-      Groq/Llama style seen before the format was locked down (backtick name,
-      comma-separated *italic* address, no phone segment):
-        * `Veterinary Hospital`, *Dhatrath, Auto Stand, Main Street, Jind, Haryana, India*
-
-    There's also an older multi-line fallback style this was originally
-    written against (name-only bullet, "Address:"/"Phone:" on following
-    lines) - kept working in case the agent's phrasing ever reverts to it.
-
-    This parser handles all of the above without caring which LLM produced
-    the output - it looks for a bulleted line whose first token is a name
-    wrapped in **bold** OR `backticks`, treats whatever comes after an
-    optional ':' or ',' as the remainder, pulls out a trailing "| Phone: ..."
-    segment if present (mapping "Not available"/"N/A"/etc. to None), strips
-    wrapping *italic* markers from what's left as the address, and falls
-    back to separate Address:/Phone: lines for anything left unset.
-    """
     if not raw_text:
         return []
 
     hospitals = []
     current = None
 
-    # Matches: "*   **Name**: rest..."  OR  "* `Name`, rest..."  OR  "*   **Name**" alone.
     name_line_re = re.compile(
         r"^[\*\-]\s*(?:\*\*(?P<bold>.+?)\*\*|`(?P<tick>.+?)`)\s*[:,]?\s*(?P<rest>.*)$"
     )
@@ -258,14 +281,9 @@ def parse_hospital_list(raw_text: str) -> List[dict]:
 
             name = (m.group("bold") or m.group("tick") or "").strip()
             rest = (m.group("rest") or "").strip()
-            # strip wrapping *italic* markers around the inline address, if any
             rest = re.sub(r"^\*+\s*", "", rest)
             rest = re.sub(r"\s*\*+$", "", rest)
 
-            # Pull a trailing "| Phone: ..." (or just "Phone: ...") segment out
-            # of the remainder, if the locked format produced one. Anything
-            # meaning "no number on file" maps to None instead of a literal
-            # string, so the frontend's `h.phone &&` checks keep working.
             phone_val = None
             phone_m = re.search(r"\|?\s*Phone\s*:\s*(.+)$", rest, re.IGNORECASE)
             if phone_m:
@@ -311,7 +329,7 @@ def parse_hospital_list(raw_text: str) -> List[dict]:
     return hospitals
 
 
-# ---- Auth Endpoints --------------------------------------------------------
+# ---- Auth Endpoints (public — this is how you GET a token) ----------------
 
 @app.post("/auth/signup")
 def signup(request: SignupRequest):
@@ -320,7 +338,8 @@ def signup(request: SignupRequest):
             request.name, request.age, request.gender, request.allergies,
             request.city, request.state, request.email, request.password
         )
-        return {"user_id": profile["ID"], "name": profile["Name"], "user": profile}
+        token = create_access_token(profile["ID"])
+        return {"user_id": profile["ID"], "name": profile["Name"], "user": profile, "access_token": token}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -331,30 +350,49 @@ def signup(request: SignupRequest):
 def login(request: LoginRequest):
     try:
         profile = login_user(request.email, request.password)
-        return {"user_id": profile["ID"], "name": profile["Name"], "user": profile}
+        token = create_access_token(profile["ID"])
+        return {"user_id": profile["ID"], "name": profile["Name"], "user": profile, "access_token": token}
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---- Health Check --------------------------------------------------------
+# ---- Health Check (public) --------------------------------------------------
 
 @app.get("/")
 def health_check():
     return {"status": "active", "message": "Medical Agent API is running"}
 
 
-# ---- Consultation Endpoints --------------------------------------------------------
+# ---- Consultation Endpoints (protected) ------------------------------------
 
 @app.post("/consultation/speech")
-async def speech_consultation(audio_file: UploadFile = File(...), user_id: str = Form(...)):
+async def speech_consultation(
+    audio_file: UploadFile = File(...),
+    user_id: str = Form(...),
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     temp_filename = f"temp_{audio_file.filename}"
     try:
         save_upload_file(audio_file, temp_filename)
         statement = transcribe_audio(temp_filename)
         inputs = {"statement": f"[{timestamp}] {statement}"}
+
+        guardrail_result = check_emergency(statement)
+        if guardrail_result:
+            return {
+                "consultation_result": guardrail_result["explanation"],
+                "prescription": {},
+                "analysis": {
+                    "overall_summary": guardrail_result["explanation"],
+                    "medicines": [],
+                    "has_allergy_conflict": False,
+                    "safety_note": guardrail_result.get("crisis_resource") or guardrail_result["disclaimer"],
+                },
+            }
 
         crew_instance = SpeechCrew().crew(user_id=user_id)
         result = crew_instance.kickoff(inputs=inputs)
@@ -384,13 +422,31 @@ async def speech_consultation(audio_file: UploadFile = File(...), user_id: str =
 
 
 @app.post("/consultation/document")
-async def document_consultation(file: UploadFile = File(...), user_id: str = Form(...)):
+async def document_consultation(
+    file: UploadFile = File(...),
+    user_id: str = Form(...),
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     temp_filename = f"temp_{file.filename}"
     try:
         save_upload_file(file, temp_filename)
         statement = extract_text_from_image(temp_filename)
         inputs = {"statement": f"[{timestamp}] {statement}"}
+
+        guardrail_result = check_emergency(statement)
+        if guardrail_result:
+            return {
+                "extraction_result": guardrail_result["explanation"],
+                "prescription": {},
+                "analysis": {
+                    "overall_summary": guardrail_result["explanation"],
+                    "medicines": [],
+                    "has_allergy_conflict": False,
+                    "safety_note": guardrail_result.get("crisis_resource") or guardrail_result["disclaimer"],
+                },
+            }
 
         crew_instance = FileCrew().crew(user_id=user_id)
         result = crew_instance.kickoff(inputs=inputs)
@@ -419,28 +475,23 @@ async def document_consultation(file: UploadFile = File(...), user_id: str = For
             os.remove(temp_filename)
 
 
-# ---- Lab Report Analysis Endpoint --------------------------------------------------------
+# ---- Lab Report Analysis Endpoints (protected) -----------------------------
 
 @app.post("/lab/analyse")
-async def analyse_lab_report(file: UploadFile = File(...), user_id: str = Form(...)):
-    """
-    Accepts a lab report image (JPG/PNG) or PDF, extracts text via OCR,
-    then runs LabReportCrew to produce a plain-language analysis.
-
-    Returns: {report_text, analysis} where analysis is a LabReportAnalysisOutput dict.
-    Analysis is NOT saved to DB until user calls /lab/save explicitly.
-    """
+async def analyse_lab_report(
+    file: UploadFile = File(...),
+    user_id: str = Form(...),
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     temp_filename = f"temp_lab_{file.filename}"
     try:
         save_upload_file(file, temp_filename)
 
-        # Extract text - Tesseract for images, fallback for PDFs
         try:
-            report_text = extract_text_from_image(temp_filename)
-        except Exception:
-            # If image open fails (e.g. PDF), try reading raw text as fallback
-            with open(temp_filename, "r", errors="ignore") as f:
-                report_text = f.read()
+            report_text = extract_text_from_lab_document(temp_filename)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Could not read the uploaded file: {e}")
 
         if not report_text or not report_text.strip():
             raise HTTPException(
@@ -473,11 +524,11 @@ async def analyse_lab_report(file: UploadFile = File(...), user_id: str = Form(.
 
 
 @app.post("/lab/save")
-def save_lab_report(request: SaveLabReportAnalysisRequest):
-    """
-    Permission-gated save - called only when user explicitly taps "Save to records".
-    Stores analysis in lab_report_analyses collection.
-    """
+def save_lab_report(
+    request: SaveLabReportAnalysisRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
     try:
         record_id = save_lab_report_analysis(
             request.user_id,
@@ -489,6 +540,7 @@ def save_lab_report(request: SaveLabReportAnalysisRequest):
             request.next_steps,
             request.disclaimer,
             request.raw_text,
+            request.report_date,
         )
         return {"status": "saved", "record_id": record_id}
     except Exception as e:
@@ -496,8 +548,12 @@ def save_lab_report(request: SaveLabReportAnalysisRequest):
 
 
 @app.get("/lab/analyses/{user_id}")
-def get_lab_analyses(user_id: str, limit: int = 20):
-    """List all saved lab report analyses for a user."""
+def get_lab_analyses(
+    user_id: str,
+    limit: int = 20,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         records = get_lab_report_analyses(user_id, limit)
         return {"analyses": records, "count": len(records)}
@@ -505,15 +561,61 @@ def get_lab_analyses(user_id: str, limit: int = 20):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---- Medicine Interaction Checker Endpoint --------------------------------------------------------
+@app.delete("/lab/analyses/{user_id}/{analysis_id}")
+def delete_lab_analysis(
+    user_id: str,
+    analysis_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
+    try:
+        deleted = delete_lab_report_analysis(user_id, analysis_id)
+        if not deleted:
+            raise HTTPException(
+                status_code=404,
+                detail="Report nahi mila ya already delete ho chuka hai."
+            )
+        return {"status": "deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health/trends/{user_id}")
+def get_health_trends(
+    user_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
+    try:
+        trends = get_test_trends(user_id)
+        return {"trends": trends, "count": len(trends)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health/trends-annotated/{user_id}")
+def get_health_trends_annotated(
+    user_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
+    try:
+        trends = get_annotated_trends(user_id)
+        return {"trends": trends, "count": len(trends)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---- Medicine Interaction Checker Endpoint (protected) ---------------------
 
 @app.post("/medicine/interactions")
-def check_medicine_interactions(request: MedicineInteractionRequest):
-    """
-    Checks a list of medicines for drug-drug interactions and allergy conflicts.
-    Returns a MedicineInteractionOutput dict.
-    This is a synchronous, fast endpoint - no file upload needed.
-    """
+def check_medicine_interactions(
+    request: MedicineInteractionRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
     if not request.medicines or len(request.medicines) == 0:
         raise HTTPException(status_code=400, detail="Kam se kam ek medicine ka naam do.")
 
@@ -539,17 +641,20 @@ def check_medicine_interactions(request: MedicineInteractionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---- Symptom Triage Endpoint --------------------------------------------------------
+# ---- Symptom Triage Endpoint (protected) -----------------------------------
 
 @app.post("/triage/symptoms")
-def triage_symptoms(request: SymptomTriageRequest):
-    """
-    Takes a symptom description and returns a triage assessment:
-    Home Care / See Doctor Soon / Visit Emergency.
-    Fast single-agent crew - no file upload, no calendar.
-    """
+def triage_symptoms(
+    request: SymptomTriageRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
     if not request.symptoms or not request.symptoms.strip():
         raise HTTPException(status_code=400, detail="Symptoms describe karo.")
+
+    guardrail_result = check_emergency(request.symptoms)
+    if guardrail_result:
+        return {"triage": guardrail_result}
 
     try:
         inputs = {"symptoms": request.symptoms}
@@ -571,19 +676,164 @@ def triage_symptoms(request: SymptomTriageRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---- Existing Endpoints --------------------------------------------------------
+# ---- Medicine Effectiveness Endpoint (protected) ---------------------------
+
+@app.post("/medicine/effectiveness")
+def check_medicine_effectiveness(
+    request: MedicineEffectivenessRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
+    if not request.points or len(request.points) < 1:
+        raise HTTPException(status_code=400, detail="Test ke liye kam se kam ek data point chahiye.")
+
+    try:
+        points_str = "\n".join(
+            f"- {p.get('date', '?')}: {p.get('value', '?')} ({p.get('status', '?')})"
+            for p in request.points
+        )
+        inputs = {
+            "medicine_name": request.medicine_name,
+            "test_name": request.test_name,
+            "start_date": request.start_date,
+            "points": points_str,
+            "normal_range": request.normal_range or "Not provided",
+        }
+        crew_instance = MedicineEffectivenessCrew().crew(user_id=request.user_id)
+        result = crew_instance.kickoff(inputs=inputs)
+
+        effectiveness_dict = {}
+        for task_output in getattr(result, "tasks_output", []):
+            pyd = getattr(task_output, "pydantic", None)
+            if pyd is not None:
+                effectiveness_dict = pyd.dict()
+                break
+
+        if not effectiveness_dict:
+            effectiveness_dict = {"raw": result.raw}
+
+        return {"effectiveness": effectiveness_dict}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---- Doctor Visit QR Endpoints ----------------------------------------------
+
+@app.post("/health/doctor-qr/{user_id}")
+def health_generate_doctor_qr(
+    user_id: str,
+    expiry_hours: int = 24,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
+    try:
+        lab_reports = get_lab_report_analyses(user_id, limit=20)
+        trends = get_annotated_trends(user_id)
+        prescriptions = get_prescriptions(user_id, limit=20)
+
+        if lab_reports:
+            lab_history_lines = []
+            for r in lab_reports:
+                date = r.get("date", "?")[:10]
+                report_type = r.get("report_type", "Unknown")
+                test_lines = "; ".join(
+                    f"{t.get('test_name')}: {t.get('value')} ({t.get('status')})"
+                    for t in r.get("tests", [])
+                )
+                lab_history_lines.append(f"- [{date}] {report_type}: {test_lines}")
+            lab_history_str = "\n".join(lab_history_lines)
+        else:
+            lab_history_str = "No saved lab reports."
+
+        if trends:
+            trend_lines = []
+            for tr in trends:
+                points_str = " -> ".join(
+                    f"{p.get('date', '?')[:10]}: {p.get('value')}" for p in tr.get("points", [])
+                )
+                annotations = tr.get("annotations") or []
+                ann_str = ""
+                if annotations:
+                    ann_str = " (medicines: " + ", ".join(
+                        f"{a['medicine_name']} since {a['start_date'][:10]}" for a in annotations
+                    ) + ")"
+                trend_lines.append(
+                    f"- {tr['test_name']}: {points_str} [{tr.get('trend_direction') or 'n/a'}]{ann_str}"
+                )
+            trends_summary_str = "\n".join(trend_lines)
+        else:
+            trends_summary_str = "No tests with 2+ saved data points yet."
+
+        if prescriptions:
+            rx_lines = []
+            for rx in prescriptions:
+                date = (rx.get("date") or "?")[:10]
+                meds = ", ".join(rx.get("medicines") or [])
+                rx_lines.append(f"- [{date}] {meds}")
+            prescriptions_summary_str = "\n".join(rx_lines)
+        else:
+            prescriptions_summary_str = "No saved prescriptions."
+
+        inputs = {
+            "lab_history": lab_history_str,
+            "trends_summary": trends_summary_str,
+            "prescriptions_summary": prescriptions_summary_str,
+        }
+
+        crew_instance = ClinicalSummaryCrew().crew(user_id=user_id)
+        result = crew_instance.kickoff(inputs=inputs)
+
+        summary_dict = {}
+        for task_output in getattr(result, "tasks_output", []):
+            pyd = getattr(task_output, "pydantic", None)
+            if pyd is not None:
+                summary_dict = pyd.dict()
+                break
+        if not summary_dict:
+            summary_dict = {"clinical_summary": result.raw, "key_flags": [], "active_medicines_note": "", "disclaimer": ""}
+
+        snapshot = {
+            "clinical_summary": summary_dict,
+            "lab_reports": lab_reports,
+            "trends": trends,
+            "prescriptions": prescriptions,
+        }
+
+        token = create_doctor_qr_token(user_id, snapshot, expiry_hours=expiry_hours)
+        return {
+            "token": token,
+            "qr_url": f"/doctor-visit/{token}",
+            "expires_in_hours": expiry_hours,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health/doctor-qr/{token}")
+def health_get_doctor_qr(token: str):
+    """Public, no auth — see module note above."""
+    try:
+        result = get_doctor_qr_snapshot(token)
+        if not result:
+            raise HTTPException(
+                status_code=404,
+                detail="Ye QR invalid hai ya expire ho chuka hai. Patient se naya QR generate karne ko kaho."
+            )
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---- Existing Endpoints ------------------------------------------------------
 
 @app.post("/medicine/compare")
 async def compare_prices(request: MedicineComparisonRequest):
     """
-    Searches each requested medicine across 1mg and Apollo Pharmacy and
-    returns structured price + delivery data for every site, plus a
-    best_price_site / fastest_delivery_site tag per medicine.
-
-    IMPORTANT: this never adds anything to a cart - extraction only.
-    The frontend is responsible for showing a link to the actual pharmacy
-    site if the user wants to buy; nothing is purchased on the user's
-    behalf at any point in this flow.
+    NOT user-scoped (no user_id in the request today) — left unauthenticated
+    for now. If abuse becomes a concern, add
+    current_user_id: str = Depends(get_current_user_id) here too.
     """
     try:
         comparison = await run_comparison(request.medicines)
@@ -602,19 +852,19 @@ async def compare_prices(request: MedicineComparisonRequest):
 
 
 @app.post("/call/schedule")
-def schedule_call(request: CallRequest, background_tasks: BackgroundTasks):
+def schedule_call(
+    request: CallRequest,
+    background_tasks: BackgroundTasks,
+    current_user_id: str = Depends(get_current_user_id),
+):
     """
-    Starts the AI calling agent in a background thread.
-    The agent: starts ngrok -> places Twilio call -> does real-time conversation
-    via AssemblyAI (STT) + LLM (reply) + Deepgram (TTS).
-
-    Returns immediately - call happens asynchronously. Poll GET /call/status
-    afterwards to get the live state and, once state == "completed", the
-    final conversation summary.
+    NEW (D34): requires a valid logged-in user (this triggers a real
+    outbound AI phone call) — no user_id field on CallRequest to check
+    ownership against, so this only enforces "someone is logged in."
     """
     if not request.number or not request.number.strip():
         raise HTTPException(status_code=400, detail="Phone number zaroori hai.")
- 
+
     try:
         thread = threading.Thread(
             target=start_call,
@@ -639,14 +889,6 @@ def schedule_call(request: CallRequest, background_tasks: BackgroundTasks):
 
 @app.get("/call/status")
 def call_status():
-    """
-    Returns the shared in-memory call status set by agents/Calling.py:
-    {state, to_number, summary, transcript, error}
-
-    state is one of: idle | dialing | in_call | completed | failed.
-    Frontend should poll this every few seconds after /call/schedule until
-    state is "completed" or "failed", then display `summary` (and stop polling).
-    """
     try:
         return get_call_status()
     except Exception as e:
@@ -654,7 +896,11 @@ def call_status():
 
 
 @app.post("/hospitals/nearby")
-def find_hospitals(location: LocationRequest):
+def find_hospitals(
+    location: LocationRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, location.user_id)
     try:
         if location.city and location.state:
             city = location.city
@@ -685,7 +931,12 @@ def find_hospitals(location: LocationRequest):
 
 
 @app.post("/general-query")
-async def general_health_query(audio_file: UploadFile = File(...), user_id: str = Form(...)):
+async def general_health_query(
+    audio_file: UploadFile = File(...),
+    user_id: str = Form(...),
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     temp_filename = f"temp_query_{audio_file.filename}"
     try:
         save_upload_file(audio_file, temp_filename)
@@ -699,10 +950,14 @@ async def general_health_query(audio_file: UploadFile = File(...), user_id: str 
             os.remove(temp_filename)
 
 
-# ---- Donor Endpoints --------------------------------------------------------
+# ---- Donor Endpoints (protected) --------------------------------------------
 
 @app.post("/donor/register")
-def donor_register(request: DonorRegisterRequest):
+def donor_register(
+    request: DonorRegisterRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
     try:
         donor = register_donor(
             request.user_id, request.name, request.blood_group,
@@ -716,7 +971,11 @@ def donor_register(request: DonorRegisterRequest):
 
 
 @app.get("/donor/{user_id}")
-def donor_profile(user_id: str):
+def donor_profile(
+    user_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         return {"donor": get_donor_by_user_id(user_id)}
     except ValueError as e:
@@ -726,7 +985,11 @@ def donor_profile(user_id: str):
 
 
 @app.post("/donor/{user_id}/record-donation")
-def donor_record_donation(user_id: str):
+def donor_record_donation(
+    user_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         return {"donor": record_donation(user_id)}
     except ValueError as e:
@@ -736,7 +999,12 @@ def donor_record_donation(user_id: str):
 
 
 @app.post("/donor/{user_id}/availability")
-def donor_availability(user_id: str, available: bool):
+def donor_availability(
+    user_id: str,
+    available: bool,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         return {"donor": toggle_availability(user_id, available)}
     except ValueError as e:
@@ -746,7 +1014,11 @@ def donor_availability(user_id: str, available: bool):
 
 
 @app.post("/donor/request/create")
-def donor_request_create(request: DonationRequestBody):
+def donor_request_create(
+    request: DonationRequestBody,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.requester_user_id)
     try:
         req = create_donation_request(
             request.requester_user_id, request.blood_group,
@@ -760,7 +1032,11 @@ def donor_request_create(request: DonationRequestBody):
 
 
 @app.post("/donor/request/find-donors")
-def donor_find_matching(request: FindDonorsRequest):
+def donor_find_matching(
+    request: FindDonorsRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    """No user_id on this request — only "must be logged in" is enforced."""
     try:
         donors = find_matching_donors(request.blood_group, request.city, request.state)
         return {"donors": donors, "count": len(donors)}
@@ -770,10 +1046,14 @@ def donor_find_matching(request: FindDonorsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ---- Health Records Endpoints --------------------------------------------------------
+# ---- Health Records Endpoints (protected) -----------------------------------
 
 @app.post("/health/vital")
-def health_add_vital(request: VitalRequest):
+def health_add_vital(
+    request: VitalRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
     try:
         record_id = add_vital(
             request.user_id, request.vital_type,
@@ -789,7 +1069,13 @@ def health_add_vital(request: VitalRequest):
 
 
 @app.get("/health/vitals/{user_id}")
-def health_get_vitals(user_id: str, vital_type: Optional[str] = None, limit: int = 30):
+def health_get_vitals(
+    user_id: str,
+    vital_type: Optional[str] = None,
+    limit: int = 30,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         records = get_vitals(user_id, vital_type, limit)
         return {"vitals": records, "count": len(records)}
@@ -797,8 +1083,33 @@ def health_get_vitals(user_id: str, vital_type: Optional[str] = None, limit: int
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.delete("/health/vitals/{user_id}/{vital_id}")
+def health_delete_vital(
+    user_id: str,
+    vital_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
+    try:
+        deleted = delete_vital(user_id, vital_id)
+        if not deleted:
+            raise HTTPException(
+                status_code=404,
+                detail="Vital record nahi mila ya already delete ho chuka hai."
+            )
+        return {"status": "deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/health/prescription")
-def health_add_prescription(request: PrescriptionRequest):
+def health_add_prescription(
+    request: PrescriptionRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
     try:
         record_id = add_prescription(
             request.user_id, request.medicines,
@@ -810,7 +1121,12 @@ def health_add_prescription(request: PrescriptionRequest):
 
 
 @app.get("/health/prescriptions/{user_id}")
-def health_get_prescriptions(user_id: str, limit: int = 20):
+def health_get_prescriptions(
+    user_id: str,
+    limit: int = 20,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         records = get_prescriptions(user_id, limit)
         return {"prescriptions": records, "count": len(records)}
@@ -818,8 +1134,33 @@ def health_get_prescriptions(user_id: str, limit: int = 20):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.delete("/health/prescriptions/{user_id}/{prescription_id}")
+def health_delete_prescription(
+    user_id: str,
+    prescription_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
+    try:
+        deleted = delete_prescription(user_id, prescription_id)
+        if not deleted:
+            raise HTTPException(
+                status_code=404,
+                detail="Prescription record nahi mila ya already delete ho chuka hai."
+            )
+        return {"status": "deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/health/prescription-analysis")
-def health_save_prescription_analysis(request: SavePrescriptionAnalysisRequest):
+def health_save_prescription_analysis(
+    request: SavePrescriptionAnalysisRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
     try:
         record_id = save_prescription_analysis(
             request.user_id,
@@ -836,7 +1177,12 @@ def health_save_prescription_analysis(request: SavePrescriptionAnalysisRequest):
 
 
 @app.get("/health/prescription-analyses/{user_id}")
-def health_get_prescription_analyses(user_id: str, limit: int = 20):
+def health_get_prescription_analyses(
+    user_id: str,
+    limit: int = 20,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         records = get_prescription_analyses(user_id, limit)
         return {"analyses": records, "count": len(records)}
@@ -845,7 +1191,12 @@ def health_get_prescription_analyses(user_id: str, limit: int = 20):
 
 
 @app.get("/health/prescription-analysis/{user_id}/{analysis_id}")
-def health_get_prescription_analysis_detail(user_id: str, analysis_id: str):
+def health_get_prescription_analysis_detail(
+    user_id: str,
+    analysis_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         record = get_prescription_analysis_by_id(user_id, analysis_id)
         if not record:
@@ -858,7 +1209,12 @@ def health_get_prescription_analysis_detail(user_id: str, analysis_id: str):
 
 
 @app.get("/health/timeline/{user_id}")
-def health_get_timeline(user_id: str, limit: int = 50):
+def health_get_timeline(
+    user_id: str,
+    limit: int = 50,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         records = get_full_timeline(user_id, limit)
         return {"timeline": records, "count": len(records)}
@@ -867,7 +1223,11 @@ def health_get_timeline(user_id: str, limit: int = 50):
 
 
 @app.post("/health/emergency-profile")
-def health_save_emergency_profile(request: EmergencyProfileRequest):
+def health_save_emergency_profile(
+    request: EmergencyProfileRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
     try:
         save_emergency_profile(
             request.user_id, request.name, request.blood_group,
@@ -881,7 +1241,11 @@ def health_save_emergency_profile(request: EmergencyProfileRequest):
 
 
 @app.get("/health/emergency-profile/{user_id}")
-def health_get_emergency_profile(user_id: str):
+def health_get_emergency_profile(
+    user_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         profile = get_emergency_profile(user_id)
         if not profile:
@@ -894,7 +1258,11 @@ def health_get_emergency_profile(user_id: str):
 
 
 @app.post("/health/generate-qr/{user_id}")
-def health_generate_qr(user_id: str):
+def health_generate_qr(
+    user_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
     try:
         token = generate_qr_token(user_id)
         qr_url = f"/health/qr/{token}"
@@ -905,6 +1273,10 @@ def health_generate_qr(user_id: str):
 
 @app.get("/health/qr/{token}")
 def health_qr_public(token: str):
+    """
+    Public, no auth — by design. `token` here is the separate
+    emergency_qr_tokens credential, not a JWT — do not touch.
+    """
     try:
         profile = get_emergency_profile_public(token)
         if not profile:

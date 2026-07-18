@@ -28,10 +28,10 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # ---- Shared helper ----------------------------------------------------------
 
-def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = False):
+def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = False, shared_kb_files: Optional[List[str]] = None):
     """
     Common setup for all crews - reads user profile, writes knowledge file,
-    optionally injects allergy info, returns (knowledge_source, embedder_config).
+    optionally injects allergy info, returns (knowledge_sources, embedder_config).
     Centralised here so each crew.crew() method stays clean.
 
     IMPORTANT: `crew_name` isolates each crew's ChromaDB memory storage. Without
@@ -41,6 +41,18 @@ def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = Fals
     for the same user — causing symptom-only queries (like a "Diarrhea" bubble
     click) to return stale, unrelated medicine combinations from a totally
     different past interaction. Each crew now gets its own memory subfolder.
+
+    `shared_kb_files` (new): optional list of file paths (relative to the
+    project's `knowledge/` folder, same convention as the per-user profile
+    file) pointing at a SHARED, non-user-specific reference knowledge base —
+    e.g. `["medical_kb/drug_interactions.txt"]`. When provided, a second
+    TextFileKnowledgeSource is added alongside the per-user profile source,
+    so the crew's agent can retrieve from both the user's own profile AND a
+    curated reference set via the same embedding pipeline. See decisions.md
+    D26 for why this exists and why it's scoped to only the crews that
+    benefit from a real external reference (LabReportCrew,
+    MedicineInteractionCrew, SymptomTriageCrew, MedicineEffectivenessCrew,
+    ClinicalSummaryCrew).
     """
     user_data, _ = get_user_knowledge_profile(user_id)
 
@@ -69,7 +81,16 @@ def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = Fals
         except Exception:
             pass
 
-    knowledge_source = TextFileKnowledgeSource(file_paths=[str(profile_file_rel)])
+    knowledge_sources = [TextFileKnowledgeSource(file_paths=[str(profile_file_rel)])]
+
+    if shared_kb_files:
+        # Separate TextFileKnowledgeSource instance (not merged into the same
+        # file_paths list) so the per-user profile source and the shared
+        # reference source are chunked/embedded independently — a large,
+        # mostly-static reference file shouldn't affect chunking behavior for
+        # the small, frequently-changing per-user profile file.
+        knowledge_sources.append(TextFileKnowledgeSource(file_paths=shared_kb_files))
+
     embedder = {
         "provider": "ollama",
         "config": {
@@ -77,7 +98,7 @@ def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = Fals
             "url": "http://localhost:11434/api/embeddings"
         }
     }
-    return knowledge_source, embedder
+    return knowledge_sources, embedder
 
 
 # ---- Pydantic Schemas --------------------------------------------------------
@@ -120,6 +141,7 @@ class PrescriptionAnalysisOutput(BaseModel):
 class LabTestResult(BaseModel):
     test_name: str = Field(..., description="Name of the lab test (e.g., Haemoglobin, Fasting Blood Sugar).")
     value: str = Field(..., description="The reported value with unit (e.g., '11.2 g/dL', '98 mg/dL').")
+    numeric_value: Optional[float] = Field(None, description="The numeric portion of `value` only, unit stripped, for charting (e.g. 11.2 for '11.2 g/dL'). Null if the value isn't a plain number (e.g. 'Positive', 'Trace', 'Nil').")
     normal_range: str = Field("", description="The reference/normal range shown on the report, if present.")
     status: str = Field(..., description="One of: 'Normal', 'Low', 'High', 'Critical Low', 'Critical High', 'Unknown'.")
     plain_explanation: str = Field(..., description="What this test measures and what the result means, in plain everyday language a non-medical person can understand.")
@@ -129,6 +151,7 @@ class LabTestResult(BaseModel):
 class LabReportAnalysisOutput(BaseModel):
     """Full analysis of a lab report - plain-language per-test breakdown."""
     report_type: str = Field(..., description="Type of report detected (e.g., 'Complete Blood Count', 'Lipid Profile', 'Thyroid Function Test', 'General Blood Work').")
+    report_date: Optional[str] = Field(None, description="The date this report was generated/collected/printed, if mentioned anywhere in the text. Output strictly as ISO 8601 'YYYY-MM-DD'. Null if no date is found anywhere in the document.")
     overall_summary: str = Field(..., description="3-5 line plain-language overview - what this report is checking and the general picture.")
     tests: List[LabTestResult] = Field(..., description="Per-test breakdown.")
     urgent_flags: List[str] = Field(default_factory=list, description="List of test names that are Critical Low or Critical High - empty list if none.")
@@ -174,6 +197,46 @@ class SymptomTriageOutput(BaseModel):
     home_care_tips: List[str] = Field(default_factory=list, description="If urgency is Home Care or See Doctor Soon, practical home care tips. Empty for emergency level.")
     warning_signs: List[str] = Field(..., description="Symptoms to watch for that would require upgrading urgency - always populated.")
     disclaimer: str = Field(..., description="Reminder this is AI triage and not a medical diagnosis.")
+
+
+# ---- Medicine Effectiveness schemas (phase 2, decisions.md D29) -------------
+
+class MedicineEffectivenessOutput(BaseModel):
+    """
+    Direction + pace verdict for one medicine's effect on one of the user's
+    own tracked lab tests, given that test's dated value series since (and,
+    where available, before) the medicine's start date. Grounded via RAG
+    against two shared reference files: test_direction_reference.txt
+    (which direction counts as "improving" for this test — already used by
+    phase 1) and medicine_response_timelines.txt (the new phase-2 file,
+    expected response windows per medicine/test pair). See decisions.md D29
+    "Phase 2" for the full feature plan and why this is deliberately
+    sequenced after phase 1.
+    """
+    direction_correct: bool = Field(..., description="True if the value is moving in the medically expected direction for this medicine+test pair.")
+    pace_verdict: str = Field(..., description="One of: 'On track', 'Too early to tell', 'Slower than typical, still within expected window', 'Not responding as expected'.")
+    plain_explanation: str = Field(..., description="2-4 sentence plain-language explanation of the verdict - states the WHY (e.g. the typical response window being used for this medicine+test pair), not just the verdict. Written for a non-medical reader.")
+    doctor_talk_recommended: bool = Field(..., description="True if the patient should proactively mention this to their doctor at the next visit - e.g. direction is wrong, or pace is well outside the expected window.")
+    disclaimer: str = Field(..., description="Short reminder this is AI-generated guidance based on the patient's own saved data, not a diagnosis, and doesn't replace a doctor's assessment.")
+
+
+# ---- Clinical Summary schema (Doctor Visit QR, decisions.md D29) ------------
+
+class ClinicalSummaryOutput(BaseModel):
+    """
+    Doctor Visit QR feature (decisions.md D29 sketch). Deliberately a
+    DIFFERENT register from LabReportAnalysisOutput.overall_summary — that
+    one is plain-language for the patient; this one is terse clinical
+    shorthand for a doctor who already has the vocabulary and wants
+    density, not hand-holding. Example target style: "Hb 9.6 (down trend,
+    2mo), FBS 118 (improving on Metformin), TSH 4.8 (down, likely
+    responding to treatment)." No em-dashes or narrative framing — reads
+    like a chart note, not an explanation.
+    """
+    clinical_summary: str = Field(..., description="Terse, clinical-register summary of the patient's current lab picture and trends, written the way a doctor would jot a quick chart note — dense, abbreviation-friendly, no patient-facing plain-language explanation.")
+    key_flags: List[str] = Field(default_factory=list, description="Short list of the most clinically notable items to check first this visit — abnormal/critical current values, or trends moving the wrong direction for their expected medicine response. Empty list if nothing stands out.")
+    active_medicines_note: str = Field("", description="One-line note on currently active medicines per saved prescriptions (e.g. 'On Metformin 500mg since 12-Sep-2024, Atorvastatin 10mg since 01-Oct-2024'). Empty string if no prescriptions on record.")
+    disclaimer: str = Field(..., description="Short reminder that this summary is generated from the patient's own self-reported/saved app data, not a chart pulled from a clinical record system, and doesn't replace the doctor's own examination and judgment.")
 
 
 # ---- Speech-based consultation crew -----------------------------------------
@@ -243,12 +306,12 @@ class SpeechCrew:
 
     @crew
     def crew(self, user_id: str) -> Crew:
-        knowledge_source, embedder = _build_crew_base(user_id, "speech", inject_allergies=True)
+        knowledge_sources, embedder = _build_crew_base(user_id, "speech", inject_allergies=True)
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
             verbose=False,
-            knowledge_sources=[knowledge_source],
+            knowledge_sources=knowledge_sources,
             embedder=embedder,
             process=Process.sequential,
             max_rpm=3
@@ -322,13 +385,13 @@ class FileCrew:
 
     @crew
     def crew(self, user_id: str) -> Crew:
-        knowledge_source, embedder = _build_crew_base(user_id, "file", inject_allergies=True)
+        knowledge_sources, embedder = _build_crew_base(user_id, "file", inject_allergies=True)
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
             verbose=False,
             max_rpm=3,
-            knowledge_sources=[knowledge_source],
+            knowledge_sources=knowledge_sources,
             embedder=embedder,
             process=Process.sequential,
         )
@@ -373,12 +436,12 @@ class Nearbyhospitals():
 
     @crew
     def crew(self, user_id: str) -> Crew:
-        knowledge_source, embedder = _build_crew_base(user_id, "hospitals")
+        knowledge_sources, embedder = _build_crew_base(user_id, "hospitals")
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
             verbose=False,
-            knowledge_sources=[knowledge_source],
+            knowledge_sources=knowledge_sources,
             embedder=embedder,
             process=Process.sequential,
             max_rpm=3
@@ -411,12 +474,12 @@ class general_que():
 
     @crew
     def crew(self, user_id: str) -> Crew:
-        knowledge_source, embedder = _build_crew_base(user_id, "general")
+        knowledge_sources, embedder = _build_crew_base(user_id, "general")
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
             verbose=False,
-            knowledge_sources=[knowledge_source],
+            knowledge_sources=knowledge_sources,
             embedder=embedder,
             process=Process.sequential,
             max_rpm=3
@@ -456,12 +519,18 @@ class LabReportCrew:
 
     @crew
     def crew(self, user_id: str) -> Crew:
-        knowledge_source, embedder = _build_crew_base(user_id, "lab_report", inject_allergies=False)
+        # RAG: grounds the agent's plain-language explanations against a shared
+        # standard reference-ranges file, alongside the per-user profile. See
+        # decisions.md D26.
+        knowledge_sources, embedder = _build_crew_base(
+            user_id, "lab_report", inject_allergies=False,
+            shared_kb_files=["medical_kb/lab_reference_ranges.txt"],
+        )
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
             verbose=False,
-            knowledge_sources=[knowledge_source],
+            knowledge_sources=knowledge_sources,
             embedder=embedder,
             process=Process.sequential,
             max_rpm=3
@@ -500,12 +569,18 @@ class MedicineInteractionCrew:
 
     @crew
     def crew(self, user_id: str) -> Crew:
-        knowledge_source, embedder = _build_crew_base(user_id, "med_interaction", inject_allergies=True)
+        # RAG: grounds the agent's interaction calls against a shared,
+        # curated drug-interaction reference file, alongside the per-user
+        # profile (kept for allergy injection). See decisions.md D26.
+        knowledge_sources, embedder = _build_crew_base(
+            user_id, "med_interaction", inject_allergies=True,
+            shared_kb_files=["medical_kb/drug_interactions.txt"],
+        )
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
             verbose=False,
-            knowledge_sources=[knowledge_source],
+            knowledge_sources=knowledge_sources,
             embedder=embedder,
             process=Process.sequential,
             max_rpm=3
@@ -544,12 +619,161 @@ class SymptomTriageCrew:
 
     @crew
     def crew(self, user_id: str) -> Crew:
-        knowledge_source, embedder = _build_crew_base(user_id, "symptom_triage", inject_allergies=False)
+        # RAG: grounds the agent's urgency reasoning against a shared
+        # symptom-urgency reference file, alongside the per-user profile.
+        # Deliberately does NOT duplicate safety_guardrails.py's hardcoded
+        # keyword list — that layer already short-circuits the clearest
+        # emergencies before this crew is even invoked. See decisions.md D26.
+        knowledge_sources, embedder = _build_crew_base(
+            user_id, "symptom_triage", inject_allergies=False,
+            shared_kb_files=["medical_kb/symptom_red_flags.txt"],
+        )
         return Crew(
             agents=self.agents,
             tasks=self.tasks,
             verbose=False,
-            knowledge_sources=[knowledge_source],
+            knowledge_sources=knowledge_sources,
+            embedder=embedder,
+            process=Process.sequential,
+            max_rpm=3
+        )
+
+
+# ---- Medicine Effectiveness crew (phase 2, decisions.md D29) -----------------
+
+@CrewBase
+class MedicineEffectivenessCrew:
+    """
+    Medicine Effectiveness feature, phase 2 (decisions.md D29). Given one
+    medicine's effect on one of a user's own tracked lab tests — the test's
+    dated value series, its normal range, and the medicine's start date —
+    reasons about BOTH direction (is the value moving the right way) and
+    pace (is it moving at the expected speed for this medicine) together,
+    grounded against two shared reference files via RAG: test_direction_
+    reference.txt (which direction is "improving" per test — already used
+    by phase 1's backend logic) and medicine_response_timelines.txt (new
+    this session — expected response windows per medicine/test pair).
+    Produces a plain-language verdict + doctor-talk recommendation a
+    non-medical user can trust.
+
+    NOTE ON test_direction_reference.txt'S PATH: this crew assumes it lives
+    at knowledge/medical_kb/test_direction_reference.txt, matching where the
+    other three shared reference files (lab_reference_ranges.txt,
+    drug_interactions.txt, symptom_red_flags.txt) already live. This wasn't
+    independently re-confirmed against the actual phase-1 file layout in
+    this session — if phase 1 put it somewhere else, update the
+    shared_kb_files path below to match before running this crew for real.
+
+    Deliberately built as phase 2, after phase 1 (annotation marker + delta
+    badge, already live-tested) — see decisions.md D29 "Why phased instead
+    of building the full pace-aware version directly."
+    """
+
+    agents_config = 'config/medicine_effectiveness_agent.yaml'
+    tasks_config = 'config/medicine_effectiveness_task.yaml'
+
+    @agent
+    def effectiveness_analyst(self) -> Agent:
+        return Agent(
+            config=self.agents_config["effectiveness_analyst"],
+            verbose=True,
+            max_iter=2,
+            memory=False,
+            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.1, api_key=GROQ_API_KEY),
+        )
+
+    @task
+    def effectiveness_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["effectiveness_task"],
+            agent=self.effectiveness_analyst(),
+            output_pydantic=MedicineEffectivenessOutput,
+        )
+
+    @crew
+    def crew(self, user_id: str) -> Crew:
+        # RAG: grounds direction + pace reasoning against two shared
+        # reference files, alongside the per-user profile. See decisions.md
+        # D26 (RAG pattern) and D29 (this feature's own reference files).
+        knowledge_sources, embedder = _build_crew_base(
+            user_id, "medicine_effectiveness", inject_allergies=False,
+            shared_kb_files=[
+                "medical_kb/test_direction_reference.txt",
+                "medical_kb/medicine_response_timelines.txt",
+            ],
+        )
+        return Crew(
+            agents=self.agents,
+            tasks=self.tasks,
+            verbose=False,
+            knowledge_sources=knowledge_sources,
+            embedder=embedder,
+            process=Process.sequential,
+            max_rpm=3
+        )
+
+
+# ---- Clinical Summary crew (Doctor Visit QR, decisions.md D29) --------------
+
+@CrewBase
+class ClinicalSummaryCrew:
+    """
+    Doctor Visit QR feature (decisions.md D29 sketch, PROJECT_CONTEXT.md
+    §10 "Doctor Visit QR"). Takes a user's saved lab report history, their
+    per-test trends, and their saved prescriptions, and produces a single
+    terse, clinical-register summary for a doctor to glance at during an
+    in-person visit — the whole reason this is a separate crew from
+    LabReportCrew rather than reusing its output: LabReportAnalysisOutput's
+    overall_summary is deliberately plain-language for the patient, and
+    mixing registers (or trying to make one field serve both readers) was
+    explicitly rejected — see ClinicalSummaryOutput's docstring.
+
+    Called from main.py's POST /health/doctor-qr/{user_id} at QR-generation
+    time only (not on every scan) — the result is cached into the token's
+    snapshot by health_records.create_doctor_qr_token(). See that file's
+    "DESIGN NOTE — snapshot, not live lookup" comment for why.
+    """
+
+    agents_config = 'config/clinical_summary_agent.yaml'
+    tasks_config = 'config/clinical_summary_task.yaml'
+
+    @agent
+    def clinical_summarizer(self) -> Agent:
+        return Agent(
+            config=self.agents_config["clinical_summarizer"],
+            verbose=True,
+            max_iter=2,
+            memory=False,
+            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.1, api_key=GROQ_API_KEY),
+        )
+
+    @task
+    def clinical_summary_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["clinical_summary_task"],
+            agent=self.clinical_summarizer(),
+            output_pydantic=ClinicalSummaryOutput,
+        )
+
+    @crew
+    def crew(self, user_id: str) -> Crew:
+        # RAG: grounds abnormal-value flagging and trend-direction framing
+        # against the same two reference files phase-1/phase-2 Medicine
+        # Effectiveness already uses, so "which direction is improving" and
+        # "what counts as abnormal" stay consistent across features rather
+        # than being re-derived per crew. See decisions.md D26/D29.
+        knowledge_sources, embedder = _build_crew_base(
+            user_id, "clinical_summary", inject_allergies=True,
+            shared_kb_files=[
+                "medical_kb/lab_reference_ranges.txt",
+                "medical_kb/test_direction_reference.txt",
+            ],
+        )
+        return Crew(
+            agents=self.agents,
+            tasks=self.tasks,
+            verbose=False,
+            knowledge_sources=knowledge_sources,
             embedder=embedder,
             process=Process.sequential,
             max_rpm=3

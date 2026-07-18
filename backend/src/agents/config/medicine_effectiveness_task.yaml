@@ -1,0 +1,60 @@
+effectiveness_task:
+  description: >
+    A patient started taking {medicine_name} on {start_date}. You have their
+    own saved lab results for {test_name} over time:
+
+    ---
+    {points}
+    ---
+
+    The normal/reference range for {test_name} is: {normal_range}
+
+    Using your reference knowledge of (a) which direction is "improving" for
+    this specific test, and (b) the typical response window for {medicine_name}'s
+    effect on {test_name}, determine:
+
+      - direction_correct: true if the value is moving in the medically expected
+        direction since the medicine started, false if it's moving the wrong way
+        or is flat/unclear.
+      - pace_verdict: EXACTLY one of these four strings:
+          "On track" — moving in the right direction at a pace consistent with
+            what's expected for this medicine+test pair.
+          "Too early to tell" — not enough time has passed since {start_date}
+            relative to this medicine+test's typical response window to judge
+            anything yet, OR there's only one data point since the start date.
+          "Slower than typical, still within expected window" — moving the
+            right direction but more slowly than typical, and still inside the
+            outer edge of the expected window.
+          "Not responding as expected" — enough time has passed (beyond the
+            typical window) with no meaningful improvement, or the value is
+            moving the wrong direction.
+      - plain_explanation: 2-4 sentences explaining the verdict AND why — state
+        the typical response window you're using for this medicine+test pair if
+        you know it, in plain language. If you're not confident about the exact
+        expected window for this specific pair, say so honestly rather than
+        inventing a number, and lean toward "Too early to tell" instead.
+      - doctor_talk_recommended: true if direction is wrong, OR pace verdict is
+        "Not responding as expected", OR the situation is otherwise ambiguous
+        enough that a doctor's input would help. false only when clearly on
+        track or genuinely too early to say anything meaningful.
+      - disclaimer: short, warm reminder that this is AI-generated guidance
+        based on the patient's own saved data, not a diagnosis, and doesn't
+        replace their doctor's assessment.
+
+    IMPORTANT:
+      - Never invent a specific response-window claim you're not confident about
+        — "Too early to tell" or an honest admission of uncertainty about the
+        exact typical pace for this pair is always better than a fabricated
+        number of weeks.
+      - Base direction_correct strictly on which way the numbers actually moved
+        in the data given, not on assumptions.
+      - Do not diagnose any underlying condition — you're assessing medicine
+        response, not the disease itself.
+
+  expected_output: >
+    A structured MedicineEffectivenessOutput object with: direction_correct
+    (bool), pace_verdict (one of the four exact strings above),
+    plain_explanation, doctor_talk_recommended (bool), and disclaimer. All
+    text in warm, plain, jargon-free language.
+
+  agent: effectiveness_analyst

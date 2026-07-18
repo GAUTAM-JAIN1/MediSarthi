@@ -1,0 +1,53 @@
+# ============================================================================
+# NEW FILE: backend/src/agents/config/clinical_summary_task.yaml
+# Same YAML shape as lab_report_task.yaml / symptom_triage_task.yaml — one
+# top-level key matching the @task method name in crew.py
+# (clinical_summary_task). The {lab_history}, {trends_summary}, and
+# {prescriptions_summary} placeholders are filled from the `inputs` dict
+# main.py passes to crew_instance.kickoff(inputs=...) — see
+# 5_main_additions.py for exactly how those three strings are built.
+# ============================================================================
+
+clinical_summary_task:
+  description: >
+    Below is one patient's saved health data from the MediSarthi app.
+    Produce a single terse, clinical-register summary for a doctor about
+    to see this patient in person — write it the way a doctor would jot a
+    quick chart note for a colleague, NOT the way you would explain a
+    result to the patient themselves. Assume the reader already knows
+    medical terminology and wants density, not context or reassurance.
+
+    Saved lab report history (most recent tests, chronological):
+    {lab_history}
+
+    Per-test trends across all saved reports (where 2+ points exist):
+    {trends_summary}
+
+    Currently saved prescriptions:
+    {prescriptions_summary}
+
+    Rules:
+    - Use standard clinical abbreviations where natural (Hb, FBS, TSH,
+      etc.) — do not spell out what each test measures.
+    - For any test with a real trend (2+ points), state the direction
+      (up/down/stable) and, if a mapped medicine's start date falls
+      within the trend window, note it briefly in parentheses (e.g.
+      "improving on Metformin").
+    - For a test with only ONE saved data point, report the latest value
+      and status only — do NOT invent or imply a trend direction that
+      isn't supported by the data.
+    - Do not invent values, dates, or medicines that are not present in
+      the data given above. If a section (e.g. prescriptions) is empty,
+      say so briefly rather than omitting it silently.
+    - key_flags should surface only what's genuinely worth a first look —
+      currently abnormal/critical values, or trends moving the wrong
+      direction for their expected medicine response. Leave it empty if
+      nothing stands out; do not pad it to seem thorough.
+    - Close with a short, honest disclaimer that this is generated from
+      the patient's own self-reported/saved app data, not a verified
+      clinical record system, and does not replace the doctor's own
+      examination and judgment.
+  expected_output: >
+    A ClinicalSummaryOutput object: a dense clinical-register
+    clinical_summary string, a key_flags list (possibly empty),
+    an active_medicines_note string (possibly empty), and a disclaimer.

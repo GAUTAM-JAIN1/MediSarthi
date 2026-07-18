@@ -9,9 +9,20 @@ lab_analysis_task:
     Your job is to analyse every test result present in this text and produce a
     structured, plain-language breakdown.
 
+    First, look for a date anywhere in the document — it may be labelled "Report Date",
+    "Collection Date", "Sample Collected On", "Reported On", "Date", or simply printed
+    near the top/bottom of the report. If you find one, normalise it to ISO 8601
+    "YYYY-MM-DD" and return it as report_date. If the document mentions multiple dates
+    (e.g. both a collection date and a report date), prefer the collection/sample date,
+    since that's when the values were actually measured. If no date appears anywhere in
+    the text, set report_date to null — do not guess or invent one.
+
     For EACH test result found, provide:
       - test_name: The name of the test exactly as it appears (or the closest clean version).
       - value: The patient's result value with its unit (e.g. "11.2 g/dL").
+      - numeric_value: The same result as a plain number with the unit stripped (e.g. 11.2
+        for "11.2 g/dL"), used later to plot trend charts across multiple reports. Use null
+        if the value isn't a plain number (e.g. "Positive", "Trace", "Nil", "1+").
       - normal_range: The reference range from the report if present (e.g. "12.0–16.0 g/dL").
         If not shown, write "Not provided".
       - status: EXACTLY one of: "Normal", "Low", "High", "Critical Low", "Critical High", "Unknown".
@@ -30,6 +41,7 @@ lab_analysis_task:
       - report_type: What kind of report is this? (e.g. "Complete Blood Count", "Lipid Profile",
         "Thyroid Function Test", "Liver Function Test", "General Blood Work", "Urine Routine").
         If it contains multiple panels, name the primary one.
+      - report_date: The date extracted per the instructions above, "YYYY-MM-DD" or null.
       - overall_summary: 3-5 sentences summarising what this report is checking and the
         general picture — is everything mostly normal? Are there concerning values? Keep it
         calm and honest.
@@ -46,14 +58,17 @@ lab_analysis_task:
     IMPORTANT:
       - If the extracted text is garbled, partial, or clearly not a lab report, still do
         your best — note in overall_summary that the text quality was poor and results may
-        be incomplete.
+        be incomplete. Set report_date to null in this case too, since any "date" found in
+        garbled text would be unreliable.
       - Never invent test values. Only report what is present in the text.
+      - Never invent a report_date. Null is correct and expected when no date is present.
       - Never diagnose a disease. Explain what the values mean, not what disease the person has.
 
   expected_output: >
-    A structured LabReportAnalysisOutput object with: report_type, overall_summary, a tests
-    list (one LabTestResult per test — test_name, value, normal_range, status,
-    plain_explanation, action_needed), urgent_flags (list of test names), has_urgent_values
-    (bool), next_steps, and disclaimer. All text in warm, plain, jargon-free language.
+    A structured LabReportAnalysisOutput object with: report_type, report_date (ISO
+    "YYYY-MM-DD" or null), overall_summary, a tests list (one LabTestResult per test —
+    test_name, value, numeric_value, normal_range, status, plain_explanation, action_needed),
+    urgent_flags (list of test names), has_urgent_values (bool), next_steps, and disclaimer.
+    All text in warm, plain, jargon-free language.
 
   agent: lab_report_analyst

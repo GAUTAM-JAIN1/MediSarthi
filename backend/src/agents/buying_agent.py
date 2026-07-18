@@ -9,12 +9,47 @@ load_dotenv()
 
 tools = Tools()
 
-# 2 separate agents, one per site, run in PARALLEL via asyncio.gather. Each
-# gets its own timeout (per-site, not combined), and each gets its own
-# Chrome profile folder — running 2 Chrome instances against the SAME
-# --user-data-dir at once causes a lock conflict, so they must use different
-# parent folders.
-PER_SITE_TIMEOUT_SECONDS = 150
+# ── Sequential vs parallel toggle ──────────────────────────────────────────
+#
+# FIX (real root cause of the 502s, not the earlier timeout bump): the repeated
+# "LLM call timed out after 75 seconds" errors in the logs are a HARDCODED
+# internal timeout inside browser-use itself (not PER_SITE_TIMEOUT_SECONDS
+# below, which only bounds the whole agent.run() call from the outside).
+# When that internal call times out, browser-use retries the SAME step up to
+# 6 times ("Result failed 1/6" ... "6/6") before giving up on that step —
+# so one slow LLM response can burn several minutes on its own, regardless
+# of how high we set our own outer timeout. Bumping PER_SITE_TIMEOUT_SECONDS
+# alone (150 -> 220) did NOT fix this, confirmed by the latest log: both
+# agents still hit repeated 75s internal timeouts and both still got killed
+# by the outer 220s limit before finishing all 3 medicines.
+#
+# The two agents were running in PARALLEL (asyncio.gather), each firing its
+# own LLM call every step, both against the SAME Groq API key at the same
+# time. The timing in the log shows Apollo's step-8 75s-timeout landing
+# right as 1mg's step-5 extract call was also in flight — consistent with
+# Groq-side contention/rate-limiting under concurrent load, which is the
+# most likely reason individual calls that are normally fast (llama-4-scout)
+# occasionally stall past 75s.
+#
+# Fix: run the two site-agents SEQUENTIALLY instead of in parallel, so only
+# one is ever calling Groq at a time. Slower wall-clock overall (roughly
+# apollo_time + onemg_time instead of max(apollo_time, onemg_time)), but
+# removes the contention that's currently causing near-100% failure. Kept
+# as a simple boolean toggle — flip back to False once Groq's rate limits
+# are less of a bottleneck (e.g. a paid tier, or a different provider) to
+# get the speed back.
+RUN_SEQUENTIALLY = True
+
+# Outer safety-net timeout per site. With sequential execution there's no
+# contention forcing repeated 75s internal retries anymore, so this should
+# rarely need to fire — kept generous (240s) as a genuine worst-case ceiling
+# (page load issues, a truly stuck element, etc), not as the primary fix.
+PER_SITE_TIMEOUT_SECONDS = 240
+
+# Only used on the (currently disabled) parallel path — spreads the two
+# agents' first LLM calls apart in time. Irrelevant while RUN_SEQUENTIALLY
+# is True, kept for when parallel mode is re-enabled.
+STAGGER_SECONDS = 4
 
 APOLLO_PROFILE_DIR = r"C:\agent_profile_apollo"
 ONEMG_PROFILE_DIR = r"C:\agent_profile_1mg"
@@ -138,15 +173,21 @@ async def _run_single_site(
     site_url: str,
     profile_dir: str,
     medicines: List[str],
+    start_delay: float = 0,
 ) -> List[Dict[str, Any]]:
     """
     Runs one agent against one pharmacy site only. Returns a list of raw
     flat dicts (one per medicine, as the agent reported them) so the caller
     can group them by medicine. Returns an empty list on any failure
-    (timeout, no result, malformed output) instead of raising — so a
-    problem on ONE site never takes down the other site's result when run
-    in parallel via asyncio.gather.
+    (timeout, no result, malformed output) instead of raising.
+
+    `start_delay`: optional sleep before this agent starts (only meaningful
+    on the parallel path — see STAGGER_SECONDS). Unused (0) when
+    RUN_SEQUENTIALLY is True since there's nothing to stagger against.
     """
+    if start_delay:
+        await asyncio.sleep(start_delay)
+
     llm = ChatGroq(model="meta-llama/llama-4-scout-17b-16e-instruct")
 
     browser = Browser(
@@ -154,10 +195,6 @@ async def _run_single_site(
         user_data_dir=profile_dir,
         profile_directory="Default",
         permissions=["geolocation"],
-        # Tightened from the original 2.0/2.0/1.0 now that each agent only
-        # handles ONE site (less to wait through per agent) and runs in
-        # parallel anyway. This part was never the cause of the bugs above —
-        # safe to keep.
         minimum_wait_page_load_time=1.0,
         wait_for_network_idle_page_load_time=1.0,
         wait_between_actions=0.5,
@@ -169,19 +206,7 @@ async def _run_single_site(
         browser=browser,
         tools=tools,
         output_model_schema=SingleSiteOutput,
-        # REVERTED: was False, which pushed the agent onto browser-use's
-        # internal `extract` tool (the one that hit the $defs bug above).
-        # "auto" lets the agent take a screenshot when it's genuinely unsure
-        # what's on the page, without paying the cost of a screenshot on
-        # every single step. Safer middle ground than full True or full False.
         use_vision="auto",
-        # REVERTED: was True, which skips the "Eval" reasoning step (the
-        # agent checking "did my last action actually work?"). That's what
-        # let the Apollo agent click the same dead element 5 times in a row
-        # before loop-detection kicked in. Eval back on = agent notices a
-        # click didn't do anything and tries something else instead.
-        # max_actions_per_step is kept — batching up to 3 actions per LLM
-        # call is still a safe speed win, unrelated to either bug above.
         max_actions_per_step=3,
     )
 
@@ -238,27 +263,52 @@ def _to_pharmacy_result(raw: Dict[str, Any], fallback_site: str) -> Optional[Pha
 
 async def run_comparison(medicine: List[str]):
     """
-    Searches each medicine in `medicine` across 1mg and Apollo Pharmacy in
-    PARALLEL (one agent per site) and returns structured price + delivery
-    data for every site. Does NOT add anything to any cart — extraction only.
-    If one site fails/times out, the other site's results are still returned.
-    The caller (main.py) computes 'best price' / 'fastest delivery' tags from
-    the returned data; the agents themselves make no purchase decision.
-    """
-    apollo_coro = _run_single_site(
-        "Apollo Pharmacy",
-        "https://www.apollopharmacy.in/search-medicines?source=/",
-        APOLLO_PROFILE_DIR,
-        medicine,
-    )
-    onemg_coro = _run_single_site(
-        "1mg",
-        "https://www.1mg.com",
-        ONEMG_PROFILE_DIR,
-        medicine,
-    )
+    Searches each medicine in `medicine` across 1mg and Apollo Pharmacy and
+    returns structured price + delivery data for every site. Does NOT add
+    anything to any cart — extraction only.
 
-    apollo_raw, onemg_raw = await asyncio.gather(apollo_coro, onemg_coro)
+    Runs SEQUENTIALLY by default (see RUN_SEQUENTIALLY above) — Apollo
+    finishes completely before 1mg starts, so only one agent is ever
+    calling Groq at a time. Slower than the old parallel version but avoids
+    the Groq-contention-driven 75s-internal-timeout retries that were
+    causing near-total failures under parallel load. Flip RUN_SEQUENTIALLY
+    to False to go back to parallel (with a small stagger) if that
+    contention stops being the bottleneck later.
+
+    If one site fails/times out, the other site's results are still
+    returned. The caller (main.py) computes 'best price' / 'fastest
+    delivery' tags from the returned data; the agents themselves make no
+    purchase decision.
+    """
+    if RUN_SEQUENTIALLY:
+        apollo_raw = await _run_single_site(
+            "Apollo Pharmacy",
+            "https://www.apollopharmacy.in/search-medicines?source=/",
+            APOLLO_PROFILE_DIR,
+            medicine,
+        )
+        onemg_raw = await _run_single_site(
+            "1mg",
+            "https://www.1mg.com",
+            ONEMG_PROFILE_DIR,
+            medicine,
+        )
+    else:
+        apollo_coro = _run_single_site(
+            "Apollo Pharmacy",
+            "https://www.apollopharmacy.in/search-medicines?source=/",
+            APOLLO_PROFILE_DIR,
+            medicine,
+            start_delay=0,
+        )
+        onemg_coro = _run_single_site(
+            "1mg",
+            "https://www.1mg.com",
+            ONEMG_PROFILE_DIR,
+            medicine,
+            start_delay=STAGGER_SECONDS,
+        )
+        apollo_raw, onemg_raw = await asyncio.gather(apollo_coro, onemg_coro)
 
     if not apollo_raw and not onemg_raw:
         # Both sites failed/timed out/returned nothing — nothing to return.
@@ -307,17 +357,10 @@ def _attach_best_tags(structured: ComparisonOutput) -> dict:
         if available_results:
             best_price_site = min(available_results, key=lambda r: r.price).site
 
-        # "Fastest delivery" is best-effort: we only tag this when at least
-        # one site actually showed delivery text. We don't try to parse/compare
-        # arbitrary delivery date strings precisely — that's unreliable. If only
-        # one site shows any delivery info at all, that site gets the tag.
         sites_with_delivery_info = [r for r in available_results if r.delivery_info.strip()]
         fastest_delivery_site = None
         if len(sites_with_delivery_info) == 1:
             fastest_delivery_site = sites_with_delivery_info[0].site
-        # If multiple sites show delivery info, we don't guess which is faster —
-        # left as None, and the frontend simply won't show a "fastest" badge for
-        # this medicine. Better to show nothing than show a wrong claim.
 
         med_dict = {
             "medicine_name": med.medicine_name,

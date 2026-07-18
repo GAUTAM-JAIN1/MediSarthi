@@ -1,0 +1,226 @@
+/* ============================================================================
+   NEW FILE: frontend/frontend/src/pages/DoctorVisitView.css
+   Uses the same design-token variables as the rest of the app (see
+   PROJECT_CONTEXT.md §4 / Layout.css) — --ms-bg-primary, --ms-white-card,
+   --ms-text-primary, --ms-text-secondary, --ms-luxury-brown, --ms-dark-navy,
+   --ms-btn. If your Layout.css defines these globally (it should, since
+   every other page relies on them without re-declaring), you don't need to
+   redefine anything here — this file just uses them.
+   ============================================================================ */
+
+.ms-dv-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  background: var(--ms-bg-primary, #F6F1EA);
+  font-family: 'Inter', sans-serif;
+}
+
+.ms-dv-card {
+  width: 100%;
+  max-width: 640px;
+  background: var(--ms-white-card, #FFFFFF);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(15, 23, 32, 0.08);
+  overflow: hidden;
+}
+
+.ms-dv-header {
+  background: var(--ms-dark-navy, #0F1720);
+  padding: 1.1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ms-dv-badge {
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.ms-dv-expiry {
+  color: var(--ms-soft-gold, #D7B895);
+  font-size: 0.75rem;
+}
+
+.ms-dv-loading,
+.ms-dv-error {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: var(--ms-text-secondary, #6B625D);
+}
+
+.ms-dv-spinner {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 0.75rem;
+  border: 3px solid rgba(0, 0, 0, 0.08);
+  border-top-color: var(--ms-luxury-brown, #9C6B45);
+  border-radius: 50%;
+  animation: ms-dv-spin 0.8s linear infinite;
+}
+
+@keyframes ms-dv-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ms-dv-error p {
+  color: #B3441C;
+}
+
+.ms-dv-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+.ms-dv-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ms-dv-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ms-text-secondary, #6B625D);
+}
+
+.ms-dv-summary-section {
+  background: var(--ms-bg-secondary, #EEE6DC);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+}
+
+.ms-dv-summary-text {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ms-text-primary, #111111);
+  white-space: pre-line;
+}
+
+.ms-dv-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.ms-dv-flag-chip {
+  background: #B3441C;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+}
+
+.ms-dv-meds-note {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--ms-text-secondary, #6B625D);
+}
+
+.ms-dv-empty-line {
+  font-size: 0.85rem;
+  color: var(--ms-text-secondary, #6B625D);
+}
+
+.ms-dv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ms-dv-list-item {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+}
+
+.ms-dv-list-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.ms-dv-report-type {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--ms-text-primary, #111111);
+}
+
+.ms-dv-date {
+  font-size: 0.78rem;
+  color: var(--ms-text-secondary, #6B625D);
+}
+
+.ms-dv-test-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.ms-dv-test-chip {
+  font-size: 0.75rem;
+  background: var(--ms-bg-secondary, #EEE6DC);
+  color: var(--ms-text-primary, #111111);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+
+.ms-dv-test-chip--flag {
+  background: #F3D8C8;
+  color: #B3441C;
+  font-weight: 600;
+}
+
+.ms-dv-trend-dir {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.ms-dv-trend-dir--up { color: #B3441C; }
+.ms-dv-trend-dir--down { color: #3A7D5C; }
+.ms-dv-trend-dir--stable { color: var(--ms-text-secondary, #6B625D); }
+
+.ms-dv-trend-points {
+  font-size: 0.8rem;
+  color: var(--ms-text-secondary, #6B625D);
+}
+
+.ms-dv-trend-annotation {
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--ms-luxury-brown, #9C6B45);
+  font-style: italic;
+}
+
+.ms-dv-rx-notes {
+  font-size: 0.8rem;
+  color: var(--ms-text-secondary, #6B625D);
+}
+
+.ms-dv-disclaimer {
+  font-size: 0.78rem;
+  color: var(--ms-text-secondary, #6B625D);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 0.9rem;
+}
+
+.ms-dv-generated-note {
+  font-size: 0.72rem;
+  color: var(--ms-text-secondary, #6B625D);
+  text-align: right;
+}

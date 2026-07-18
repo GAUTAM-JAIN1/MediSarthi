@@ -31,9 +31,11 @@ const URGENCY_CONFIG = {
   'Visit Emergency / Go Now': { color: 'red',    icon: LuTriangleAlert },
 };
 
-// ── Interaction Checker Section ──────────────────────────────────────────────
+// AUTH (D34): both sections below now take `authFetch` as a prop from the
+// page-level useUser() call, and use it instead of plain fetch() for their
+// one protected POST call each.
 
-function InteractionChecker({ userId, isLoggedIn }) {
+function InteractionChecker({ userId, isLoggedIn, authFetch }) {
   const [medicines, setMedicines] = useState(['', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -69,7 +71,7 @@ function InteractionChecker({ userId, isLoggedIn }) {
     setResult(null);
 
     try {
-      const res = await fetch('http://localhost:8080/medicine/interactions', {
+      const res = await authFetch('http://localhost:8080/medicine/interactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, medicines: filled }),
@@ -237,9 +239,7 @@ function InteractionResult({ result }) {
 }
 
 
-// ── Symptom Triage Section ───────────────────────────────────────────────────
-
-function SymptomTriage({ userId, isLoggedIn }) {
+function SymptomTriage({ userId, isLoggedIn, authFetch }) {
   const [symptoms, setSymptoms] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -259,7 +259,7 @@ function SymptomTriage({ userId, isLoggedIn }) {
     setResult(null);
 
     try {
-      const res = await fetch('http://localhost:8080/triage/symptoms', {
+      const res = await authFetch('http://localhost:8080/triage/symptoms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, symptoms }),
@@ -343,7 +343,6 @@ function TriageResult({ result }) {
         </div>
       </div>
 
-      {/* Explanation */}
       {result.explanation && (
         <div className="ms-mc-triage-section">
           <div className="ms-mc-result-label">Kyun Yeh Assessment?</div>
@@ -351,7 +350,6 @@ function TriageResult({ result }) {
         </div>
       )}
 
-      {/* Flags */}
       {result.flags && result.flags.length > 0 && (
         <div className="ms-mc-triage-section">
           <div className="ms-mc-result-label">Key Observations</div>
@@ -366,7 +364,6 @@ function TriageResult({ result }) {
         </div>
       )}
 
-      {/* Home care tips */}
       {result.home_care_tips && result.home_care_tips.length > 0 && (
         <div className="ms-mc-triage-section">
           <div className="ms-mc-result-label">Ghar Pe Kya Karein</div>
@@ -378,7 +375,6 @@ function TriageResult({ result }) {
         </div>
       )}
 
-      {/* Warning signs */}
       {result.warning_signs && result.warning_signs.length > 0 && (
         <div className="ms-mc-triage-section ms-mc-warning-section">
           <div className="ms-mc-result-label">
@@ -392,7 +388,6 @@ function TriageResult({ result }) {
         </div>
       )}
 
-      {/* Disclaimer */}
       {result.disclaimer && (
         <div className="ms-mc-disclaimer">
           <LuShieldCheck size={14} /> {result.disclaimer}
@@ -403,10 +398,8 @@ function TriageResult({ result }) {
 }
 
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-
 export default function MedicineCheck() {
-  const { userId, isLoggedIn } = useUser();
+  const { userId, isLoggedIn, authFetch } = useUser();
 
   return (
     <Layout>
@@ -423,8 +416,8 @@ export default function MedicineCheck() {
       </div>
 
       <div className="ms-mc-content">
-        <InteractionChecker userId={userId} isLoggedIn={isLoggedIn} />
-        <SymptomTriage userId={userId} isLoggedIn={isLoggedIn} />
+        <InteractionChecker userId={userId} isLoggedIn={isLoggedIn} authFetch={authFetch} />
+        <SymptomTriage userId={userId} isLoggedIn={isLoggedIn} authFetch={authFetch} />
       </div>
     </Layout>
   );

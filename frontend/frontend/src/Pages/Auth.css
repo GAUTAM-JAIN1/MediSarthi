@@ -87,6 +87,26 @@
   gap: 0.4rem;
 }
 
+/* Two-column layout for Age/Gender and City/State */
+.ms-auth-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.ms-auth-row .ms-auth-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.ms-auth-select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%236B625D' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.2rem;
+}
+
 .ms-auth-label {
   font-family: "Inter", sans-serif;
   font-size: 0.82rem;

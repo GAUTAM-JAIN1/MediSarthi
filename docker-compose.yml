@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      # NOTE: adjust if your real path differs — PROJECT_CONTEXT.md notes a
+      # doubled `frontend/frontend/` folder (outer one only has
+      # package-lock.json). This assumes the Dockerfile below goes inside
+      # the INNER frontend/frontend/ folder, next to package.json.
+      context: ./frontend/frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+# No MongoDB service here on purpose — MONGO_URI in backend/.env already
+# points at Atlas (cloud), so there's nothing to run locally for the DB.

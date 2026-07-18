@@ -12,7 +12,6 @@ import '../components/Layout.css';
 import './FindMedicine.css';
 
 // Safe helper — same pattern as Auth.jsx/HealthInfo.jsx/EmergencyView.jsx.
-// FastAPI's "detail" is sometimes a string, sometimes a list of validation-error objects.
 const extractErrorMessage = (detail, fallback) => {
   if (!detail) return fallback;
   if (typeof detail === 'string') return detail;
@@ -23,12 +22,6 @@ const extractErrorMessage = (detail, fallback) => {
   return fallback;
 };
 
-// ── AI Health Map symptom data ───────────────────────────────────────────
-// Inner ring = the 8 most common symptoms (bigger bubbles), outer ring = the
-// rest (smaller bubbles) — mirrors the two-tier bubble sizing in the target
-// design. Positions are computed with real trig below, not hand-placed, so
-// they won't be pixel-identical to the reference image, but the layout
-// (inner ring + interleaved outer ring around a center hub) matches it.
 const INNER_SYMPTOMS = [
   { key: 'fever', label: 'Fever', icon: LuThermometer },
   { key: 'headache', label: 'Headache', icon: LuBrain },
@@ -50,7 +43,6 @@ const OUTER_SYMPTOMS = [
   { key: 'diarrhea', label: 'Diarrhea', icon: LuDroplets },
 ];
 
-// Polar → cartesian, used to lay both rings out around the center hub.
 function ringPositions(items, radius, startAngle = -90) {
   const step = 360 / items.length;
   return items.map((item, i) => {
@@ -59,10 +51,6 @@ function ringPositions(items, radius, startAngle = -90) {
   });
 }
 
-// Popular searches — same idea as the original COMMON_SYMPTOMS shortcut list,
-// relabeled to match the target design's chip copy. Clicking one fills the
-// existing `query` textarea state (same handleTextSubmit path), nothing new
-// is called.
 const POPULAR_SEARCHES = [
   { label: 'Fever and headache', text: 'I have a fever and headache since yesterday.' },
   { label: 'Cold and cough', text: 'I have a cold and cough.' },
@@ -82,14 +70,10 @@ const MODES = [
   { id: 'scan', title: 'Scan prescription', sub: 'Upload & analyze', icon: LuUpload },
 ];
 
-// Prescription Analysis card — UNCHANGED from the previous version, no logic
-// or endpoint touched. Shows the plain-language breakdown (overall_summary +
-// per-medicine purpose/how_to_take/side-effects/precautions) and an allergy
-// warning banner if has_allergy_conflict is true, plus a permission-gated
-// "Save to my records" button. Still used by the Voice mode (real audio →
-// /consultation/speech → SpeechCrew prescription) and Scan mode
-// (/consultation/document → FileCrew prescription).
-function PrescriptionAnalysisCard({ analysis, rawMedicines, source, userId, onSaved }) {
+// AUTH (D34): PrescriptionAnalysisCard's one protected POST call now takes
+// `authFetch` as a prop (passed down from the page-level useUser() call)
+// instead of using plain fetch().
+function PrescriptionAnalysisCard({ analysis, rawMedicines, source, userId, onSaved, authFetch }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -109,7 +93,7 @@ function PrescriptionAnalysisCard({ analysis, rawMedicines, source, userId, onSa
         source,
         raw_medicines: rawMedicines || [],
       };
-      const res = await fetch('http://localhost:8080/health/prescription-analysis', {
+      const res = await authFetch('http://localhost:8080/health/prescription-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -203,12 +187,6 @@ function PrescriptionAnalysisCard({ analysis, rawMedicines, source, userId, onSa
   );
 }
 
-// NEW — Symptom Triage result card. Renders the output of /triage/symptoms
-// (SymptomTriageOutput: urgency_level, urgency_color, headline, explanation,
-// flags, home_care_tips, warning_signs, disclaimer). This is what the
-// Describe-symptoms / bubble-select flow now shows instead of a fabricated
-// prescription, since that flow only ever has symptom text, not a real
-// consultation transcript — triage is the correct shape for that input.
 function TriageResultCard({ triage }) {
   if (!triage || !triage.urgency_level) return null;
 
@@ -273,25 +251,18 @@ function TriageResultCard({ triage }) {
 }
 
 export default function FindMedicine() {
-  const { userId, isLoggedIn } = useUser();
+  const { userId, isLoggedIn, authFetch } = useUser();
 
-  // ── Text query state (the typed textarea content) ──
   const [query, setQuery] = useState('');
 
-  // ── Describe/bubble symptom-triage state (NEW shape — replaces the old
-  // textResult/textAnalysis pair for this flow, since /triage/symptoms
-  // returns a SymptomTriageOutput, not a prescription). ──
   const [triageResult, setTriageResult] = useState(null);
   const [textLoading, setTextLoading] = useState(false);
   const [textError, setTextError] = useState('');
 
-  // ── Voice consultation state (UNCHANGED — real audio, real
-  // /consultation/speech transcription → SpeechCrew prescription) ──
   const [textResult, setTextResult] = useState(null);
   const [textAnalysis, setTextAnalysis] = useState(null);
   const [textRawMedicines, setTextRawMedicines] = useState([]);
 
-  // ── File upload state (UNCHANGED) ──
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState(null);
   const [fileResult, setFileResult] = useState(null);
@@ -300,19 +271,15 @@ export default function FindMedicine() {
   const [fileLoading, setFileLoading] = useState(false);
   const [fileError, setFileError] = useState('');
 
-  // ── Voice recording state (UNCHANGED) ──
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
 
-  // Cosmetic-only — flips placeholder/button text between English and Hindi.
-  // Doesn't change what gets sent to the backend.
   const [hindiMode, setHindiMode] = useState(false);
 
-  // ── AI Health Map state ──
-  const [selectedSymptoms, setSelectedSymptoms] = useState([]); // array of labels
-  const [activeMode, setActiveMode] = useState('describe'); // 'describe' | 'voice' | 'scan'
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+  const [activeMode, setActiveMode] = useState('describe');
   const [showMorePopular, setShowMorePopular] = useState(false);
 
   const drawerRef = useRef(null);
@@ -335,7 +302,6 @@ export default function FindMedicine() {
     }, 150);
   };
 
-  // Combines bubble-selected symptoms + free-typed text into one query string.
   const combinedQuery = useMemo(() => {
     const parts = [];
     if (selectedSymptoms.length) parts.push(`Symptoms: ${selectedSymptoms.join(', ')}.`);
@@ -343,22 +309,6 @@ export default function FindMedicine() {
     return parts.join(' ');
   }, [selectedSymptoms, query]);
 
-  // NOTE: `query` used above must be declared before combinedQuery — moved
-  // the declaration up here since useMemo referenced it.
-  // (kept as a single declaration below to avoid a duplicate — see `query` state.)
-
-  // ── Text / bubble query submit — FIXED. Previously this disguised plain
-  // text as an "audio" blob and POSTed it to /consultation/speech, which
-  // runs real speech-to-text transcription on it. Transcribing a text file
-  // as if it were audio produced garbage/`None`, so the doctor agent had no
-  // real symptom to work with and fell back to a generic hallucinated
-  // prescription (e.g. selecting "Diarrhea" returned Paracetamol +
-  // Cetrizine + Azithromycin instead of anything diarrhea-specific).
-  //
-  // This flow only ever has symptom text (no real audio), so it now calls
-  // /triage/symptoms directly with JSON — the endpoint built for exactly
-  // this: SymptomTriageCrew returns an urgency assessment (Home Care / See
-  // Doctor Soon / Emergency) instead of fabricating a prescription. ──
   const handleTextSubmit = async () => {
     if (!combinedQuery.trim()) return;
     if (!isLoggedIn) {
@@ -369,7 +319,7 @@ export default function FindMedicine() {
     setTextError('');
     setTriageResult(null);
     try {
-      const res = await fetch('http://localhost:8080/triage/symptoms', {
+      const res = await authFetch('http://localhost:8080/triage/symptoms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, symptoms: combinedQuery }),
@@ -387,9 +337,6 @@ export default function FindMedicine() {
     }
   };
 
-  // ── Voice recording — UNCHANGED (real audio → real /consultation/speech
-  // transcription → real SpeechCrew prescription; this path was never the
-  // bug, only the fake-audio-blob text hack was). ──
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -430,7 +377,7 @@ export default function FindMedicine() {
       formData.append('audio_file', audioBlob, 'recording.webm');
       formData.append('user_id', userId);
 
-      const res = await fetch('http://localhost:8080/consultation/speech', {
+      const res = await authFetch('http://localhost:8080/consultation/speech', {
         method: 'POST',
         body: formData,
       });
@@ -450,7 +397,6 @@ export default function FindMedicine() {
     }
   };
 
-  // ── Prescription file upload — UNCHANGED ──
   const handleFileChange = (e) => {
     const f = e.target.files?.[0];
     if (f) {
@@ -479,7 +425,7 @@ export default function FindMedicine() {
       formData.append('file', file);
       formData.append('user_id', userId);
 
-      const res = await fetch('http://localhost:8080/consultation/document', {
+      const res = await authFetch('http://localhost:8080/consultation/document', {
         method: 'POST',
         body: formData,
       });
@@ -498,11 +444,6 @@ export default function FindMedicine() {
     }
   };
 
-  // ── Honest AI Analysis panel state (idle / loading / done). No simulated
-  // steps: loading shows a real spinner + real elapsed seconds, done only
-  // appears once an actual response has landed. Now also accounts for
-  // triageResult so the right column shows up for the describe/bubble flow
-  // too. ──
   const isBusy = textLoading || fileLoading;
   const hasResult = Boolean(textResult || fileResult || textAnalysis || fileAnalysis || triageResult);
   const [elapsed, setElapsed] = useState(0);
@@ -522,7 +463,6 @@ export default function FindMedicine() {
     <Layout>
       <div className="ms-findmedicine-page">
         <div className={`ms-fm-shell ${analysisState === 'idle' ? 'ms-fm-shell--wide' : ''}`}>
-          {/* ═══════════════ LEFT COLUMN ═══════════════ */}
           <aside className="ms-fm-left ms-fm-anim" style={{ animationDelay: '0s' }}>
             <div className="ms-fm-eyebrow">
               <LuSparkles /> AI Powered Medicine Discovery
@@ -617,7 +557,6 @@ export default function FindMedicine() {
             </div>
           </aside>
 
-          {/* ═══════════════ CENTER COLUMN — AI Health Map ═══════════════ */}
           <main className="ms-fm-center ms-fm-anim" style={{ animationDelay: '0.08s' }}>
             <div className="ms-fm-map-stage">
               <svg className="ms-fm-map-rings" viewBox="-310 -310 620 620" aria-hidden="true">
@@ -695,7 +634,6 @@ export default function FindMedicine() {
               </button>
             </div>
 
-            {/* ── Active input drawer ── */}
             <div className="ms-fm-drawer" ref={drawerRef}>
               {activeMode === 'describe' && (
                 <>
@@ -824,7 +762,6 @@ export default function FindMedicine() {
                 </>
               )}
 
-              {/* Results */}
               {activeMode === 'describe' && <TriageResultCard triage={triageResult} />}
 
               {activeMode === 'voice' && textResult && !textAnalysis && (
@@ -834,7 +771,7 @@ export default function FindMedicine() {
                 </div>
               )}
               {activeMode === 'voice' && (
-                <PrescriptionAnalysisCard analysis={textAnalysis} rawMedicines={textRawMedicines} source="voice" userId={userId} />
+                <PrescriptionAnalysisCard analysis={textAnalysis} rawMedicines={textRawMedicines} source="voice" userId={userId} authFetch={authFetch} />
               )}
               {activeMode === 'scan' && fileResult && !fileAnalysis && (
                 <div className="ms-fm-result">
@@ -843,13 +780,11 @@ export default function FindMedicine() {
                 </div>
               )}
               {activeMode === 'scan' && (
-                <PrescriptionAnalysisCard analysis={fileAnalysis} rawMedicines={fileRawMedicines} source="document" userId={userId} />
+                <PrescriptionAnalysisCard analysis={fileAnalysis} rawMedicines={fileRawMedicines} source="document" userId={userId} authFetch={authFetch} />
               )}
             </div>
           </main>
 
-          {/* ═══════════════ RIGHT COLUMN — only rendered while something is
-              actually happening (loading/done). Idle filler cards removed. ═══ */}
           {analysisState !== 'idle' && (
             <aside className="ms-fm-right ms-fm-anim" style={{ animationDelay: '0.1s' }}>
               <div className="ms-fm-analysis-card">

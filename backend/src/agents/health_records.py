@@ -1,11 +1,12 @@
 """
 health_records.py — MediSarthi health records backend
 MongoDB collections: health_vitals, health_prescriptions, emergency_profiles,
-emergency_qr_tokens, prescription_analyses, lab_report_analyses (medical_db)
+emergency_qr_tokens, prescription_analyses, lab_report_analyses,
+doctor_qr_tokens (medical_db)
 """
 
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson import ObjectId
 
 
@@ -28,6 +29,32 @@ def _serialize(doc):
     if "user_id" in doc:
         doc["user_id"] = str(doc["user_id"])
     return doc
+
+
+def _resolve_report_date(report_date: str) -> str:
+    """
+    Lab report ke apne date (agar LabReportCrew ne report text se extract kiya,
+    ISO format YYYY-MM-DD) ko is record ki chronological `date` field ke liye
+    resolve karta hai.
+
+    FIX: pehle `save_lab_report_analysis` hamesha `datetime.utcnow()` (save-time)
+    use karta tha `date` field ke liye — matlab "kab upload hua" na ki "report
+    kab ki thi". Isse Health Trends chart (get_test_trends) galat X-axis
+    dikhata tha: 2 mahine purani report bhi "aaj" pe plot ho jati thi.
+
+    Ab: agar `report_date` valid "YYYY-MM-DD" string hai, wahi date use hoti
+    hai (midnight timestamp ke saath, existing isoformat() strings ke format
+    se consistent rehne ke liye). Agar khaali hai ya parse nahi ho paata
+    (LLM ko report mein date nahi mili, ya galat format aaya), silently
+    save-time (`utcnow()`) pe fallback karta hai — koi crash nahi, bas
+    kam-precise trend point ban jata hai.
+    """
+    if report_date:
+        try:
+            return datetime.strptime(report_date.strip(), "%Y-%m-%d").isoformat()
+        except (ValueError, AttributeError):
+            pass
+    return datetime.utcnow().isoformat()
 
 
 # ── Vitals ───────────────────────────────────────────────────────────────────
@@ -82,6 +109,27 @@ def get_vitals(user_id: str, vital_type: str = None, limit: int = 30) -> list:
     return [_serialize(doc) for doc in cursor]
 
 
+def delete_vital(user_id: str, vital_id: str) -> bool:
+    """
+    Ek saved vital record permanently delete karta hai. Same user_id-scoped
+    pattern as delete_lab_report_analysis (D30) — koi user doosre user ka
+    vital delete nahi kar sakta, chahe vital_id guess/reuse kare.
+
+    Returns: True agar kuch delete hua, False agar vital_id invalid tha ya
+    record already exist nahi karta — endpoint isko 404 mein convert karta hai.
+    """
+    db = _get_db()
+    collection = db["health_vitals"]
+
+    try:
+        oid = ObjectId(vital_id)
+    except Exception:
+        return False
+
+    result = collection.delete_one({"_id": oid, "user_id": user_id})
+    return result.deleted_count > 0
+
+
 # ── Prescriptions ─────────────────────────────────────────────────────────────
 
 def add_prescription(
@@ -116,6 +164,34 @@ def get_prescriptions(user_id: str, limit: int = 20) -> list:
 
     cursor = collection.find({"user_id": user_id}, sort=[("date", -1)], limit=limit)
     return [_serialize(doc) for doc in cursor]
+
+
+def delete_prescription(user_id: str, prescription_id: str) -> bool:
+    """
+    Ek saved prescription record permanently delete karta hai. Same
+    user_id-scoped delete pattern as delete_vital/delete_lab_report_analysis.
+
+    Connected side-effect worth knowing: get_annotated_trends() reads
+    health_prescriptions LIVE (not a snapshot) to build the "since <medicine>"
+    markers/delta badges on Health Trends charts (see get_annotated_trends()
+    docstring below). So deleting a prescription here automatically removes
+    its annotation from those charts on the next trends fetch — no separate
+    cleanup needed, unlike the Doctor Visit QR snapshot which would NOT
+    reflect this until a fresh QR is generated.
+
+    Returns: True agar kuch delete hua, False agar prescription_id invalid
+    tha ya record already exist nahi karta.
+    """
+    db = _get_db()
+    collection = db["health_prescriptions"]
+
+    try:
+        oid = ObjectId(prescription_id)
+    except Exception:
+        return False
+
+    result = collection.delete_one({"_id": oid, "user_id": user_id})
+    return result.deleted_count > 0
 
 
 # ── Prescription analysis ─────────────────────────────────────────────────────
@@ -175,7 +251,7 @@ def get_prescription_analysis_by_id(user_id: str, analysis_id: str) -> dict:
     return _serialize(doc)
 
 
-# ── Lab report analysis (NEW) ─────────────────────────────────────────────────
+# ── Lab report analysis ────────────────────────────────────────────────────
 #
 # Same permission-gated pattern as prescription_analyses.
 # User uploads lab report → AI analyses it → result shown in UI.
@@ -191,6 +267,7 @@ def save_lab_report_analysis(
     next_steps: str,
     disclaimer: str,
     raw_text: str = "",
+    report_date: str = "",
 ) -> str:
     """
     Lab report analysis permanently save karo — sirf user confirmation ke baad.
@@ -205,7 +282,11 @@ def save_lab_report_analysis(
         has_urgent_values: bool.
         next_steps: overall recommendation.
         disclaimer: AI reminder text.
-        raw_text: original OCR text (optional, for reference).
+        raw_text: original OCR/extracted text (optional, for reference).
+        report_date: the report's OWN date if LabReportCrew found one in the
+            text, "YYYY-MM-DD" format. This — not save time — is what drives
+            `date`/the trend chart's chronology. Falls back to save-time
+            (utcnow) if empty or unparseable. See _resolve_report_date().
 
     Returns: inserted record's id (string).
     """
@@ -222,7 +303,7 @@ def save_lab_report_analysis(
         "next_steps": next_steps or "",
         "disclaimer": disclaimer or "",
         "raw_text": raw_text or "",
-        "date": datetime.utcnow().isoformat(),
+        "date": _resolve_report_date(report_date),
         "created_at": datetime.utcnow().isoformat(),
     }
 
@@ -254,6 +335,188 @@ def get_lab_report_analysis_by_id(user_id: str, analysis_id: str) -> dict:
 
     doc = collection.find_one({"_id": oid, "user_id": user_id})
     return _serialize(doc)
+
+
+def delete_lab_report_analysis(user_id: str, analysis_id: str) -> bool:
+    """
+    Ek saved lab report analysis permanently delete karta hai.
+
+    `user_id` bhi query mein include hai — matlab koi user apna analysis_id
+    guess/reuse karke kisi doosre user ka record delete nahi kar sakta,
+    delete sirf tabhi hota hai jab dono match karein.
+
+    Frontend confirmation (type "DELETE") already ho chuka hota hai is tak
+    pahunchne se pehle — ye function khud koi confirmation nahi maangta,
+    bas delete karta hai.
+
+    Returns: True agar kuch delete hua, False agar analysis_id invalid tha
+    ya wo record already exist nahi karta (already deleted / kabhi tha hi
+    nahi) — dono cases mein endpoint isse 404 mein convert karta hai.
+    """
+    db = _get_db()
+    collection = db["lab_report_analyses"]
+
+    try:
+        oid = ObjectId(analysis_id)
+    except Exception:
+        return False
+
+    result = collection.delete_one({"_id": oid, "user_id": user_id})
+    return result.deleted_count > 0
+
+
+def get_test_trends(user_id: str, min_points: int = 2) -> list:
+    """
+    Har saved lab report ke tests ko test_name se group karke ek chronological
+    series banata hai, taaki frontend "same test kaise change hua time ke saath"
+    dikha sake (Health Trends chart on the Lab Report page).
+
+    Sirf wo tests return karta hai jo kam se kam `min_points` alag reports mein
+    dikhe ho — ek hi report mein aaya test trend nahi bana sakta.
+
+    Returns: list of dicts, sorted so currently-abnormal tests come first:
+      {
+        test_name: str,
+        points: [ {date, value, numeric_value, status, normal_range}, ... ]  (oldest -> newest),
+        latest_status: str,
+        latest_normal_range: str,
+        trend_direction: "up" | "down" | "stable" | None,
+      }
+    """
+    db = _get_db()
+    collection = db["lab_report_analyses"]
+
+    # oldest first, so each test's points list is already chronological
+    cursor = collection.find({"user_id": user_id}, sort=[("date", 1)])
+
+    grouped = {}
+    for doc in cursor:
+        date = doc.get("date")
+        for t in doc.get("tests", []):
+            name = t.get("test_name")
+            if not name:
+                continue
+            grouped.setdefault(name, []).append({
+                "date": date,
+                "value": t.get("value"),
+                "numeric_value": t.get("numeric_value"),
+                "status": t.get("status"),
+                "normal_range": t.get("normal_range"),
+            })
+
+    trends = []
+    for name, points in grouped.items():
+        if len(points) < min_points:
+            continue
+
+        numeric_points = [p for p in points if isinstance(p.get("numeric_value"), (int, float))]
+        trend_direction = None
+        if len(numeric_points) >= 2:
+            first_val = numeric_points[0]["numeric_value"]
+            last_val = numeric_points[-1]["numeric_value"]
+            if last_val > first_val:
+                trend_direction = "up"
+            elif last_val < first_val:
+                trend_direction = "down"
+            else:
+                trend_direction = "stable"
+
+        trends.append({
+            "test_name": name,
+            "points": points,
+            "latest_status": points[-1].get("status"),
+            "latest_normal_range": points[-1].get("normal_range"),
+            "trend_direction": trend_direction,
+        })
+
+    # Currently-abnormal tests first (most useful to see), then alphabetical.
+    urgency_order = {"Critical Low": 0, "Critical High": 0, "Low": 1, "High": 1, "Unknown": 2, "Normal": 3}
+    trends.sort(key=lambda tr: (urgency_order.get(tr["latest_status"], 2), tr["test_name"]))
+
+    return trends
+
+
+def get_annotated_trends(user_id: str, min_points: int = 2) -> list:
+    """
+    Medicine Effectiveness feature, phase 1 (see decisions.md D29,
+    PROJECT_CONTEXT.md §10). Same output as get_test_trends(), PLUS an
+    `annotations` list per trend — one entry per saved prescription whose
+    medicine is known (via medicine_test_map.py) to affect that specific
+    test, each `{medicine_name, start_date}`.
+
+    Deliberately a SEPARATE function from get_test_trends() rather than
+    modifying it in place — get_test_trends()'s existing shape is relied on
+    by GET /health/trends/{user_id}. Adding a new function means that
+    endpoint keeps working completely unchanged; GET /health/trends-annotated
+    wraps this one instead, without a synchronized two-sided deploy.
+    get_test_trends() can be retired in favor of this one later if the
+    annotation-aware version fully replaces it.
+
+    How the join works: reuses get_test_trends() for the base trend data
+    (unchanged sorting/grouping/2+-points-only logic), then separately reads
+    every saved prescription for this user (get_prescriptions, no limit) and,
+    for each one, asks medicine_test_map.resolve_tracked_tests() which test
+    names that medicine is known to affect. If a returned test name matches
+    a trend already in the base list, the prescription's medicine name +
+    start date is appended to that trend's `annotations`. Medicines not in
+    medicine_test_map (resolve_tracked_tests returns None) are silently
+    skipped — no error, no annotation, exactly the "known medicine missing
+    is graceful, not broken" tradeoff documented in decisions.md D29.
+
+    Note on start date: health_prescriptions stores `date` (when the
+    prescription record was added — see add_prescription()), not a separate
+    structured per-medicine start date. This function uses that `date` as
+    the annotation's start_date. If a future prescription-analysis pass adds
+    a real per-medicine start_time (SpeechCrew/FileCrew's PrescriptionOutput
+    already HAS a `start_time` per MedicineItem — see crew.py — but that's
+    calendar-reminder data, not currently persisted into health_prescriptions
+    itself), this function should prefer that more precise value. Documented
+    here rather than silently guessed at, since getting this wrong shifts
+    where the marker lands on the chart.
+
+    Returns: list of dicts, same shape as get_test_trends() with one added
+    key per trend:
+      {
+        test_name, points, latest_status, latest_normal_range, trend_direction,
+        annotations: [ {medicine_name, start_date}, ... ]  (empty list if none)
+      }
+    """
+    trends = get_test_trends(user_id, min_points=min_points)
+    if not trends:
+        return trends
+
+    # Import here (not at module top) to avoid a hard import-order dependency
+    # for callers that only ever use get_test_trends() and don't need the
+    # Medicine Effectiveness feature loaded at all.
+    from agents.medicine_test_map import resolve_tracked_tests
+
+    prescriptions = get_prescriptions(user_id, limit=1000)
+
+    trends_by_test_name = {tr["test_name"]: tr for tr in trends}
+    for tr in trends:
+        tr["annotations"] = []
+
+    for rx in prescriptions:
+        medicines = rx.get("medicines") or []
+        start_date = rx.get("date")
+        if not start_date:
+            continue
+
+        for medicine_name in medicines:
+            tracked_tests = resolve_tracked_tests(medicine_name)
+            if not tracked_tests:
+                continue
+
+            for test_name in tracked_tests:
+                trend = trends_by_test_name.get(test_name)
+                if trend is None:
+                    continue
+                trend["annotations"].append({
+                    "medicine_name": medicine_name,
+                    "start_date": start_date,
+                })
+
+    return trends
 
 
 # ── Combined timeline ─────────────────────────────────────────────────────────
@@ -384,3 +647,133 @@ def generate_qr_token(user_id: str) -> str:
         upsert=True,
     )
     return token
+
+
+# ── Doctor Visit QR ───────────────────────────────────────────────────────────
+#
+# New collection: doctor_qr_tokens. Separate from emergency_qr_tokens on
+# purpose (see decisions.md D32): the Emergency QR is a permanent token
+# meant to sit on a lock screen and intentionally exposes only a narrow,
+# low-sensitivity subset. This token is time-limited (24h default),
+# generated on demand before a doctor visit, and exposes the FULL clinical
+# picture (lab history, trends, prescriptions, AI clinical summary) —
+# mixing that into the permanent Emergency QR's scope would mean a lost
+# wallet leaks a person's entire medical history, not just emergency basics.
+#
+# DESIGN NOTE — snapshot, not live lookup:
+# Unlike get_emergency_profile_public() (which reads the LIVE emergency
+# profile every time the QR is scanned), this stores a SNAPSHOT: the
+# clinical summary + lab reports + trends + prescriptions exactly as they
+# were at the moment the QR was generated. Two reasons:
+#   1. The clinical summary needs an LLM call (ClinicalSummaryCrew) to
+#      produce the terse clinical-register text — you don't want that
+#      LLM round-trip to fire again every time a doctor's phone scans the
+#      code mid-appointment (could be scanned more than once, spotty
+#      clinic wifi, etc).
+#   2. A snapshot is actually more clinically honest for a single visit —
+#      the doctor sees the exact picture that was true when the patient
+#      generated the code for THIS visit, not a picture that could shift
+#      underneath them if the patient saves a new lab report five minutes
+#      later mid-appointment.
+# Tradeoff accepted: if the patient's data changes after generating the
+# code, the doctor won't see that change unless the patient regenerates a
+# fresh QR. Fine for a same-day-visit tool; would need a rethink if this
+# token type were ever meant to stay valid for weeks.
+#
+# CLEANUP FIX (D33): `expires_at` is now stored as a native Python datetime
+# (BSON Date), not an `.isoformat()` string. This is required for
+# db_connect.ensure_indexes()'s TTL index on this field to actually work —
+# MongoDB's TTL background monitor only acts on Date-typed fields; a string
+# field silently never gets cleaned up. `created_at` stays a plain string
+# (display/debug only, no TTL/comparison logic depends on it).
+
+def create_doctor_qr_token(user_id: str, snapshot: dict, expiry_hours: int = 24) -> str:
+    """
+    Naya time-limited Doctor Visit QR token banata hai, ek pre-built
+    snapshot (clinical summary + lab history + trends + prescriptions)
+    ke saath store karta hai.
+
+    `snapshot` main.py mein banaya jaata hai (ClinicalSummaryCrew ka output
+    + get_lab_report_analyses()/get_annotated_trends()/get_prescriptions()
+    ka result already-fetched data se) — health_records.py khud crew.py ko
+    import nahi karta (circular import se bachne ke liye: crew.py already
+    health_records.py se get_emergency_profile import karta hai).
+
+    Regenerate karne pe purana token replace NAHI hota (emergency QR ke
+    unlike) — har generate ek naya, independent token banata hai, taaki
+    purana token jo doctor ke phone pe already khula hai wahi visit ke
+    beech mein achanak invalid na ho jaye.
+
+    Purane expired tokens ab MongoDB ka TTL index khud background mein
+    delete kar deta hai (see db_connect.ensure_indexes(), D33) — ~60
+    seconds ke andar `expires_at` guzarne ke baad, koi manual cleanup job
+    ki zaroorat nahi.
+
+    Returns: naya token (string).
+    """
+    db = _get_db()
+    collection = db["doctor_qr_tokens"]
+
+    token = secrets.token_urlsafe(20)
+    now = datetime.utcnow()
+    expires_at = now + timedelta(hours=expiry_hours)
+
+    collection.insert_one({
+        "user_id": user_id,
+        "token": token,
+        "snapshot": snapshot,
+        "created_at": now.isoformat(),
+        "expires_at": expires_at,  # native datetime — required for TTL index (D33)
+    })
+    return token
+
+
+def get_doctor_qr_snapshot(token: str) -> dict:
+    """
+    Token se saved snapshot fetch karta hai — public access, no auth
+    (doctor ke phone se scan hota hai, unka MediSarthi account nahi hota).
+
+    Expiry check yahin hoti hai: agar `expires_at` guzar chuka hai, expired
+    treat karke None return karta hai. Is check ke alawa bhi, ab MongoDB ka
+    TTL index (D33) khud background mein expired documents delete kar deta
+    hai — ye function ka apna check isliye rakha hai kyunki TTL cleanup
+    ek background sweep hai (~60s periodic), turant expiry ke waqt hi
+    delete ho jaye ye guaranteed nahi — is function ka manual check request
+    ke exact waqt par sahi answer deta hai chahe TTL sweep abhi tak chala
+    ho ya nahi.
+
+    Returns: {snapshot: {...}, expires_at, generated_at} ya None agar
+    token invalid hai ya expire ho chuka hai.
+    """
+    db = _get_db()
+    collection = db["doctor_qr_tokens"]
+
+    doc = collection.find_one({"token": token})
+    if not doc:
+        return None
+
+    expires_at = doc.get("expires_at")
+    if not expires_at:
+        return None
+
+    # Handles both new-style (native datetime, post-D33) and any legacy
+    # string-typed documents created before this fix, without crashing
+    # either way. New tokens are always datetime; this branch exists only
+    # for backward compatibility with whatever was already in the
+    # collection at deploy time.
+    if isinstance(expires_at, str):
+        try:
+            expiry_dt = datetime.fromisoformat(expires_at)
+        except ValueError:
+            return None
+    else:
+        expiry_dt = expires_at
+
+    if datetime.utcnow() > expiry_dt:
+        return None
+
+    return {
+        "snapshot": doc.get("snapshot", {}),
+        "generated_at": doc.get("created_at"),
+        "expires_at": expiry_dt.isoformat(),
+    }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Layout from "../components/Layout";
+import { useUser } from "../hooks/useUser";
 import {
   LuHeartHandshake,
   LuDroplet,
@@ -12,13 +13,11 @@ import {
   LuArrowRight,
   LuHeart,
 } from "react-icons/lu";
-import "./Donor.css";
+import "./donor.css";
 
 const API_BASE = "http://localhost:8080";
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
-// Standard, medically established donor-compatibility chart (static reference
-// data — not tied to backend, purely educational).
 const COMPATIBILITY = {
   "O-":  { canDonateTo: ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"], canReceiveFrom: ["O-"] },
   "O+":  { canDonateTo: ["O+", "A+", "B+", "AB+"], canReceiveFrom: ["O-", "O+"] },
@@ -33,13 +32,19 @@ const COMPATIBILITY = {
 const ORBIT_ANGLES = [0, 60, 120, 180, 240, 300];
 
 export default function Donor() {
-  const [userId, setUserId] = useState(null);
+  // AUTH (D34): switched from a manual `localStorage.getItem("ms_user_id")`
+  // useEffect to the shared useUser() hook — same userId value either way,
+  // but this also gives us `authFetch`, which every protected donor
+  // endpoint below now needs (register/profile/availability/donation/
+  // find-donors/create-request all require a valid token on the backend
+  // now). isLoggedIn from the hook already accounts for "token present too",
+  // not just userId, so it's a slightly stricter (more correct) check than
+  // the old plain userId-truthy checks below.
+  const { userId, isLoggedIn, authFetch } = useUser();
 
-  // donor profile state
   const [donor, setDonor] = useState(null);
   const [checkingProfile, setCheckingProfile] = useState(true);
 
-  // register form state
   const [form, setForm] = useState({
     name: "",
     blood_group: "",
@@ -50,38 +55,34 @@ export default function Donor() {
   const [registering, setRegistering] = useState(false);
   const [registerError, setRegisterError] = useState("");
 
-  // find donors state
   const [findForm, setFindForm] = useState({ blood_group: "", city: "", state: "" });
   const [foundDonors, setFoundDonors] = useState(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
 
-  // request blood state
   const [requestMessage, setRequestMessage] = useState("");
   const [requestStatus, setRequestStatus] = useState("");
 
   const [toggling, setToggling] = useState(false);
   const [recording, setRecording] = useState(false);
 
-  // ── NEW: hero interaction state ──
   const [selectedGroup, setSelectedGroup] = useState("O+");
   const registerSectionRef = useRef(null);
   const findSectionRef = useRef(null);
 
   useEffect(() => {
-    const id = localStorage.getItem("ms_user_id");
-    setUserId(id);
-    if (id) {
-      fetchDonorProfile(id);
+    if (isLoggedIn && userId) {
+      fetchDonorProfile(userId);
     } else {
       setCheckingProfile(false);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, isLoggedIn]);
 
   async function fetchDonorProfile(id) {
     setCheckingProfile(true);
     try {
-      const res = await fetch(`${API_BASE}/donor/${id}`);
+      const res = await authFetch(`${API_BASE}/donor/${id}`);
       if (res.ok) {
         const data = await res.json();
         setDonor(data.donor);
@@ -99,7 +100,7 @@ export default function Donor() {
     e.preventDefault();
     setRegisterError("");
 
-    if (!userId) {
+    if (!isLoggedIn) {
       setRegisterError("Pehle login karo donor banne ke liye.");
       return;
     }
@@ -110,7 +111,7 @@ export default function Donor() {
 
     setRegistering(true);
     try {
-      const res = await fetch(`${API_BASE}/donor/register`, {
+      const res = await authFetch(`${API_BASE}/donor/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -139,7 +140,7 @@ export default function Donor() {
     setToggling(true);
     try {
       const nextAvailable = !donor.available;
-      const res = await fetch(
+      const res = await authFetch(
         `${API_BASE}/donor/${userId}/availability?available=${nextAvailable}`,
         { method: "POST" }
       );
@@ -157,7 +158,7 @@ export default function Donor() {
     if (!donor) return;
     setRecording(true);
     try {
-      const res = await fetch(`${API_BASE}/donor/${userId}/record-donation`, {
+      const res = await authFetch(`${API_BASE}/donor/${userId}/record-donation`, {
         method: "POST",
       });
       const data = await res.json();
@@ -179,10 +180,14 @@ export default function Donor() {
       setSearchError("Blood group, city aur state bharo.");
       return;
     }
+    if (!isLoggedIn) {
+      setSearchError("Pehle login karo.");
+      return;
+    }
 
     setSearching(true);
     try {
-      const res = await fetch(`${API_BASE}/donor/request/find-donors`, {
+      const res = await authFetch(`${API_BASE}/donor/request/find-donors`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(findForm),
@@ -198,7 +203,7 @@ export default function Donor() {
   }
 
   async function handleCreateRequest() {
-    if (!userId) {
+    if (!isLoggedIn) {
       setRequestStatus("Pehle login karo request banane ke liye.");
       return;
     }
@@ -208,7 +213,7 @@ export default function Donor() {
     }
     setRequestStatus("Bhej rahe hain...");
     try {
-      const res = await fetch(`${API_BASE}/donor/request/create`, {
+      const res = await authFetch(`${API_BASE}/donor/request/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -227,7 +232,6 @@ export default function Donor() {
     }
   }
 
-  // ── NEW: hero helpers ──
   const scrollToRegister = () => {
     registerSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -247,7 +251,6 @@ export default function Donor() {
   return (
     <Layout>
       <div className="donor-page">
-        {/* ══════════ HERO ══════════ */}
         <section className="donor-hero">
           <div className="donor-hero-left">
             <h1 className="donor-hero-title">
@@ -357,7 +360,6 @@ export default function Donor() {
           </div>
         </section>
 
-        {/* ══════════ CTA CARDS ══════════ */}
         <section className="donor-cta-row">
           <button className="donor-cta-card donor-cta-card--gold" onClick={scrollToRegister}>
             <span className="donor-cta-icon">
@@ -382,7 +384,6 @@ export default function Donor() {
           </button>
         </section>
 
-        {/* ══════════ Donor Profile / Register ══════════ */}
         <section className="donor-card donor-section" ref={registerSectionRef}>
           <div className="donor-section-header">
             <LuHeartHandshake size={22} />
@@ -391,7 +392,7 @@ export default function Donor() {
 
           {checkingProfile ? (
             <p className="donor-text-secondary">Profile check ho raha hai...</p>
-          ) : !userId ? (
+          ) : !isLoggedIn ? (
             <p className="donor-text-secondary">Donor banne ke liye pehle login karo.</p>
           ) : donor ? (
             <div className="donor-profile-card">
@@ -497,7 +498,6 @@ export default function Donor() {
           )}
         </section>
 
-        {/* ══════════ Find Donors / Request Blood ══════════ */}
         <section className="donor-card donor-section" ref={findSectionRef}>
           <div className="donor-section-header">
             <LuSearch size={22} />
@@ -582,7 +582,6 @@ export default function Donor() {
           )}
         </section>
 
-        {/* ══════════ Blood Compatibility (static, factual reference) ══════════ */}
         <section className="donor-card donor-section donor-compat-section">
           <div className="donor-section-header">
             <LuDroplet size={22} />
