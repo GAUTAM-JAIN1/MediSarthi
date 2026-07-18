@@ -19,8 +19,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install tesseract + poppler (needed to import file_to_text.py)
-        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr poppler-utils
+      - name: Install tesseract + poppler + portaudio (needed to import file_to_text.py / speech_to_text.py)
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr poppler-utils libportaudio2
 
       - name: Install uv
         run: pip install uv
