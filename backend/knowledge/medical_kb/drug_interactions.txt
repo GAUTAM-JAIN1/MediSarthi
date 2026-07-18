@@ -1,0 +1,98 @@
+MEDISARTHI — GENERAL DRUG INTERACTION REFERENCE
+(Shared knowledge base for MedicineInteractionCrew. General reference facts only —
+not exhaustive, not a substitute for a pharmacist/doctor. Used to ground the
+interaction_checker agent's answers, not to replace its own reasoning.)
+
+== ANTICOAGULANTS / ANTIPLATELETS ==
+
+Warfarin + Aspirin (or other NSAIDs like Ibuprofen, Diclofenac): Both increase
+bleeding risk through different mechanisms (Warfarin blocks clotting factors,
+NSAIDs affect platelet function and can irritate the GI lining). Combined use
+significantly raises risk of serious bleeding, especially GI bleeds. Generally
+classified Major to Contraindicated depending on dose/duration. Requires close
+doctor supervision if unavoidable.
+
+Warfarin + Antibiotics (Ciprofloxacin, Metronidazole, many others): Several
+common antibiotics inhibit the liver enzymes that clear Warfarin, raising INR
+and bleeding risk. Usually needs more frequent INR monitoring during and after
+antibiotic course, not necessarily avoidance.
+
+Aspirin + Clopidogrel: Often prescribed together intentionally after cardiac
+events (dual antiplatelet therapy) under doctor supervision — the combination
+itself is a known, monitored protocol, not automatically dangerous, but
+increases bleeding risk versus either drug alone and should never be
+self-initiated without a cardiologist's direction.
+
+== SEROTONERGIC DRUGS ==
+
+SSRIs (Fluoxetine, Sertraline, Escitalopram, etc.) + MAOIs (Phenelzine,
+Tranylcypromine): Can cause serotonin syndrome — a potentially
+life-threatening condition (agitation, high fever, rapid heart rate, muscle
+rigidity). This combination is classically Contraindicated; label guidance
+typically requires a washout period of at least 2 weeks between stopping one
+and starting the other.
+
+SSRIs + Tramadol: Tramadol itself has serotonergic activity; combining with
+an SSRI raises serotonin syndrome risk. Usually classified Moderate to Major
+depending on doses involved.
+
+SSRIs + NSAIDs: Both can independently increase bleeding risk (SSRIs affect
+platelet serotonin uptake); combined use raises GI bleeding risk, particularly
+in older adults. Typically Moderate.
+
+== BLOOD PRESSURE / HEART MEDICINES ==
+
+ACE inhibitors (Enalapril, Ramipril, Lisinopril) + Potassium supplements or
+potassium-sparing diuretics (Spironolactone): Can cause dangerously high
+potassium (hyperkalemia), leading to heart rhythm problems. Needs monitoring
+of blood potassium if combined; not automatically avoided but requires
+oversight.
+
+Beta-blockers (Atenolol, Metoprolol) + Verapamil/Diltiazem (calcium channel
+blockers): Both slow heart rate and reduce contraction strength; combined use
+can cause dangerously slow heart rate or worsen heart failure. Usually
+Moderate to Major, dose-dependent.
+
+== DIABETES MEDICINES ==
+
+Metformin + Contrast dye (used in some imaging scans): Rare risk of lactic
+acidosis if kidney function is reduced around the time of contrast imaging.
+Doctors typically pause Metformin briefly around such procedures — this is a
+procedural interaction, not a general everyday-use one.
+
+Sulfonylureas (Glimepiride, Glipizide) + Alcohol: Alcohol can unpredictably
+raise or lower blood sugar and mask hypoglycemia symptoms; combined use raises
+risk of dangerous low blood sugar episodes.
+
+== COMMON OTC / EVERYDAY COMBINATIONS ==
+
+Paracetamol (Acetaminophen) + Alcohol (regular, heavy use): Both are processed
+by the liver; regular heavy alcohol use alongside frequent Paracetamol use
+raises risk of liver damage. Occasional standard-dose Paracetamol with
+moderate alcohol is generally considered low risk; the concern is chronic
+heavy combined use.
+
+Antacids (containing Calcium, Magnesium, or Aluminum) + many antibiotics
+(Tetracyclines, Fluoroquinolones like Ciprofloxacin): Antacids can bind the
+antibiotic in the gut and reduce absorption significantly. Usually managed by
+simply spacing doses at least 2 hours apart — a timing interaction, not a
+true contraindication.
+
+Multivitamins/Iron supplements + Levothyroxine (thyroid medicine): Calcium,
+iron, and some multivitamins reduce Levothyroxine absorption if taken close
+together. Standard guidance is to separate doses by several hours, usually
+taking Levothyroxine on an empty stomach in the morning.
+
+== GENERAL NOTES FOR THE AGENT ==
+
+- "None" severity should still be considered whenever two medicines have no
+  well-established interaction — do not invent a concern where none exists.
+- Herbal/ayurvedic supplements (e.g., St. John's Wort) can interact with many
+  prescription drugs (notably reducing effectiveness of birth control,
+  antidepressants, and blood thinners via liver enzyme induction) — worth
+  flagging if mentioned, even though this file focuses on conventional
+  medicines.
+- This file is a grounding reference, not a complete pharmacology database.
+  The agent should still rely on its own trained medical knowledge for pairs
+  not covered here, and should say so honestly (classify as uncertain rather
+  than invent a specific mechanism) when a pair is genuinely unfamiliar.

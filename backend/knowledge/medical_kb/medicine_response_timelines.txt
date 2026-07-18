@@ -1,0 +1,245 @@
+MEDICINE RESPONSE TIMELINES — MediSarthi shared reference (medical_kb)
+Medicine Effectiveness feature, phase 2 (see decisions.md D29)
+
+Purpose: expected pace of response per medicine/test pair, so the app can
+tell the difference between "not working" and "too early to judge." This is
+hand-curated general clinical knowledge, honestly scoped the same way as the
+project's other shared reference files (drug_interactions.txt,
+lab_reference_ranges.txt, symptom_red_flags.txt) — not exhaustive, not a
+substitute for a doctor's judgement, and deliberately conservative: where a
+precise window isn't well established, that is stated rather than invented.
+
+Coverage matches medicine_test_map.py's MEDICINE_TEST_MAP keys exactly, so
+every medicine phase 1 can annotate a chart for also has a phase 2 pace
+reference. If medicine_test_map.py gains a new medicine later, add its entry
+here in the same session — the two files are meant to stay in sync.
+
+======================================================================
+DIABETES
+======================================================================
+
+Metformin
+  - Fasting Blood Sugar: typically shows measurable improvement within
+    1-2 weeks of starting or of a dose change. If FBS is still clearly
+    elevated after 4 weeks at a stable dose, that's worth flagging.
+  - Postprandial Blood Sugar: similar to FBS, 1-2 weeks for an initial
+    response, may take up to 4 weeks to fully settle at a new dose.
+  - HbA1c: because HbA1c reflects a rolling ~3-month average of blood
+    sugar, it CANNOT meaningfully change in less than 6-8 weeks even if
+    daily sugars have already improved. Judging HbA1c before 8-12 weeks
+    since starting/changing dose is premature — this is the single most
+    common false "not working" read for this medicine.
+
+Glimepiride
+  - Fasting Blood Sugar / Postprandial Blood Sugar: onset is fast (days
+    to 1 week) since it directly stimulates insulin release; expect an
+    early, visible effect on daily sugars.
+  - HbA1c: same 8-12 week rolling-average constraint as Metformin above —
+    fast daily-sugar response does not mean HbA1c should move any sooner.
+
+Gliclazide
+  - Fasting Blood Sugar / Postprandial Blood Sugar: 1-2 weeks for initial
+    response, similar mechanism/class to Glimepiride.
+  - HbA1c: 8-12 weeks, same rolling-average reasoning as above.
+
+Sitagliptin
+  - Fasting Blood Sugar: gentler onset than sulfonylureas — meaningful
+    change usually takes 2-4 weeks.
+  - HbA1c: 8-12 weeks, same rolling-average constraint as other diabetes
+    medicines above.
+
+Insulin
+  - Fasting Blood Sugar / Postprandial Blood Sugar: fastest-acting of the
+    diabetes medicines in this list — effect on daily sugar readings is
+    typically visible within days of a correct dose being reached; dose
+    titration itself (finding the right dose) commonly takes 1-2 weeks
+    of adjustment.
+  - HbA1c: still 8-12 weeks minimum to reflect a dose change, same
+    rolling-average reasoning as above, regardless of how fast daily
+    sugars respond.
+
+Empagliflozin
+  - Fasting Blood Sugar: gradual onset, typically 2-4 weeks for a clear
+    trend.
+  - HbA1c: 8-12 weeks, same rolling-average constraint as above.
+
+======================================================================
+THYROID
+======================================================================
+
+Levothyroxine
+  - TSH: the single slowest-responding test/medicine pair in this whole
+    reference. TSH is not expected to meaningfully change for at least
+    6-8 weeks after starting or changing dose — this is a deliberate,
+    well-established clinical convention (repeat TSH testing sooner than
+    6 weeks is generally considered too early to be informative). Do not
+    treat an unchanged TSH before 6 weeks as "not working."
+  - Free T3 / Free T4: these can shift somewhat sooner than TSH (often
+    within 2-4 weeks), but the definitive read on dose adequacy still
+    comes from TSH at the 6-8 week mark — an early T3/T4 move without a
+    corresponding TSH move yet is expected, not concerning on its own.
+
+Carbimazole
+  - TSH: used for the opposite direction (overactive thyroid) — response
+    is often faster to begin (some early effect within 1-2 weeks) but
+    can take 4-8 weeks for TSH/T3/T4 to fully normalize, and dose is
+    often adjusted more than once along the way.
+  - Free T3 / Free T4: often the first to show visible improvement,
+    sometimes within 2-3 weeks, ahead of TSH normalizing.
+
+======================================================================
+LIPID / CHOLESTEROL
+======================================================================
+
+Atorvastatin
+  - Total Cholesterol / LDL Cholesterol: meaningful reduction typically
+    visible by 4-6 weeks; the fuller, more stable effect is usually seen
+    by 8-12 weeks.
+  - HDL Cholesterol: statins have a smaller, more variable effect on HDL
+    than on LDL — a flat or only slightly-changed HDL at 6 weeks is not
+    unusual and isn't itself a sign the medicine "isn't working" for its
+    main (LDL-lowering) purpose.
+  - Triglycerides: similar timeline to LDL, 4-6 weeks for initial
+    movement, up to 8-12 weeks for the fuller effect.
+
+Rosuvastatin
+  - Total Cholesterol / LDL Cholesterol / Triglycerides: same general
+    window as Atorvastatin above — 4-6 weeks for initial movement,
+    8-12 weeks for the fuller, more stable effect. Considered slightly
+    more potent per-mg than Atorvastatin but the response timeline is
+    comparable.
+  - HDL Cholesterol: same caveat as Atorvastatin — smaller, more variable
+    effect, don't judge this as the main marker of response.
+
+Fenofibrate
+  - Triglycerides: this is the primary target for this medicine and
+    responds relatively quickly — meaningful reduction often visible by
+    2-4 weeks, fuller effect by 6-8 weeks.
+  - HDL Cholesterol: modest improvement, if any, usually takes longer to
+    show (6-8 weeks) and is a secondary effect, not the main purpose.
+
+======================================================================
+BLOOD PRESSURE (kidney-panel side effect, not BP itself — see
+medicine_test_map.py's own note on why these are listed here)
+======================================================================
+
+Amlodipine
+  - Creatinine: not expected to move much either way under normal
+    circumstances — Amlodipine is not typically nephrotoxic. A test
+    ordered here is more of a routine baseline/safety check than an
+    "effectiveness" measure; a stable Creatinine over any timeframe is
+    the expected (reassuring) result, not evidence of "no effect."
+
+Losartan
+  - Creatinine / Blood Urea: Losartan (an ARB) can cause a small, often
+    expected initial rise in Creatinine when first started or when the
+    dose increases — usually stabilizes within 2-4 weeks. A modest early
+    increase is not automatically a bad sign; a large or continuously
+    rising Creatinine, or one that hasn't stabilized by 4-6 weeks,
+    is what's actually worth flagging to a doctor.
+
+Telmisartan
+  - Creatinine / Blood Urea: same ARB-class pattern as Losartan above —
+    a small expected initial rise that should stabilize within 2-4 weeks.
+
+Enalapril
+  - Creatinine / Blood Urea: ACE inhibitors show a similar pattern to
+    ARBs (Losartan/Telmisartan above) — small expected initial rise,
+    should stabilize within 2-4 weeks of starting or a dose change.
+
+======================================================================
+ANAEMIA / IRON
+======================================================================
+
+Iron supplement (ferrous sulphate/ascorbate and equivalents)
+  - Hemoglobin: iron repletion is gradual — earliest meaningful Hemoglobin
+    rise is usually not before 3-4 weeks, with fuller correction commonly
+    taking 8-12 weeks depending on how low the starting level was. Judging
+    this before 3-4 weeks is premature.
+  - Ferritin / Iron: Ferritin (iron stores) can actually rise before
+    Hemoglobin does in some cases, sometimes within 2-3 weeks, since it
+    reflects stores being replenished rather than red cell production
+    catching up — an early Ferritin improvement without a Hemoglobin
+    improvement yet is not a contradiction.
+
+Folic acid
+  - Hemoglobin: if folate deficiency is the actual cause of low Hemoglobin,
+    response can be relatively quick — improvement sometimes visible within
+    2-3 weeks, more clearly by 4-6 weeks. If the underlying cause is not
+    folate deficiency, Hemoglobin may not respond to this medicine at all,
+    regardless of how long it's taken — this reference cannot tell those
+    two cases apart from the data alone.
+
+Vitamin B12 (methylcobalamin/mecobalamin)
+  - Vitamin B12: blood level itself typically normalizes relatively fast
+    with supplementation/injection, often within 2-4 weeks.
+  - Hemoglobin: if B12 deficiency was the actual cause of anaemia, Hemoglobin
+    response is slower than the B12 level itself — meaningful improvement
+    usually needs 6-8 weeks, similar overall timeline to iron-deficiency
+    anaemia above.
+
+Vitamin D
+  - Vitamin D: gradual correction — meaningful rise in blood level is
+    usually not visible before 6-8 weeks of consistent supplementation,
+    and can take 8-12 weeks for more significant deficiencies. This is
+    one of the slower-responding tests in this reference; don't expect
+    an early change.
+
+======================================================================
+LIVER / GOUT
+======================================================================
+
+Allopurinol
+  - Uric Acid: gradual, dose-dependent lowering — meaningful reduction
+    typically takes 2-4 weeks, with the fuller effect often not reached
+    until 6-8 weeks, especially if the dose is being titrated upward
+    over that period (common practice with this medicine).
+
+Febuxostat
+  - Uric Acid: similar overall window to Allopurinol above — initial
+    movement within 2-4 weeks, fuller effect by 6-8 weeks.
+
+Silymarin
+  - SGPT / SGOT: supportive/hepatoprotective effect is gradual and
+    modest — meaningful improvement, if any, is not usually expected
+    before 4-6 weeks, and effect size varies considerably by underlying
+    cause of the elevated values. This reference is not confident about
+    a precise typical window for this medicine — lean toward "too early
+    to tell" rather than a firm verdict before 6 weeks.
+  - Bilirubin: similar caution as above — gradual and modest at best,
+    not confident about a precise typical window; avoid a firm verdict
+    before 4-6 weeks.
+
+======================================================================
+KIDNEY (specific renal-support medicines)
+======================================================================
+
+Sodium bicarbonate
+  - Creatinine / Blood Urea: this medicine treats metabolic acidosis
+    rather than directly targeting Creatinine/Urea, so its effect on
+    these specific values is indirect and this reference is not
+    confident about a specific typical response window for this pair —
+    default to "too early to tell" rather than a firm on-track/off-track
+    call unless the values are clearly and significantly worsening.
+
+======================================================================
+GENERAL NOTES FOR THE REASONING MODEL
+======================================================================
+
+- "Too early to tell" is always the safer default when less time has
+  passed since start_date than the shortest window mentioned above for
+  that medicine+test pair, or when only one data point exists since the
+  medicine started.
+- A test moving in the right direction but slower than the window above
+  should be called "Slower than typical, still within expected window" —
+  not "Not responding as expected" — as long as the elapsed time since
+  start_date hasn't yet exceeded the OUTER edge of the window given.
+- "Not responding as expected" should be reserved for cases where the
+  elapsed time has clearly passed the outer edge of the expected window
+  above with no meaningful improvement, or the value is moving the wrong
+  direction entirely.
+- Where this file says it isn't confident about a precise window
+  (Silymarin, Sodium bicarbonate), do not invent a specific week-count —
+  say so honestly in plain_explanation and lean toward "Too early to
+  tell" rather than a confident-sounding verdict not backed by this
+  reference.

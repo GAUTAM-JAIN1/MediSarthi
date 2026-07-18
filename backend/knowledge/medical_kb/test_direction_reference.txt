@@ -1,0 +1,168 @@
+TEST DIRECTION REFERENCE
+=========================
+Purpose: for each common lab test, states which direction of movement counts as
+"improving" versus "worsening" — used by the Medicine Effectiveness feature to
+correctly label a trend (e.g. a falling Hemoglobin is worsening even though the
+number is going down, while a falling Fasting Blood Sugar is improving). This
+file is about DIRECTION only. It does not say how fast a value should move, or
+which medicine affects which test — see medicine_response_timelines.txt (phase 2)
+and the medicine-test mapping in code for those.
+
+How to use this file: for a given test_name, find its entry below and use the
+stated direction rule to decide whether a trend's most recent movement (up vs
+down vs unchanged) is improving, worsening, or neutral. If the value is already
+within its normal_range, prefer "staying within range" framing over "higher/
+lower is better" framing — direction only matters as a tiebreaker while a value
+is still outside range.
+
+
+BLOOD / HAEMATOLOGY
+--------------------
+Hemoglobin (Hb): Higher is better, up to the top of the normal range. Below
+normal range, rising is improving; above normal range, falling toward normal
+is improving (rare, but happens e.g. after treating polycythemia).
+
+Haematocrit (HCT/PCV): Same direction logic as Hemoglobin — they move together.
+
+RBC Count: Same direction logic as Hemoglobin.
+
+WBC Count: Neither higher nor lower is inherently "better" — must stay within
+range. A rise from below-normal toward normal is improving; a rise from within
+normal to above normal is worsening (may indicate infection/inflammation). A
+fall from above-normal toward normal is improving.
+
+Platelet Count: Same in-range-is-the-goal logic as WBC Count. Both very low
+(bleeding risk) and very high (clotting risk) are concerning in their own way.
+
+ESR (Erythrocyte Sedimentation Rate): Lower is better. A falling ESR generally
+means inflammation is resolving.
+
+CRP (C-Reactive Protein): Lower is better. Falling CRP means inflammation is
+resolving; this test often responds faster than ESR.
+
+
+BLOOD SUGAR / DIABETES
+------------------------
+Fasting Blood Sugar (FBS): Lower is better, down to the bottom of the normal
+range. Going too low (hypoglycemia) is its own separate concern, not covered
+by this "lower is better" framing — flag values below the normal range's lower
+bound as needing attention regardless of trend direction.
+
+Postprandial Blood Sugar (PPBS) / Random Blood Sugar (RBS): Same direction
+logic as Fasting Blood Sugar.
+
+HbA1c: Lower is better, down to the bottom of the normal range. Remember this
+is a ~3-month rolling average — see medicine_response_timelines.txt for why it
+moves slower than FBS after a medicine change.
+
+Insulin (Fasting): Lower is generally better within a diabetes-management
+context, but very low values can indicate a different problem (e.g. Type 1
+diabetes, pancreatic issues) — don't apply "lower is always better" blindly if
+the value is far below range.
+
+
+THYROID
+--------
+TSH (Thyroid-Stimulating Hormone): Direction depends on which way the patient
+started out of range. If TSH was HIGH (hypothyroid pattern), falling toward
+normal is improving. If TSH was LOW (hyperthyroid pattern), rising toward
+normal is improving. Never say "lower TSH is always better" — check which
+direction the patient's original abnormality was in first.
+
+Free T3 / Free T4: Opposite direction logic from TSH in the same patient —
+in hypothyroidism these are typically low and rising-toward-normal is
+improving; in hyperthyroidism these are typically high and falling-toward-
+normal is improving.
+
+
+LIPID PROFILE
+--------------
+Total Cholesterol: Lower is better, down to the bottom of the normal range.
+
+LDL Cholesterol ("bad cholesterol"): Lower is better.
+
+HDL Cholesterol ("good cholesterol"): Higher is better — this is the one
+lipid value where the usual "lower is better" pattern is reversed. Flag this
+explicitly since it's a common source of confusion.
+
+Triglycerides: Lower is better.
+
+
+KIDNEY FUNCTION
+-----------------
+Creatinine: Lower is better, down to the bottom of the normal range.
+
+Blood Urea / BUN (Blood Urea Nitrogen): Lower is better.
+
+eGFR (estimated Glomerular Filtration Rate): Higher is better (opposite of
+Creatinine/Urea, since eGFR measures how well the kidneys are filtering, not
+a waste product level). Flag this explicitly — it's the other common
+"direction flips" case besides HDL.
+
+Uric Acid: Lower is better, down to the bottom of the normal range.
+
+
+LIVER FUNCTION
+----------------
+SGPT/ALT: Lower is better.
+
+SGOT/AST: Lower is better.
+
+Bilirubin (Total/Direct/Indirect): Lower is better.
+
+Alkaline Phosphatase (ALP): Lower is better.
+
+Albumin: Higher is better, up to the top of the normal range (low albumin can
+indicate liver or kidney problems, or malnutrition).
+
+
+VITAMINS / MINERALS
+----------------------
+Vitamin D: Higher is better, up to the top of the normal range.
+
+Vitamin B12: Higher is better, up to the top of the normal range.
+
+Calcium: Neither higher nor lower is inherently better — must stay within
+range, same logic as WBC/Platelets.
+
+Iron / Ferritin / TIBC: Higher is better for Iron and Ferritin (up to normal
+range) in the common context of iron-deficiency anaemia. TIBC (Total
+Iron-Binding Capacity) moves the opposite way — lower TIBC alongside rising
+Iron/Ferritin is the expected improving pattern.
+
+
+URINE ROUTINE
+---------------
+Most urine routine parameters (Protein, Sugar, Ketones, Blood, Pus Cells,
+Bacteria) are qualitative ("Nil"/"Trace"/"Positive"/"1+"/"2+") rather than
+numeric. Direction logic: "Nil" or "Negative" is the goal; any move from a
+higher +marking toward "Nil"/"Trace" is improving, and vice versa. These
+values typically won't have a numeric_value and will use the fallback
+status-chip display in the Health Trends chart rather than a line — this file
+is included for completeness in case a future version adds semi-quantitative
+handling.
+
+
+GENERAL NOTES FOR THE AGENT
+------------------------------
+- This file is hand-curated general reference material, not sourced from a
+  licensed medical database. It covers common tests seen in routine blood
+  work, lipid profiles, thyroid panels, and basic metabolic/kidney/liver
+  panels — it is not exhaustive.
+- If a test_name appears in a report but is not listed here, say so honestly
+  and fall back on your own trained medical knowledge for that specific test
+  rather than guessing a direction — do not force-fit an unlisted test into
+  the closest-sounding category above.
+- "Better" always means "closer to being within the normal range printed on
+  the report," not some universal target number — always reference the
+  report's own stated normal_range for the actual boundary, this file only
+  tells you which direction to walk.
+- A value that is already within its normal range and stays there across
+  multiple reports should be described as "stable within normal range," not
+  scored as "improving" or "worsening" — those labels are for values that are
+  currently or were previously outside range.
+- Do not use this file to diagnose a condition. It only supports labeling the
+  direction of a numeric trend — pair it with the patient's actual normal_range
+  and current status, and always close with the same doctor-consultation
+  framing already used elsewhere in this project (see lab_reference_ranges.txt
+  and the existing disclaimer field on LabReportAnalysisOutput).

@@ -1,0 +1,99 @@
+MEDISARTHI — SYMPTOM URGENCY REFERENCE
+(Shared knowledge base for SymptomTriageCrew. General triage reference —
+grounds the triage_nurse agent's own judgement, does not replace it. Note:
+safety_guardrails.py already hardcodes an instant pre-check for the most
+unambiguous emergencies — chest pain, can't breathe, stroke signs, heavy
+bleeding, suicidal ideation, obstetric emergencies — bypassing this crew
+entirely for those cases. This file is for everything the LLM triage agent
+itself still needs to reason about: the wider, less clear-cut range of
+presentations the hardcoded keyword list deliberately doesn't try to cover.)
+
+== FEVER ==
+
+Home Care territory: Fever <102°F in an otherwise well adult, responding to
+paracetamol, alert and drinking fluids normally, no other worrying signs.
+
+See a Doctor Soon: Fever persisting >3 days despite medicine, fever with
+significant body ache/weakness limiting daily activity, fever in someone
+with a chronic condition (diabetes, heart disease) that could complicate
+recovery.
+
+Emergency territory: Fever with stiff neck and severe headache, fever with
+confusion or difficulty staying awake, very high fever (>104°F) not
+responding to medicine, fever in an infant under 3 months of age.
+
+== ABDOMINAL PAIN ==
+
+Home Care: Mild, generalized discomfort after a heavy/spicy meal, improving
+over hours, no fever, no vomiting.
+
+See a Doctor Soon: Persistent pain lasting >24-48 hours, pain with
+low-grade fever, pain that's localized and worsening rather than improving.
+
+Emergency: Sudden severe pain, pain with rigid/board-like abdomen, pain
+localized to lower right side with fever (possible appendicitis), pain with
+persistent vomiting and inability to keep fluids down, pain during pregnancy
+with bleeding.
+
+== RESPIRATORY SYMPTOMS ==
+
+Home Care: Mild cough/congestion, no fever or low-grade only, breathing
+comfortably at rest and with mild activity.
+
+See a Doctor Soon: Cough persisting beyond 2 weeks, cough with colored
+(green/yellow) phlegm and fever, mild breathlessness only with significant
+exertion that's new for the person.
+
+Emergency: Breathlessness at rest, blue lips/fingertips, unable to speak in
+full sentences due to breathlessness, chest tightness with breathlessness
+(this overlaps with the hardcoded guardrail — noted for completeness).
+
+== HEADACHE ==
+
+Home Care: Typical tension-type headache, responds to usual pain relief,
+similar to headaches the person has had before.
+
+See a Doctor Soon: New headache pattern different from usual, headache
+with mild visual disturbance, frequent headaches needing daily medicine.
+
+Emergency: Sudden "worst headache of my life," headache with fever and
+neck stiffness, headache with confusion/slurred speech/weakness on one
+side (overlaps with stroke guardrail keywords).
+
+== SKIN / RASH ==
+
+Home Care: Mild localized rash, itching without spreading, no fever, known
+trigger (e.g., new soap, mild allergy).
+
+See a Doctor Soon: Rash spreading over days, rash with mild swelling, rash
+that isn't improving with usual antihistamines/creams after several days.
+
+Emergency: Rash with facial/throat swelling, rash with difficulty breathing,
+rapidly spreading rash with high fever (possible serious infection or severe
+allergic reaction).
+
+== GENERAL / VAGUE SYMPTOMS ==
+
+Home Care: Mild fatigue, feeling "off," minor aches — especially with an
+identifiable cause (poor sleep, stress, recent minor illness).
+
+See a Doctor Soon: Unexplained fatigue lasting >2 weeks, unexplained weight
+loss, symptoms that are mild individually but persistent and unexplained.
+
+Emergency: Sudden severe weakness on one side of the body, sudden confusion
+in someone previously alert, fainting/loss of consciousness even if brief
+and now "back to normal" (needs same-day evaluation, not necessarily
+ambulance-level unless recurrent or with injury).
+
+== GENERAL NOTES FOR THE AGENT ==
+
+- These buckets describe common patterns, not rules — the agent should
+  still weigh the patient's full description (duration, associated symptoms,
+  age, known conditions) rather than pattern-matching a single symptom word.
+- When a description sits between two buckets, the agent should lean toward
+  the higher urgency level, consistent with the "when in doubt, escalate"
+  instruction already in its task config.
+- This file intentionally does not repeat the hardcoded guardrail's exact
+  keyword list — that layer already handles the clearest cases before this
+  crew is even invoked. This file exists for the greyer, more common
+  presentations where judgement (not a keyword match) is actually needed.

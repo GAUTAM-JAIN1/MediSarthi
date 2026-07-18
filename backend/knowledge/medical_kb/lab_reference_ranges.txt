@@ -1,0 +1,93 @@
+MEDISARTHI — STANDARD LAB TEST REFERENCE RANGES
+(Shared knowledge base for LabReportCrew. General adult reference ranges from
+widely-used clinical lab conventions — actual "normal" ranges vary slightly by
+lab, method, age, sex, and pregnancy status. This file grounds the
+lab_report_analyst agent's plain-language explanations; the report's own
+printed reference range should always take priority over this file when
+present, since it reflects the specific lab's method.)
+
+== COMPLETE BLOOD COUNT (CBC) ==
+
+Haemoglobin: Adult male ~13.5–17.5 g/dL, adult female ~12.0–15.5 g/dL.
+Low = anemia (fatigue, pallor common causes: iron deficiency, blood loss,
+chronic disease). High = polycythemia, dehydration, or living at altitude.
+
+WBC (White Blood Cell count): ~4,000–11,000 cells/µL. High = infection,
+inflammation, stress response, or (rarely) blood disorders. Low = certain
+viral infections, some medications, bone marrow issues.
+
+Platelet count: ~150,000–450,000/µL. Low = increased bleeding/bruising risk
+(causes: viral infection like dengue, some medications, autoimmune conditions).
+High = can occur with inflammation, iron deficiency, or after major bleeding.
+
+== BLOOD SUGAR ==
+
+Fasting Blood Sugar: Normal ~70–99 mg/dL. Prediabetes ~100–125 mg/dL.
+Diabetes ≥126 mg/dL (on repeat testing).
+
+Post-Prandial (2hr after meal): Normal <140 mg/dL. Prediabetes 140–199 mg/dL.
+Diabetes ≥200 mg/dL.
+
+HbA1c (average 3-month blood sugar): Normal <5.7%. Prediabetes 5.7–6.4%.
+Diabetes ≥6.5%.
+
+== LIPID PROFILE ==
+
+Total Cholesterol: Desirable <200 mg/dL. Borderline 200–239. High ≥240.
+
+LDL ("bad" cholesterol): Optimal <100 mg/dL. Near-optimal 100–129.
+Borderline high 130–159. High 160–189. Very high ≥190.
+
+HDL ("good" cholesterol): Low (higher risk) if <40 mg/dL (men) or <50 mg/dL
+(women). Higher HDL is generally protective.
+
+Triglycerides: Normal <150 mg/dL. Borderline high 150–199. High 200–499.
+Very high ≥500 (raises pancreatitis risk).
+
+== THYROID FUNCTION ==
+
+TSH: Normal ~0.4–4.0 mIU/L (some labs use 0.5–5.0). High TSH usually means
+underactive thyroid (hypothyroidism); low TSH usually means overactive
+thyroid (hyperthyroidism) — the direction is often counterintuitive to
+patients, worth explaining plainly.
+
+Free T4: Normal ~0.8–1.8 ng/dL. Interpreted alongside TSH, not alone.
+
+== KIDNEY FUNCTION ==
+
+Creatinine: Adult male ~0.7–1.3 mg/dL, adult female ~0.6–1.1 mg/dL. High
+suggests reduced kidney function; needs context (hydration, muscle mass,
+medications like NSAIDs can also raise it).
+
+Blood Urea Nitrogen (BUN): ~7–20 mg/dL. High can indicate reduced kidney
+function, dehydration, or high protein intake.
+
+== LIVER FUNCTION ==
+
+ALT (SGPT): ~7–56 U/L. AST (SGOT): ~10–40 U/L. Elevation suggests liver
+cell stress/damage — causes range from fatty liver, alcohol, viral hepatitis,
+to certain medications.
+
+Bilirubin (Total): ~0.1–1.2 mg/dL. High causes yellowing of skin/eyes
+(jaundice) — causes include liver disease, bile duct blockage, or increased
+red blood cell breakdown.
+
+== VITAMIN LEVELS ==
+
+Vitamin D (25-OH): Deficient <20 ng/mL. Insufficient 20–29 ng/mL.
+Sufficient 30–100 ng/mL. Very common deficiency in the general population,
+usually not urgent but worth addressing.
+
+Vitamin B12: Normal ~200–900 pg/mL (varies by lab). Low levels linked to
+fatigue, nerve symptoms (tingling, numbness), and in chronic cases anemia.
+
+== GENERAL NOTES FOR THE AGENT ==
+
+- Always prefer the normal_range printed directly on the report over these
+  general figures when both are available — the report's range reflects the
+  actual lab's equipment/method and is more accurate for that specific result.
+- These are general adult ranges; pediatric, pregnancy, and elderly reference
+  ranges can differ meaningfully and are not covered in this file.
+- A single abnormal value in isolation is often less meaningful than a
+  pattern across several related tests — encourage the "next_steps" field to
+  reflect that nuance rather than reacting to one number in isolation.

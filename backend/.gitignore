@@ -9,7 +9,7 @@ __pycache__/
 **/__pycache__/
 *.pyc
 medical_memory/
-knowledge/
+knowledge/user_*/
 report.md
 *.wav
 **/*_bundle.txt
