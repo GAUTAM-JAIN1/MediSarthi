@@ -206,7 +206,10 @@ def save_upload_file(upload_file: UploadFile, destination: str):
 
 
 def extract_text_from_image(image_path: str) -> str:
-    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    import platform
+
+    if platform.system() == "Windows":
+        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
     image = Image.open(image_path)
     image = image.convert("L")
@@ -242,8 +245,11 @@ def extract_text_from_lab_document(file_path: str) -> str:
 
     try:
         from pdf2image import convert_from_path
+        import platform
 
-        pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+        if platform.system() == "Windows":
+            pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
         page_images = convert_from_path(file_path)
         ocr_text = [pytesseract.image_to_string(img, lang='eng') for img in page_images]
         text = "\n".join(ocr_text).strip()

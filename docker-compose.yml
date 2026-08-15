@@ -1,4 +1,4 @@
-services:
+﻿services:
   backend:
     build:
       context: ./backend
@@ -6,11 +6,23 @@ services:
       - "8080:8080"
     env_file:
       - ./backend/.env
+    environment:
+      # FIX (Docker adaptability): crew.py used to hardcode the Ollama
+      # embedder URL to http://localhost:11434 â€” inside the container that
+      # resolves to the CONTAINER, not the host machine actually running
+      # Ollama, so every RAG-backed crew call (which is now ALL crews) was
+      # failing/hanging. host.docker.internal points back at the host.
+      # Works out of the box on Docker Desktop (Windows/Mac). The
+      # extra_hosts line below is a fallback so this also resolves if this
+      # ever runs on a native Linux Docker host.
+      - OLLAMA_EMBED_URL=http://host.docker.internal:11434/api/embeddings
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
   frontend:
     build:
-      # NOTE: adjust if your real path differs — PROJECT_CONTEXT.md notes a
+      # NOTE: adjust if your real path differs â€” PROJECT_CONTEXT.md notes a
       # doubled `frontend/frontend/` folder (outer one only has
       # package-lock.json). This assumes the Dockerfile below goes inside
       # the INNER frontend/frontend/ folder, next to package.json.
@@ -21,5 +33,5 @@ services:
       - backend
     restart: unless-stopped
 
-# No MongoDB service here on purpose — MONGO_URI in backend/.env already
+# No MongoDB service here on purpose â€” MONGO_URI in backend/.env already
 # points at Atlas (cloud), so there's nothing to run locally for the DB.

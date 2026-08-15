@@ -1,4 +1,4 @@
-from crewai import Agent, Crew, Process, Task
+﻿from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from typing import Type, Optional, List
 from crewai import LLM
@@ -18,7 +18,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # NOTE (Groq migration): All 7 crews below were moved off gemini/gemini-2.5-flash
-# to groq/llama-3.3-70b-versatile because the Gemini free tier on this project hit
+# to groq/openai/gpt-oss-120b because the Gemini free tier on this project hit
 # a daily 20-requests/day wall (GenerateRequestsPerDayPerProjectPerModel-FreeTier),
 # which made iterative dev/testing unworkable. GEMINI_API_KEY is left loaded above
 # in case anything else in the project still needs it -- it is just no longer used
@@ -38,13 +38,13 @@ def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = Fals
     this, every crew for a given user shared the SAME CREWAI_STORAGE_DIR, so
     e.g. SpeechCrew's `doctor` agent (memory=True) could retrieve/reuse
     memories that were actually written by FileCrew (prescription photo scan)
-    for the same user — causing symptom-only queries (like a "Diarrhea" bubble
+    for the same user â€” causing symptom-only queries (like a "Diarrhea" bubble
     click) to return stale, unrelated medicine combinations from a totally
     different past interaction. Each crew now gets its own memory subfolder.
 
     `shared_kb_files` (new): optional list of file paths (relative to the
     project's `knowledge/` folder, same convention as the per-user profile
-    file) pointing at a SHARED, non-user-specific reference knowledge base —
+    file) pointing at a SHARED, non-user-specific reference knowledge base â€”
     e.g. `["medical_kb/drug_interactions.txt"]`. When provided, a second
     TextFileKnowledgeSource is added alongside the per-user profile source,
     so the crew's agent can retrieve from both the user's own profile AND a
@@ -86,16 +86,34 @@ def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = Fals
     if shared_kb_files:
         # Separate TextFileKnowledgeSource instance (not merged into the same
         # file_paths list) so the per-user profile source and the shared
-        # reference source are chunked/embedded independently — a large,
+        # reference source are chunked/embedded independently â€” a large,
         # mostly-static reference file shouldn't affect chunking behavior for
         # the small, frequently-changing per-user profile file.
         knowledge_sources.append(TextFileKnowledgeSource(file_paths=shared_kb_files))
+
+    # FIX (Docker adaptability): this used to be hardcoded to
+    # "http://localhost:11434/api/embeddings", which works on bare-metal
+    # (Ollama running on the same machine) but breaks inside Docker â€”
+    # "localhost" inside a container refers to the CONTAINER itself, not
+    # the host machine actually running Ollama. That's why RAG-backed
+    # crews (which is now ALL crews, since embedder is always set below
+    # regardless of shared_kb_files) were failing/hanging as soon as this
+    # project moved into Docker.
+    #
+    # Fix: read the URL from an env var, defaulting to the old bare-metal
+    # value so nothing changes for non-Docker runs. Set
+    # OLLAMA_EMBED_URL=http://host.docker.internal:11434/api/embeddings in
+    # backend/.env when running via docker-compose (see updated
+    # docker-compose.yml, which also adds the extra_hosts mapping needed
+    # for host.docker.internal to resolve on Linux Docker hosts â€” it works
+    # out of the box on Docker Desktop for Windows/Mac).
+    ollama_url = os.getenv("OLLAMA_EMBED_URL", "http://localhost:11434/api/embeddings")
 
     embedder = {
         "provider": "ollama",
         "config": {
             "model": "mxbai-embed-large",
-            "url": "http://localhost:11434/api/embeddings"
+            "url": ollama_url
         }
     }
     return knowledge_sources, embedder
@@ -207,7 +225,7 @@ class MedicineEffectivenessOutput(BaseModel):
     own tracked lab tests, given that test's dated value series since (and,
     where available, before) the medicine's start date. Grounded via RAG
     against two shared reference files: test_direction_reference.txt
-    (which direction counts as "improving" for this test — already used by
+    (which direction counts as "improving" for this test â€” already used by
     phase 1) and medicine_response_timelines.txt (the new phase-2 file,
     expected response windows per medicine/test pair). See decisions.md D29
     "Phase 2" for the full feature plan and why this is deliberately
@@ -225,16 +243,16 @@ class MedicineEffectivenessOutput(BaseModel):
 class ClinicalSummaryOutput(BaseModel):
     """
     Doctor Visit QR feature (decisions.md D29 sketch). Deliberately a
-    DIFFERENT register from LabReportAnalysisOutput.overall_summary — that
+    DIFFERENT register from LabReportAnalysisOutput.overall_summary â€” that
     one is plain-language for the patient; this one is terse clinical
     shorthand for a doctor who already has the vocabulary and wants
     density, not hand-holding. Example target style: "Hb 9.6 (down trend,
     2mo), FBS 118 (improving on Metformin), TSH 4.8 (down, likely
-    responding to treatment)." No em-dashes or narrative framing — reads
+    responding to treatment)." No em-dashes or narrative framing â€” reads
     like a chart note, not an explanation.
     """
-    clinical_summary: str = Field(..., description="Terse, clinical-register summary of the patient's current lab picture and trends, written the way a doctor would jot a quick chart note — dense, abbreviation-friendly, no patient-facing plain-language explanation.")
-    key_flags: List[str] = Field(default_factory=list, description="Short list of the most clinically notable items to check first this visit — abnormal/critical current values, or trends moving the wrong direction for their expected medicine response. Empty list if nothing stands out.")
+    clinical_summary: str = Field(..., description="Terse, clinical-register summary of the patient's current lab picture and trends, written the way a doctor would jot a quick chart note â€” dense, abbreviation-friendly, no patient-facing plain-language explanation.")
+    key_flags: List[str] = Field(default_factory=list, description="Short list of the most clinically notable items to check first this visit â€” abnormal/critical current values, or trends moving the wrong direction for their expected medicine response. Empty list if nothing stands out.")
     active_medicines_note: str = Field("", description="One-line note on currently active medicines per saved prescriptions (e.g. 'On Metformin 500mg since 12-Sep-2024, Atorvastatin 10mg since 01-Oct-2024'). Empty string if no prescriptions on record.")
     disclaimer: str = Field(..., description="Short reminder that this summary is generated from the patient's own self-reported/saved app data, not a chart pulled from a clinical record system, and doesn't replace the doctor's own examination and judgment.")
 
@@ -255,7 +273,7 @@ class SpeechCrew:
             verbose=True,
             max_iter=1,
             memory=True,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.2, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.2, api_key=GROQ_API_KEY),
         )
 
     @agent
@@ -265,7 +283,7 @@ class SpeechCrew:
             verbose=True,
             max_iter=1,
             memory=False,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.2, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.2, api_key=GROQ_API_KEY),
             tools=[GoogleCalendarTool()]
         )
 
@@ -276,7 +294,7 @@ class SpeechCrew:
             verbose=True,
             max_iter=1,
             memory=False,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.2, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.2, api_key=GROQ_API_KEY),
         )
 
     @task
@@ -333,7 +351,7 @@ class FileCrew:
             config=self.agents_config["Medical_Data_Extractor"],
             verbose=True,
             max_rpm=3,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.1, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.1, api_key=GROQ_API_KEY),
         )
 
     @agent
@@ -344,7 +362,7 @@ class FileCrew:
             max_iter=1,
             memory=False,
             max_rpm=3,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.2, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.2, api_key=GROQ_API_KEY),
             tools=[GoogleCalendarTool()]
         )
 
@@ -355,7 +373,7 @@ class FileCrew:
             verbose=True,
             max_iter=1,
             memory=False,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.2, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.2, api_key=GROQ_API_KEY),
         )
 
     @task
@@ -414,7 +432,7 @@ class Nearbyhospitals():
         return Agent(
             config=self.agents_config['hospital_finder'],
             tools=[MyCustomTool()],
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.2, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.2, api_key=GROQ_API_KEY),
             verbose=True
         )
 
@@ -422,7 +440,7 @@ class Nearbyhospitals():
     def hospital_reporter(self) -> Agent:
         return Agent(
             config=self.agents_config['hospital_reporter'],
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.2, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.2, api_key=GROQ_API_KEY),
             verbose=True
         )
 
@@ -464,7 +482,7 @@ class general_que():
     def home_health_assistant(self) -> Agent:
         return Agent(
             config=self.agents_config['home_health_assistant'],
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.2, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.2, api_key=GROQ_API_KEY),
             verbose=True
         )
 
@@ -506,7 +524,7 @@ class LabReportCrew:
             verbose=True,
             max_iter=2,
             memory=False,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.1, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.1, api_key=GROQ_API_KEY),
         )
 
     @task
@@ -556,7 +574,7 @@ class MedicineInteractionCrew:
             verbose=True,
             max_iter=2,
             memory=False,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.1, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.1, api_key=GROQ_API_KEY),
         )
 
     @task
@@ -606,7 +624,7 @@ class SymptomTriageCrew:
             verbose=True,
             max_iter=1,
             memory=False,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.1, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.1, api_key=GROQ_API_KEY),
         )
 
     @task
@@ -622,7 +640,7 @@ class SymptomTriageCrew:
         # RAG: grounds the agent's urgency reasoning against a shared
         # symptom-urgency reference file, alongside the per-user profile.
         # Deliberately does NOT duplicate safety_guardrails.py's hardcoded
-        # keyword list — that layer already short-circuits the clearest
+        # keyword list â€” that layer already short-circuits the clearest
         # emergencies before this crew is even invoked. See decisions.md D26.
         knowledge_sources, embedder = _build_crew_base(
             user_id, "symptom_triage", inject_allergies=False,
@@ -645,14 +663,14 @@ class SymptomTriageCrew:
 class MedicineEffectivenessCrew:
     """
     Medicine Effectiveness feature, phase 2 (decisions.md D29). Given one
-    medicine's effect on one of a user's own tracked lab tests — the test's
-    dated value series, its normal range, and the medicine's start date —
+    medicine's effect on one of a user's own tracked lab tests â€” the test's
+    dated value series, its normal range, and the medicine's start date â€”
     reasons about BOTH direction (is the value moving the right way) and
     pace (is it moving at the expected speed for this medicine) together,
     grounded against two shared reference files via RAG: test_direction_
-    reference.txt (which direction is "improving" per test — already used
+    reference.txt (which direction is "improving" per test â€” already used
     by phase 1's backend logic) and medicine_response_timelines.txt (new
-    this session — expected response windows per medicine/test pair).
+    this session â€” expected response windows per medicine/test pair).
     Produces a plain-language verdict + doctor-talk recommendation a
     non-medical user can trust.
 
@@ -661,11 +679,11 @@ class MedicineEffectivenessCrew:
     other three shared reference files (lab_reference_ranges.txt,
     drug_interactions.txt, symptom_red_flags.txt) already live. This wasn't
     independently re-confirmed against the actual phase-1 file layout in
-    this session — if phase 1 put it somewhere else, update the
+    this session â€” if phase 1 put it somewhere else, update the
     shared_kb_files path below to match before running this crew for real.
 
     Deliberately built as phase 2, after phase 1 (annotation marker + delta
-    badge, already live-tested) — see decisions.md D29 "Why phased instead
+    badge, already live-tested) â€” see decisions.md D29 "Why phased instead
     of building the full pace-aware version directly."
     """
 
@@ -679,7 +697,7 @@ class MedicineEffectivenessCrew:
             verbose=True,
             max_iter=2,
             memory=False,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.1, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.1, api_key=GROQ_API_KEY),
         )
 
     @task
@@ -719,19 +737,19 @@ class MedicineEffectivenessCrew:
 class ClinicalSummaryCrew:
     """
     Doctor Visit QR feature (decisions.md D29 sketch, PROJECT_CONTEXT.md
-    §10 "Doctor Visit QR"). Takes a user's saved lab report history, their
+    Â§10 "Doctor Visit QR"). Takes a user's saved lab report history, their
     per-test trends, and their saved prescriptions, and produces a single
     terse, clinical-register summary for a doctor to glance at during an
-    in-person visit — the whole reason this is a separate crew from
+    in-person visit â€” the whole reason this is a separate crew from
     LabReportCrew rather than reusing its output: LabReportAnalysisOutput's
     overall_summary is deliberately plain-language for the patient, and
     mixing registers (or trying to make one field serve both readers) was
-    explicitly rejected — see ClinicalSummaryOutput's docstring.
+    explicitly rejected â€” see ClinicalSummaryOutput's docstring.
 
     Called from main.py's POST /health/doctor-qr/{user_id} at QR-generation
-    time only (not on every scan) — the result is cached into the token's
+    time only (not on every scan) â€” the result is cached into the token's
     snapshot by health_records.create_doctor_qr_token(). See that file's
-    "DESIGN NOTE — snapshot, not live lookup" comment for why.
+    "DESIGN NOTE â€” snapshot, not live lookup" comment for why.
     """
 
     agents_config = 'config/clinical_summary_agent.yaml'
@@ -744,7 +762,7 @@ class ClinicalSummaryCrew:
             verbose=True,
             max_iter=2,
             memory=False,
-            llm=LLM(model="groq/llama-3.3-70b-versatile", temperature=0.1, api_key=GROQ_API_KEY),
+            llm=LLM(model="groq/openai/gpt-oss-120b", temperature=0.1, api_key=GROQ_API_KEY),
         )
 
     @task

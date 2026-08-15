@@ -96,3 +96,18 @@ taking Levothyroxine on an empty stomach in the morning.
   The agent should still rely on its own trained medical knowledge for pairs
   not covered here, and should say so honestly (classify as uncertain rather
   than invent a specific mechanism) when a pair is genuinely unfamiliar.
+
+  == DUPLICATE THERAPY / SAME DRUG UNDER DIFFERENT BRAND NAMES ==
+
+Common Indian OTC brand names that are the SAME active ingredient, not separate
+medicines. Taking two of these together is not a "drug interaction" — it is
+double-dosing the same drug, which risks overdose:
+
+Paracetamol (Acetaminophen) — Dolo 650, Crocin, Calpol, Paracip, P-500, Fepanil
+Ibuprofen — Brufen, Combiflam (also contains Paracetamol)
+Cetirizine — Cetzine, Alerid, Okacet
+Domperidone — Domstal, Vomistop
+Pantoprazole — Pantocid, Pan-D (also contains Domperidone)
+
+If a patient's list includes two brands mapping to the same active ingredient,
+flag as Duplicate Therapy (see agent instructions), not as a standard interaction.

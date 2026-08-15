@@ -9,6 +9,17 @@ interaction_check_task:
 
     Your task:
 
+    Step 0 — Identify active ingredients first:
+      Before checking pairs, identify the active ingredient(s) of each medicine in the list —
+      including recognizing common Indian brand names (e.g., Dolo 650 = Paracetamol 650mg,
+      Crocin = Paracetamol, Calpol = Paracetamol, Combiflam = Ibuprofen + Paracetamol).
+      If two or more medicines in the list share the same active ingredient, this is NOT a
+      drug-drug interaction. Flag it instead as a Duplicate Therapy finding: severity "Major",
+      description explaining they are the same drug under different brand names, and
+      recommendation warning about cumulative overdose risk (state the safe total daily
+      limit for that active ingredient, e.g. Paracetamol should not exceed 4000mg/day from
+      all sources combined).
+
     Step 1 — Check every pair:
       For EVERY unique pair of medicines in the list, assess whether a known drug interaction
       exists. A list of 3 medicines means 3 pairs (A-B, A-C, B-C). A list of 4 means 6 pairs.

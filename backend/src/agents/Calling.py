@@ -67,6 +67,16 @@ def get_call_status() -> dict:
 
 CALL_PORT = 8001  # Separate from main API (8080) — Twilio needs its own port
 
+# Absolute path to the REAL ngrok binary (installed via apt in the Dockerfile
+# at /usr/bin/ngrok). We deliberately do NOT call plain "ngrok" here — under
+# `uv run`, .venv/bin is ahead of /usr/bin on PATH, and pyngrok (a transitive
+# dependency) installs its own wrapper script also named "ngrok" in
+# .venv/bin/. That wrapper tries to download the real binary at runtime and
+# times out inside the container. Using the absolute path removes the
+# ambiguity entirely. Falls back to "ngrok" (bare command) if the apt install
+# location doesn't exist — e.g. when running this file outside Docker.
+NGROK_BIN = "/usr/local/bin/ngrok" if os.path.exists("/usr/local/bin/ngrok") else "ngrok"
+
 
 def _start_ngrok(port: int) -> str | None:
     """
@@ -80,31 +90,53 @@ def _start_ngrok(port: int) -> str | None:
     webhook POST to /twiml). Twilio can't parse that HTML as TwiML, so it
     silently drops the call before your <Say> greeting ever plays.
 
-    DEBUG MODE: stdout/stderr are NOT suppressed right now (no DEVNULL) so
-    that any ngrok startup error (auth, session-limit, version, etc.) prints
-    straight into this terminal. Once everything works, you can put
-    `stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL` back if the noise
-    bothers you.
+    FIX (this version):
+    - Passes --authtoken explicitly on the command line instead of relying
+      only on the NGROK_AUTHTOKEN env var — more reliable across ngrok
+      versions / container env-loading timing.
+    - Captures ngrok's own stdout/stderr via a pipe. If ngrok exits early
+      (auth failure, port conflict, etc.) we now print ngrok's REAL error
+      instead of just a generic "fetch failed" guess.
+    - More polling attempts (10 instead of 6) in case ngrok's local API is
+      just slow to come up inside the container.
     """
     # Kill any leftover ngrok from a previous call
+    import platform
+    _kill_cmd = "taskkill /IM ngrok.exe /F" if platform.system() == "Windows" else "pkill -f ngrok"
     subprocess.run(
-        "taskkill /IM ngrok.exe /F",
+        _kill_cmd,
         shell=True,
         stderr=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
     )
+    time.sleep(1)  # let the OS release port 4040 / 8001 after kill
 
-    subprocess.Popen(
-        [
-            "ngrok", "http", str(port),
-            "--request-header-add", "ngrok-skip-browser-warning:true",
-        ]
+    authtoken = os.getenv("NGROK_AUTHTOKEN", "")
+    cmd = [
+        NGROK_BIN, "http", str(port),
+        "--request-header-add", "ngrok-skip-browser-warning:true",
+    ]
+    if authtoken:
+        cmd += ["--authtoken", authtoken]
+
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
     )
     print(f"[Calling] ngrok starting on port {port}...")
 
-    # Give ngrok a moment, then poll its local API
     time.sleep(3)
-    for attempt in range(6):
+
+    # If ngrok already crashed (bad auth, port in use, etc.), say why instead
+    # of silently polling for 9+ seconds and giving a useless generic error.
+    if proc.poll() is not None:
+        output = proc.stdout.read() if proc.stdout else ""
+        print(f"[Calling] ngrok exited early (code {proc.returncode}):\n{output}")
+        return None
+
+    for attempt in range(10):
         try:
             resp = requests.get("http://127.0.0.1:4040/api/tunnels", timeout=3)
             tunnels = resp.json().get("tunnels", [])
@@ -117,7 +149,13 @@ def _start_ngrok(port: int) -> str | None:
             pass
         time.sleep(1)
 
-    print("[Calling] ngrok URL fetch failed — is ngrok installed and in PATH?")
+    print("[Calling] ngrok URL fetch failed after 10 attempts — dumping process output below:")
+    try:
+        proc.terminate()
+        output = proc.stdout.read() if proc.stdout else ""
+        print(output or "(no output captured)")
+    except Exception:
+        pass
     return None
 
 

@@ -1,7 +1,8 @@
-from browser_use import Agent, Browser, ChatGroq, Tools
+﻿from browser_use import Agent, Browser, ChatGroq, Tools
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import os
+import tempfile
 from dotenv import load_dotenv
 import asyncio
 
@@ -9,14 +10,14 @@ load_dotenv()
 
 tools = Tools()
 
-# ── Sequential vs parallel toggle ──────────────────────────────────────────
+# â”€â”€ Sequential vs parallel toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #
 # FIX (real root cause of the 502s, not the earlier timeout bump): the repeated
 # "LLM call timed out after 75 seconds" errors in the logs are a HARDCODED
 # internal timeout inside browser-use itself (not PER_SITE_TIMEOUT_SECONDS
 # below, which only bounds the whole agent.run() call from the outside).
 # When that internal call times out, browser-use retries the SAME step up to
-# 6 times ("Result failed 1/6" ... "6/6") before giving up on that step —
+# 6 times ("Result failed 1/6" ... "6/6") before giving up on that step â€”
 # so one slow LLM response can burn several minutes on its own, regardless
 # of how high we set our own outer timeout. Bumping PER_SITE_TIMEOUT_SECONDS
 # alone (150 -> 220) did NOT fix this, confirmed by the latest log: both
@@ -26,7 +27,7 @@ tools = Tools()
 # The two agents were running in PARALLEL (asyncio.gather), each firing its
 # own LLM call every step, both against the SAME Groq API key at the same
 # time. The timing in the log shows Apollo's step-8 75s-timeout landing
-# right as 1mg's step-5 extract call was also in flight — consistent with
+# right as 1mg's step-5 extract call was also in flight â€” consistent with
 # Groq-side contention/rate-limiting under concurrent load, which is the
 # most likely reason individual calls that are normally fast (llama-4-scout)
 # occasionally stall past 75s.
@@ -35,40 +36,74 @@ tools = Tools()
 # one is ever calling Groq at a time. Slower wall-clock overall (roughly
 # apollo_time + onemg_time instead of max(apollo_time, onemg_time)), but
 # removes the contention that's currently causing near-100% failure. Kept
-# as a simple boolean toggle — flip back to False once Groq's rate limits
+# as a simple boolean toggle â€” flip back to False once Groq's rate limits
 # are less of a bottleneck (e.g. a paid tier, or a different provider) to
 # get the speed back.
 RUN_SEQUENTIALLY = True
 
 # Outer safety-net timeout per site. With sequential execution there's no
 # contention forcing repeated 75s internal retries anymore, so this should
-# rarely need to fire — kept generous (240s) as a genuine worst-case ceiling
+# rarely need to fire â€” kept generous (240s) as a genuine worst-case ceiling
 # (page load issues, a truly stuck element, etc), not as the primary fix.
 PER_SITE_TIMEOUT_SECONDS = 240
 
-# Only used on the (currently disabled) parallel path — spreads the two
+# Only used on the (currently disabled) parallel path â€” spreads the two
 # agents' first LLM calls apart in time. Irrelevant while RUN_SEQUENTIALLY
 # is True, kept for when parallel mode is re-enabled.
 STAGGER_SECONDS = 4
 
-APOLLO_PROFILE_DIR = r"C:\agent_profile_apollo"
-ONEMG_PROFILE_DIR = r"C:\agent_profile_1mg"
+# FIX (Docker adaptability): these were hardcoded to Windows-only paths
+# (r"C:\agent_profile_apollo", r"C:\agent_profile_1mg"). That's a real bug
+# on its own outside Docker too, but inside a Linux container "C:\..." isn't
+# a valid path at all, so browser-use would fail before it even gets to the
+# LLM call. Using tempfile.gettempdir() makes this resolve correctly on
+# Windows (bare-metal), Linux (Docker), and macOS without any extra config.
+# Override with env vars if you want persistent (non-tmp) Chrome profiles.
+APOLLO_PROFILE_DIR = os.getenv(
+    "APOLLO_PROFILE_DIR", os.path.join(tempfile.gettempdir(), "agent_profile_apollo")
+)
+ONEMG_PROFILE_DIR = os.getenv(
+    "ONEMG_PROFILE_DIR", os.path.join(tempfile.gettempdir(), "agent_profile_1mg")
+)
+
+# FIX (Docker adaptability + dead model): the Groq model this used to point
+# at, meta-llama/llama-4-scout-17b-16e-instruct, was fully shut down by Groq
+# on 07/17/26 (deprecation announced 06/17/26) â€” every call to it now 404s,
+# on bare-metal AND in Docker. This is the real root cause of the "Groq
+# model 404 inside Docker" open item in progress.md â€” it isn't
+# Docker-specific at all, the model is just dead. Groq's official
+# replacement is openai/gpt-oss-120b or qwen/qwen3.6-27b (vision-capable,
+# but Groq marks it preview-only, not for production). Defaulting to
+# gpt-oss-120b; switch to qwen/qwen3.6-27b via env var if page-reading
+# quality drops now that use_vision="auto" has a different model backing it.
+BUYING_AGENT_MODEL = os.getenv("BUYING_AGENT_GROQ_MODEL", "openai/gpt-oss-120b")
+
+# FIX (Docker adaptability): this was hardcoded to a Windows Chrome install
+# path (r"C:\Program Files\Google\Chrome\Application\chrome.exe"), which
+# doesn't exist on the Linux container at all â€” browser-use would fail to
+# launch the browser immediately on every call inside Docker. Leaving this
+# unset lets Playwright use its own managed Chromium (installed into the
+# image via `playwright install --with-deps chromium` in the Dockerfile â€”
+# see updated backend/Dockerfile). Set CHROME_EXECUTABLE_PATH only if you
+# specifically want to reuse a real Chrome install with its own profile/
+# extensions (bare-metal Windows only).
+CHROME_EXECUTABLE_PATH = os.getenv("CHROME_EXECUTABLE_PATH")  # None -> Playwright-managed Chromium
 
 
-# ── Final/merged output schema (used by run_comparison + main.py only —
-#    NOT passed to the per-site Agent anymore, see note below) ─────────────
+# â”€â”€ Final/merged output schema (used by run_comparison + main.py only â€”
+#    NOT passed to the per-site Agent anymore, see note below) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #
 # CHANGED (D2 compliance fix): the old BestDeal schema only returned a single
 # "winning" site, and the agent's task prompt told it to click "Add to cart"
 # on the winning site automatically. That directly violated the project's own
-# D2 rule (no auto add-to-cart, ever — human-in-the-loop confirmation only).
+# D2 rule (no auto add-to-cart, ever â€” human-in-the-loop confirmation only).
 #
 # New approach: the agent ONLY extracts data (price + delivery info) from
 # every site, for every medicine. It never clicks "Add to cart" or any
 # purchase-path button. The "best" tags (best price / fastest delivery) are
 # computed AFTER extraction, in Python, not decided or acted on by the agent.
 # Compare.jsx is responsible for showing an "Add to cart" button that simply
-# links/redirects the user to the actual pharmacy site — nothing is ever
+# links/redirects the user to the actual pharmacy site â€” nothing is ever
 # added to a cart on the user's behalf.
 
 class PharmacySiteResult(BaseModel):
@@ -79,7 +114,7 @@ class PharmacySiteResult(BaseModel):
     delivery_info: str = Field("", description="Delivery estimate as shown on the site, e.g. 'Delivery by tomorrow, 2pm'. Empty string if not shown.")
     product_url: str = Field("", description="Direct URL to the product page on this site, so the frontend can link the user there.")
     available: bool = Field(True, description="False if the medicine could not be found on this site at all.")
-    notes: str = Field("", description="Any other relevant info shown (offers, discounts) — kept brief.")
+    notes: str = Field("", description="Any other relevant info shown (offers, discounts) â€” kept brief.")
 
 
 class MedicineComparisonResult(BaseModel):
@@ -92,14 +127,14 @@ class ComparisonOutput(BaseModel):
     medicines: List[MedicineComparisonResult] = Field(..., description="One entry per medicine that was searched for.")
 
 
-# ── Per-site agent output schema — FLATTENED to avoid a real bug ──────────
+# â”€â”€ Per-site agent output schema â€” FLATTENED to avoid a real bug â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 #
 # CHANGED (bug fix): the previous version used nested Pydantic models here
 # (SingleSiteOutput -> SingleSiteMedicineResult -> PharmacySiteResult). When
 # use_vision=False forced the agent to fall back to browser-use's internal
 # `extract` tool to read page text, that tool tried to validate against this
 # nested schema and choked: "Invalid output_schema... Unsupported JSON
-# Schema keyword: $defs" — Pydantic generates a $defs/$ref section for any
+# Schema keyword: $defs" â€” Pydantic generates a $defs/$ref section for any
 # nested BaseModel, and browser-use's lightweight extract-tool schema
 # checker doesn't resolve $defs. It silently fell back to unstructured
 # free-text extraction, which returned garbage (generic page text instead of
@@ -108,7 +143,7 @@ class ComparisonOutput(BaseModel):
 #
 # Fix: use a flat List[Dict[str, Any]] instead of a nested model. A dict
 # field doesn't generate a named $ref/$defs entry in the JSON schema, so this
-# sidesteps the bug entirely — regardless of whether use_vision ends up
+# sidesteps the bug entirely â€” regardless of whether use_vision ends up
 # True/False/"auto" later. Validation is looser (we don't get Pydantic field
 # validation on each record anymore), so `_run_single_site` defensively
 # rebuilds proper PharmacySiteResult objects afterward and skips any
@@ -144,22 +179,22 @@ def _build_site_task(site_label: str, site_url: str, medicines: List[str]) -> st
        - Open the first matching product result.
        - Read and record: product name, price, pack quantity, and any delivery
          estimate text shown on the page (e.g. "Delivery by [date]", "Get it by
-         tomorrow"). If no delivery estimate is visible, leave it blank — do not
+         tomorrow"). If no delivery estimate is visible, leave it blank â€” do not
          guess or invent one.
        - Record the product page URL.
        - If the medicine cannot be found on this site at all, mark available
          as false and leave the other fields blank.
        - Go back to the search page before searching for the next medicine.
        - If clicking an element doesn't seem to change the page after a
-         couple of seconds, don't keep clicking the same element — try a
+         couple of seconds, don't keep clicking the same element â€” try a
          different matching element or re-read the page first.
 
-    IMPORTANT — things you must NEVER do:
+    IMPORTANT â€” things you must NEVER do:
        - Never click "Add to cart", "Buy now", "Place order", or any similar
          button.
        - Never proceed past a product page to checkout.
        - Never invent a price, delivery date, or product name that isn't
-         actually shown on the page — leave the field blank/null instead.
+         actually shown on the page â€” leave the field blank/null instead.
 
     Return your findings as structured data: for every medicine, one FLAT
     entry (not nested) with keys: medicine_name, site ("{site_label}"),
@@ -182,23 +217,30 @@ async def _run_single_site(
     (timeout, no result, malformed output) instead of raising.
 
     `start_delay`: optional sleep before this agent starts (only meaningful
-    on the parallel path — see STAGGER_SECONDS). Unused (0) when
+    on the parallel path â€” see STAGGER_SECONDS). Unused (0) when
     RUN_SEQUENTIALLY is True since there's nothing to stagger against.
     """
     if start_delay:
         await asyncio.sleep(start_delay)
 
-    llm = ChatGroq(model="meta-llama/llama-4-scout-17b-16e-instruct")
+    llm = ChatGroq(model=BUYING_AGENT_MODEL)
 
-    browser = Browser(
-        executable_path="C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    browser_kwargs = dict(
         user_data_dir=profile_dir,
         profile_directory="Default",
         permissions=["geolocation"],
         minimum_wait_page_load_time=1.0,
         wait_for_network_idle_page_load_time=1.0,
         wait_between_actions=0.5,
+        headless=True,
     )
+    # Only pass executable_path when explicitly set (bare-metal override).
+    # Passing None here would tell browser-use to look for a path that
+    # doesn't exist rather than falling back to its managed Chromium.
+    if CHROME_EXECUTABLE_PATH:
+        browser_kwargs["executable_path"] = CHROME_EXECUTABLE_PATH
+
+    browser = Browser(**browser_kwargs)
 
     agent = Agent(
         task=_build_site_task(site_label, site_url, medicines),
@@ -217,7 +259,7 @@ async def _run_single_site(
             await browser.close()
         except Exception:
             pass
-        print(f"[buying_agent] {site_label} timed out after {PER_SITE_TIMEOUT_SECONDS}s — skipping this site.")
+        print(f"[buying_agent] {site_label} timed out after {PER_SITE_TIMEOUT_SECONDS}s â€” skipping this site.")
         return []
     except Exception as e:
         try:
@@ -242,7 +284,7 @@ def _to_pharmacy_result(raw: Dict[str, Any], fallback_site: str) -> Optional[Pha
     """
     Defensively converts one raw flat dict (as returned by the agent) into a
     validated PharmacySiteResult. Returns None (and logs) instead of raising
-    if the agent returned something malformed/missing fields — one bad
+    if the agent returned something malformed/missing fields â€” one bad
     record from the LLM shouldn't crash the whole comparison.
     """
     try:
@@ -265,9 +307,9 @@ async def run_comparison(medicine: List[str]):
     """
     Searches each medicine in `medicine` across 1mg and Apollo Pharmacy and
     returns structured price + delivery data for every site. Does NOT add
-    anything to any cart — extraction only.
+    anything to any cart â€” extraction only.
 
-    Runs SEQUENTIALLY by default (see RUN_SEQUENTIALLY above) — Apollo
+    Runs SEQUENTIALLY by default (see RUN_SEQUENTIALLY above) â€” Apollo
     finishes completely before 1mg starts, so only one agent is ever
     calling Groq at a time. Slower than the old parallel version but avoids
     the Groq-contention-driven 75s-internal-timeout retries that were
@@ -311,7 +353,7 @@ async def run_comparison(medicine: List[str]):
         apollo_raw, onemg_raw = await asyncio.gather(apollo_coro, onemg_coro)
 
     if not apollo_raw and not onemg_raw:
-        # Both sites failed/timed out/returned nothing — nothing to return.
+        # Both sites failed/timed out/returned nothing â€” nothing to return.
         return None
 
     # Merge the two single-site outputs back into the original
@@ -344,7 +386,7 @@ def _attach_best_tags(structured: ComparisonOutput) -> dict:
     """
     Takes the raw extracted data and computes, per medicine, which site had
     the best price and which had the fastest/clearest delivery estimate.
-    This is plain Python logic — the agent does not decide or act on this,
+    This is plain Python logic â€” the agent does not decide or act on this,
     it only ever reports raw data. Returns a plain dict ready for the API
     response (so main.py doesn't need to import pydantic models from here).
     """

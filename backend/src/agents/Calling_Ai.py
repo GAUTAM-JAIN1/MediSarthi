@@ -6,7 +6,12 @@ load_dotenv()
 
 _client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-GROQ_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+# meta-llama/llama-4-scout-17b-16e-instruct was Groq-deprecated (announced
+# 17 June 2026). Switched to openai/gpt-oss-120b — Groq's own recommended
+# general-purpose replacement. Unlike buying_agent.py, this file never
+# handles images (pure text call-transcript reasoning), so the text-only
+# gpt-oss-120b is the right fit here — no need for a multimodal model.
+GROQ_MODEL = "openai/gpt-oss-120b"
 
 
 def _groq(prompt: str) -> str:
@@ -35,11 +40,10 @@ def decide_reply(
     Now takes patient_name + reason from the CallRequest (set by main.py)
     instead of calling face_recognize — user details come from auth.py.
 
-    Switched from Gemini to Groq (meta-llama/llama-4-scout-17b-16e-instruct)
-    because the Gemini free-tier project hit a hard `limit: 0` quota wall
-    (429 errors on every call). Groq is also what the rest of MediSarthi
-    (medicine price compare) already uses, and its latency is low enough
-    for real-time call turns.
+    Runs on Groq (openai/gpt-oss-120b) because the Gemini free-tier project
+    hit a hard `limit: 0` quota wall (429 errors on every call). Groq is
+    also what the rest of MediSarthi (medicine price compare) already
+    uses, and its latency is low enough for real-time call turns.
     """
     history_text = "\n".join(conversation_history[-10:])  # last 10 turns
 
