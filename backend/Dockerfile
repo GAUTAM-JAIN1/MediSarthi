@@ -49,6 +49,7 @@ RUN uv sync --no-dev
 RUN uv run playwright install --with-deps chromium
 
 COPY knowledge ./knowledge
+COPY data/catalog ./data/catalog
 # NOTE: no top-level `config/` folder in this project â€” CrewAI's YAML
 # configs live inside src/agents/config/ and are already covered by the
 # `COPY src ./src` line above. Don't re-add a separate COPY config step.
