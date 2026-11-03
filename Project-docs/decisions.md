@@ -1183,3 +1183,11 @@ future endpoint), it doesn't expose that recovery to the end user today.
 4. **Catalog Hash Change:**
    - Previous SHA256: `878324ce78166edd10ebe11ae2edcc0e229e7470adb64ce18b9cb8820c6288c3`
    - New SHA256: `4cac87391dbd481922221f2eb81079409f7fa58a27c1ee404d8e0493f2b14ded` (reproducible across two clean importer runs).
+
+## D53 - Canonical OpenAPI environment set to uv.lock (3 Nov 2026)
+
+- The hash 37e7e6f8... was measured in a local pip venv (fastapi 0.138.1, pydantic 2.13.4, starlette 1.3.1). CI and Docker install from uv.lock (fastapi 0.124.0, pydantic 2.12.5, starlette 0.50.0).
+- Canonical OpenAPI hash is now 8ae125ca82c88c78289a555f5727873a7f902f5fe37000c04185c3c23dc411e8 (in-memory, LF), measured in the uv.lock environment. CI confirmation was pending when this entry was written.
+- Route count 43 is unchanged. Earlier parity checks (P03 to P08) each compared before and after inside one environment, so those results stay valid.
+- uv.lock was regenerated with uv 0.13.7 (lock revision 3 to 5). Against the committed lock, cmake, dlib, face-recognition and face-recognition-models were removed (already absent from pyproject.toml; the committed lock was stale), and pyobjc-framework-pubsub 12.1 was added (macOS-only marker). No version of fastapi, pydantic, starlette or any other runtime package changed.
+- Follow-up: pin uv to 0.13.7 in the CI install step so the lock format stays consistent.
