@@ -1,0 +1,17 @@
+Result 'Fluticasone Propionate Cream IP 0.05%':
+  Keys: ['available', 'delivery_info', 'notes', 'price', 'product_name', 'product_url', 'quantity', 'site']
+Result 'Fluticasone Propionate Nasal Spray IP 50 mcg':
+  Keys: ['available', 'delivery_info', 'notes', 'price', 'product_name', 'product_url', 'quantity', 'site']
+Result 'Salmeterol 50mcg and Fluticasone Propionate 100mcg Powder for Inhalation IP':
+  Keys: ['available', 'delivery_info', 'notes', 'price', 'product_name', 'product_url', 'quantity', 'site']
+Result 'Formoterol Fumarate 6mcg and Fluticasone Propionate 250mcg Powder for Inhalation':
+  Keys: ['available', 'delivery_info', 'notes', 'price', 'product_name', 'product_url', 'quantity', 'site']
+Result 'Azelastine Hydrochloride 140mcg and Fluticasone Propionate 50mcg Nasal Spray':
+  Keys: ['available', 'delivery_info', 'notes', 'price', 'product_name', 'product_url', 'quantity', 'site']
+Result 'Salmeterol 25mcg and Fluticasone Propionate 250mcg Inhaler IP':
+  Keys: ['available', 'delivery_info', 'notes', 'price', 'product_name', 'product_url', 'quantity', 'site']
+Result 'Formoterol 6mcg and Fluticasone Propionate 250mcg Inhaler':
+  Keys: ['available', 'delivery_info', 'notes', 'price', 'product_name', 'product_url', 'quantity', 'site']
+Result 'Fluticasone Propionate Respules 0.5mg per 2ml':
+  Keys: ['available', 'delivery_info', 'notes', 'price', 'product_name', 'product_url', 'quantity', 'site']
+RESPONSE_SHAPE_CHECK: PASS

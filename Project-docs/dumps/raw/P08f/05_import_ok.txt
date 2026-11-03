@@ -1,0 +1,12 @@
+.\venv\Scripts\python.exe : C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\venv\Lib\site-packages\google
+\api_core\_python_version_support.py:255: FutureWarning: You are using a Python version (3.11.9) which Google will 
+stop supporting in new releases of google.api_core once it reaches its end of life (2027-10-24). Please upgrade to the 
+latest Python version, or at least Python 3.12, to continue receiving updates for google.api_core past that date.
+At line:1 char:107
++ ... velopment"; .\venv\Scripts\python.exe -c "import sys; sys.path.insert ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\gauta\...past that date.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  warnings.warn(message, FutureWarning)
+IMPORT_OK

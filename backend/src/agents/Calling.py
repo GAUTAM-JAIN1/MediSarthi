@@ -26,10 +26,18 @@ load_dotenv()
 # main.py's /call/schedule starts it in a background thread via start_call().
 _call_app = FastAPI()
 
-_twilio_client = Client(
-    os.getenv("TWILIO_ACCOUNT_SID"),
-    os.getenv("TWILIO_AUTH_TOKEN")
-)
+_twilio_client = None
+
+
+def _get_twilio_client():
+    global _twilio_client
+    sid = os.getenv("TWILIO_ACCOUNT_SID")
+    token = os.getenv("TWILIO_AUTH_TOKEN")
+    if not sid or not token:
+        raise RuntimeError("Twilio credentials are not set")
+    if _twilio_client is None:
+        _twilio_client = Client(sid, token)
+    return _twilio_client
 
 # Shared call data — set by start_call() before the call is made.
 # Thread-safe enough for single-call-at-a-time use case.
@@ -295,7 +303,8 @@ def _trigger_call(to_number: str, ngrok_url: str):
     time.sleep(4)  # Let uvicorn finish starting
     print(f"[Calling] Placing call to {to_number}...")
     try:
-        call = _twilio_client.calls.create(
+        client = _get_twilio_client()
+        call = client.calls.create(
             to=to_number,
             from_=os.getenv("TWILIO_PHONE_NUMBER"),
             url=f"{ngrok_url}/twiml",

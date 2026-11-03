@@ -1,0 +1,68 @@
+{
+  "input_sha256": "4ac1c0e8967e16de86aad74b0810fc06342d5f81bbe3e27bb7c6e5d46e02c4d3",
+  "output_sha256": "4cac87391dbd481922221f2eb81079409f7fa58a27c1ee404d8e0493f2b14ded",
+  "total_rows": 2445,
+  "unique_drug_codes": 2445,
+  "zero_mrp_rows": 345,
+  "no_strength_rows": 382,
+  "slash_strength_rows": 41,
+  "slash_mismatch_rows": 0,
+  "combination_rows": 878,
+  "concentration_rows": 133,
+  "pack_count_present_rows": 1730,
+  "non_medicine_rows": 350,
+  "group_case_variants": [
+    {
+      "canonical": "Anti-Fungal",
+      "variants": [
+        "Anti-Fungal",
+        "Anti-fungal"
+      ]
+    },
+    {
+      "canonical": "Anti-Retroviral",
+      "variants": [
+        "Anti-Retroviral",
+        "Anti-retroviral"
+      ]
+    },
+    {
+      "canonical": "Anti-Viral",
+      "variants": [
+        "Anti-Viral",
+        "Anti-viral"
+      ]
+    },
+    {
+      "canonical": "Hemorrhoids & Anal Fissures",
+      "variants": [
+        "Hemorrhoids & Anal Fissures",
+        "Hemorrhoids & Anal fissures"
+      ]
+    },
+    {
+      "canonical": "Hepato-Protective",
+      "variants": [
+        "Hepato-Protective",
+        "Hepato-protective"
+      ]
+    },
+    {
+      "canonical": "Stomatologicals",
+      "variants": [
+        "STOMATOLOGICALS",
+        "Stomatologicals"
+      ]
+    }
+  ],
+  "duplicate_name_unit_pairs": [
+    {
+      "name_clean": "l-ornithine l-aspartate 150mg and pancreatin 100mg tablets",
+      "unit_size_raw": "10's",
+      "drug_codes": [
+        "1738",
+        "2040"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+    "medicines":  [
+                      {
+                          "medicine_name":  "Fluticasone Propionate",
+                          "results":  [
+                                          {
+                                              "site":  "PMBJP Jan Aushadhi",
+                                              "product_name":  "Fluticasone Propionate Cream IP 0.05%",
+                                              "price":  18.75,
+                                              "quantity":  "10 g",
+                                              "delivery_info":  "",
+                                              "product_url":  "",
+                                              "available":  true,
+                                              "notes":  "Topical | list dated 2026-11-02"
+                                          },
+                                          {
+                                              "site":  "PMBJP Jan Aushadhi",
+                                              "product_name":  "Fluticasone Propionate Nasal Spray IP 50 mcg",
+                                              "price":  75.0,
+                                              "quantity":  "100 MD",
+                                              "delivery_info":  "",
+                                              "product_url":  "",
+                                              "available":  true,
+                                              "notes":  "Topical | list dated 2026-11-02"
+                                          },
+                                          {
+                                              "site":  "PMBJP Jan Aushadhi",
+                                              "product_name":  "Salmeterol 50mcg and Fluticasone Propionate 100mcg Powder for Inhalation IP",
+                                              "price":  70.31,
+                                              "quantity":  "30\u0027s",
+                                              "delivery_info":  "",
+                                              "product_url":  "",
+                                              "available":  true,
+                                              "notes":  "Powder | list dated 2026-11-02 | combination"
+                                          },
+                                          {
+                                              "site":  "PMBJP Jan Aushadhi",
+                                              "product_name":  "Formoterol Fumarate 6mcg and Fluticasone Propionate 250mcg Powder for Inhalation",
+                                              "price":  103.13,
+                                              "quantity":  "30\u0027s",
+                                              "delivery_info":  "",
+                                              "product_url":  "",
+                                              "available":  true,
+                                              "notes":  "Powder | list dated 2026-11-02 | combination"
+                                          },
+                                          {
+                                              "site":  "PMBJP Jan Aushadhi",
+                                              "product_name":  "Azelastine Hydrochloride 140mcg and Fluticasone Propionate 50mcg Nasal Spray",
+                                              "price":  178.13,
+                                              "quantity":  "70 MD",
+                                              "delivery_info":  "",
+                                              "product_url":  "",
+                                              "available":  true,
+                                              "notes":  "Topical | list dated 2026-11-02 | combination"
+                                          },
+                                          {
+                                              "site":  "PMBJP Jan Aushadhi",
+                                              "product_name":  "Salmeterol 25mcg and Fluticasone Propionate 250mcg Inhaler IP",
+                                              "price":  234.38,
+                                              "quantity":  "100 MD",
+                                              "delivery_info":  "",
+                                              "product_url":  "",
+                                              "available":  true,
+                                              "notes":  "Other | list dated 2026-11-02 | combination"
+                                          },
+                                          {
+                                              "site":  "PMBJP Jan Aushadhi",
+                                              "product_name":  "Formoterol 6mcg and Fluticasone Propionate 250mcg Inhaler",
+                                              "price":  271.88,
+                                              "quantity":  "120 MDI",
+                                              "delivery_info":  "",
+                                              "product_url":  "",
+                                              "available":  true,
+                                              "notes":  "Other | list dated 2026-11-02 | combination"
+                                          },
+                                          {
+                                              "site":  "PMBJP Jan Aushadhi",
+                                              "product_name":  "Fluticasone Propionate Respules 0.5mg per 2ml",
+                                              "price":  15.94,
+                                              "quantity":  "2 ML",
+                                              "delivery_info":  "",
+                                              "product_url":  "",
+                                              "available":  true,
+                                              "notes":  "Other | list dated 2026-11-02 | concentration (mg/ml) | liquid: strength is per volume. Dose is in ml, not tablets. Confirm the dose with a doctor or pharmacist."
+                                          }
+                                      ],
+                          "best_price_site":  "PMBJP Jan Aushadhi",
+                          "fastest_delivery_site":  null
+                      }
+                  ]
+}

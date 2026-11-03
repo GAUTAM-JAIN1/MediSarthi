@@ -1,0 +1,12 @@
+Import completed successfully.
+Total rows: 2445
+Unique drug codes: 2445
+Zero MRP rows: 345
+No strength rows: 382
+Slash strength rows: 41
+Slash mismatch rows: 0
+Combination rows: 878
+Concentration rows: 133
+Pack count present rows: 1730
+Non-medicine rows: 350
+Output SHA256: 4cac87391dbd481922221f2eb81079409f7fa58a27c1ee404d8e0493f2b14ded

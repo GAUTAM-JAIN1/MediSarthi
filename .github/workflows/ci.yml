@@ -29,10 +29,24 @@ jobs:
         run: uv sync --no-dev
 
       - name: Run tests
-        run: uv run pytest -v
         env:
+          APP_ENV: development
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'ci-test-only-secret-key-do-not-use-in-prod-0123456789' }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          echo "APP_ENV=$APP_ENV"
+          echo "JWT_SECRET_KEY length=${#JWT_SECRET_KEY}"
+          uv run pytest -v
+
+      - name: Dump OpenAPI and package versions (diagnostic)
+        if: always()
+        env:
+          APP_ENV: development
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'ci-test-only-secret-key-do-not-use-in-prod-0123456789' }}
+        run: |
+          uv run python -W ignore -c "import sys,json,hashlib; import fastapi, pydantic, starlette; sys.path.insert(0,'src'); from agents.main import app; s=json.dumps(app.openapi(), sort_keys=True, indent=2); print('VERSIONS fastapi=%s pydantic=%s starlette=%s' % (fastapi.__version__, pydantic.__version__, starlette.__version__)); print('OPENAPI_HASH', hashlib.sha256(s.encode('utf-8')).hexdigest()); print(s)" > openapi_ci.txt
+          head -n 2 openapi_ci.txt
 
   frontend:
     runs-on: ubuntu-latest

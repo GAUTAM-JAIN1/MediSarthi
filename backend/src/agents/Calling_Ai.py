@@ -4,7 +4,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+_client = None
+
+
+def _get_groq_client():
+    global _client
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY is not set")
+    if _client is None:
+        _client = Groq(api_key=api_key)
+    return _client
 
 # meta-llama/llama-4-scout-17b-16e-instruct was Groq-deprecated (announced
 # 17 June 2026). Switched to openai/gpt-oss-120b — Groq's own recommended
@@ -15,7 +25,8 @@ GROQ_MODEL = "openai/gpt-oss-120b"
 
 
 def _groq(prompt: str) -> str:
-    response = _client.chat.completions.create(
+    client = _get_groq_client()
+    response = client.chat.completions.create(
         model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.6,

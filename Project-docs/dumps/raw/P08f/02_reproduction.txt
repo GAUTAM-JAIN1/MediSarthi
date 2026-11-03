@@ -1,0 +1,6 @@
+sr_no 421: name_raw='Fluticasone Propionate Respules 0.5mg per 2ml' | comps=[{'salt': 'fluticasone propionate respules', 'strength': 0.5, 'unit': 'mg', 'parse_ok': True}]
+sr_no 425: name_raw='Fluticasone Propionate Nasal Spray IP 50 mcg' | comps=[{'salt': 'fluticasone propionate spray', 'strength': 50.0, 'unit': 'mcg', 'parse_ok': True}]
+sr_no 771: name_raw='Fluticasone Furoate Nasal Spray 27.5mcg' | comps=[{'salt': 'fluticasone furoate spray', 'strength': 27.5, 'unit': 'mcg', 'parse_ok': True}]
+sr_no 431: name_raw='Ipratropium Bromide Respirator Solution 250mcg' | comps=[{'salt': 'ipratropium bromide respirator', 'strength': 250.0, 'unit': 'mcg', 'parse_ok': True}]
+search('fluticasone propionate'): [424, 433, 602, 961, 968, 1086]
+search('fluticasone furoate'): [771]

@@ -5,11 +5,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI")
+_client = None
+
+
 def get_database():
-    client = MongoClient(MONGO_URI)
-    db = client["medical_db"]
-    return db
+    global _client
+    mongo_uri = os.getenv("MONGO_URI")
+    if not mongo_uri:
+        raise RuntimeError("MONGO_URI is not set")
+    if _client is None:
+        _client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+    return _client["medical_db"]
 
 
 def ensure_indexes():

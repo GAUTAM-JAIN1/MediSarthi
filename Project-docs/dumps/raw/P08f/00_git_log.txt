@@ -1,0 +1,2 @@
+1151654 Phase 0-1 and medicine catalog: config validation, request-id middleware, router split, PMBJP catalog-backed price lookup (scraping removed)
+0ae8532 Fix Docker adaptability issues: ngrok binary install, Playwright chromium setup, Groq rate-limit/model swap, remove Windows-hardcoded paths

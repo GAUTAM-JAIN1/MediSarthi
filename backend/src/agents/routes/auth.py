@@ -1,0 +1,42 @@
+from fastapi import APIRouter, HTTPException, Request
+from agents.schemas import SignupRequest, LoginRequest
+from agents.rate_limit import LOGIN_LIMITER, SIGNUP_LIMITER, get_client_ip
+from agents.auth import signup_user, login_user
+from agents.jwt_utils import create_access_token
+from agents.errors import _server_error
+
+router = APIRouter()
+
+
+@router.post("/auth/signup")
+def signup(request: SignupRequest, req: Request):
+    client_ip = get_client_ip(req)
+    if not SIGNUP_LIMITER.check(client_ip):
+        raise HTTPException(status_code=429, detail="Too many attempts. Try again in a minute.")
+    try:
+        profile = signup_user(
+            request.name, request.age, request.gender, request.allergies,
+            request.city, request.state, request.email, request.password
+        )
+        token = create_access_token(profile["ID"])
+        return {"user_id": profile["ID"], "name": profile["Name"], "user": profile, "access_token": token}
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err))
+    except Exception as e:
+        raise _server_error(e)
+
+
+@router.post("/auth/login")
+def login(request: LoginRequest, req: Request):
+    client_ip = get_client_ip(req)
+    if not LOGIN_LIMITER.check(client_ip):
+        raise HTTPException(status_code=429, detail="Too many attempts. Try again in a minute.")
+    try:
+        profile = login_user(request.email, request.password)
+        token = create_access_token(profile["ID"])
+        return {"user_id": profile["ID"], "name": profile["Name"], "user": profile, "access_token": token}
+    except ValueError as err:
+        raise HTTPException(status_code=401, detail=str(err))
+    except Exception as e:
+        raise _server_error(e)
+

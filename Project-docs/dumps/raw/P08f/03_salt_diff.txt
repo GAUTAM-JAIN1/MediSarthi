@@ -1,0 +1,13 @@
+Changed rows count: 10
+Full sr_no list: [421, 425, 431, 771, 1011, 1364, 1731, 1738, 1843, 1866]
+Changed rows detail:
+sr_no 421: 'Fluticasone Propionate Respules 0.5mg per 2ml' | old: ['fluticasone propionate respules'] | new: ['fluticasone propionate']
+sr_no 425: 'Fluticasone Propionate Nasal Spray IP 50 mcg' | old: ['fluticasone propionate spray'] | new: ['fluticasone propionate']
+sr_no 431: 'Ipratropium Bromide Respirator Solution 250mcg' | old: ['ipratropium bromide respirator'] | new: ['ipratropium bromide']
+sr_no 771: 'Fluticasone Furoate Nasal Spray 27.5mcg' | old: ['fluticasone furoate spray'] | new: ['fluticasone furoate']
+sr_no 1011: 'Levosalbutamol Respules 0.63mg per 2.5ml' | old: ['levosalbutamol respules'] | new: ['levosalbutamol']
+sr_no 1364: 'Mometasone Aqueous Nasal Spray IP 0.05%w/v (nasal suspension in a pressurise container)' | old: ['mometasone aqueous spray'] | new: ['mometasone aqueous']
+sr_no 1731: 'Janaushadhi Antiseptic Bandage Spray (Cetrimide 0.10% w/w with Lidocaine 1.0% w/w Spray)' | old: ['janaushadhi antiseptic bandage spray'] | new: ['janaushadhi antiseptic bandage']
+sr_no 1738: 'Janaushadhi Burn Relief Spray (Lidocaine 3% w/w and Benzethonium 0.20% w/w Spray)' | old: ['janaushadhi burn relief spray', 'benzethonium'] | new: ['janaushadhi burn relief', 'benzethonium']
+sr_no 1843: 'Janaushadhi Pain Relief Spray (Wintergreen Tel 20% w/w, karpura 10% w/w, turpentine Oil 10% w/w, Nilgiri ka Tel 6% w/w, Pudina ka Phool 4% w/w, Lavang ka Tel 1% w/w, Cinnamon Oil 0.5% w/w)' | old: ['janaushadhi pain relief spray', 'karpura', 'turpentine oil', 'nilgiri ka tel', 'pudina ka phool', 'lavang ka tel', 'cinnamon oil'] | new: ['janaushadhi pain relief', 'karpura', 'turpentine oil', 'nilgiri ka tel', 'pudina ka phool', 'lavang ka tel', 'cinnamon oil']
+sr_no 1866: 'Throat Spray (Chamomile extract, peppermint oil, Sage oil, Pine Needle oil, Bergamot oil, Cineole oil, Methyl salicylate, Ethyl Alcohol, Propylene Glycol, Glycerin, Citric acid, Polysorbate 80, water)' | old: ['throat spray', 'peppermint oil', 'sage oil', 'pine needle oil', 'bergamot oil', 'cineole oil', 'methyl salicylate', 'ethyl alcohol', 'propylene glycol', 'glycerin', 'citric acid', 'polysorbate 80', 'water)'] | new: ['throat', 'peppermint oil', 'sage oil', 'pine needle oil', 'bergamot oil', 'cineole oil', 'methyl salicylate', 'ethyl alcohol', 'propylene glycol', 'glycerin', 'citric acid', 'polysorbate 80', 'water)']
