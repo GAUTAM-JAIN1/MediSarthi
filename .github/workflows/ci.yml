@@ -29,12 +29,15 @@ jobs:
         run: uv sync --no-dev
 
       - name: Run tests
-        run: uv run pytest -v
         env:
           APP_ENV: development
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY || 'ci-test-only-secret-key-do-not-use-in-prod-0123456789' }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          echo "APP_ENV=$APP_ENV"
+          echo "JWT_SECRET_KEY length=${#JWT_SECRET_KEY}"
+          uv run pytest -v
 
   frontend:
     runs-on: ubuntu-latest
