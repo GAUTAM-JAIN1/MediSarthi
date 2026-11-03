@@ -588,7 +588,7 @@
     "name_clean": "paracetamol paediatric oral suspension ip 125 mg per 5 ml",
     "components": [
       {
-        "salt": "paracetamol paediatric",
+        "salt": "paracetamol",
         "strength": 125.0,
         "unit": "mg",
         "parse_ok": true
@@ -3234,7 +3234,7 @@
     "name_clean": "povidone-iodine solution ip 10 % w/v",
     "components": [
       {
-        "salt": "povidone-iodine solution",
+        "salt": "povidone-iodine",
         "strength": 10.0,
         "unit": "%",
         "parse_ok": true
@@ -3261,7 +3261,7 @@
     "name_clean": "povidone-iodine solution ip 5 % w/v",
     "components": [
       {
-        "salt": "povidone-iodine solution",
+        "salt": "povidone-iodine",
         "strength": 5.0,
         "unit": "%",
         "parse_ok": true
@@ -3288,7 +3288,7 @@
     "name_clean": "povidone iodine solution 7.5% w/v",
     "components": [
       {
-        "salt": "povidone iodine solution",
+        "salt": "povidone iodine",
         "strength": 7.5,
         "unit": "%",
         "parse_ok": true
@@ -4527,7 +4527,7 @@
     "name_clean": "lactulose solution ip 10g per 15ml",
     "components": [
       {
-        "salt": "lactulose solution",
+        "salt": "lactulose",
         "strength": 10.0,
         "unit": "g",
         "parse_ok": true
@@ -7563,7 +7563,7 @@
     "name_clean": "carboxymethylcellulose sodium eye drops ip 0.5% w/v",
     "components": [
       {
-        "salt": "carboxymethylcellulose sodium eye drops",
+        "salt": "carboxymethylcellulose sodium",
         "strength": 0.5,
         "unit": "%",
         "parse_ok": true
@@ -7590,7 +7590,7 @@
     "name_clean": "ciprofloxacin eye drops ip 0.3% w/v",
     "components": [
       {
-        "salt": "ciprofloxacin eye drops",
+        "salt": "ciprofloxacin",
         "strength": 0.3,
         "unit": "%",
         "parse_ok": true
@@ -7617,7 +7617,7 @@
     "name_clean": "gentamicin eye drops ip 0.3% w/v",
     "components": [
       {
-        "salt": "gentamicin eye drops",
+        "salt": "gentamicin",
         "strength": 0.3,
         "unit": "%",
         "parse_ok": true
@@ -7644,7 +7644,7 @@
     "name_clean": "xylometazoline nasal drops ip 0.1%w/v",
     "components": [
       {
-        "salt": "xylometazoline nasal drops",
+        "salt": "xylometazoline",
         "strength": 0.1,
         "unit": "%",
         "parse_ok": true
@@ -12078,7 +12078,7 @@
     "name_clean": "saline nasal drops (sodium chloride 0.65% w/v)",
     "components": [
       {
-        "salt": "saline nasal drops",
+        "salt": "saline",
         "strength": 0.65,
         "unit": "%",
         "parse_ok": true
@@ -12138,7 +12138,7 @@
     "name_clean": "fluticasone propionate respules 0.5mg per 2ml",
     "components": [
       {
-        "salt": "fluticasone propionate respules",
+        "salt": "fluticasone propionate",
         "strength": 0.5,
         "unit": "mg",
         "parse_ok": true
@@ -12258,7 +12258,7 @@
     "name_clean": "fluticasone propionate nasal spray ip 50 mcg",
     "components": [
       {
-        "salt": "fluticasone propionate nasal spray",
+        "salt": "fluticasone propionate",
         "strength": 50.0,
         "unit": "mcg",
         "parse_ok": true
@@ -12339,7 +12339,7 @@
     "name_clean": "oxymetazoline hydrochloride nasal drops ip 0.5 mg per ml",
     "components": [
       {
-        "salt": "oxymetazoline hydrochloride nasal drops",
+        "salt": "oxymetazoline hydrochloride",
         "strength": 0.5,
         "unit": "mg",
         "parse_ok": true
@@ -12438,7 +12438,7 @@
     "name_clean": "ipratropium bromide respirator solution 250mcg",
     "components": [
       {
-        "salt": "ipratropium bromide respirator solution",
+        "salt": "ipratropium bromide",
         "strength": 250.0,
         "unit": "mcg",
         "parse_ok": true
@@ -14238,7 +14238,7 @@
         "parse_ok": false
       },
       {
-        "salt": "pepsin enzyme drops",
+        "salt": "pepsin enzyme",
         "strength": null,
         "unit": null,
         "parse_ok": false
@@ -14424,7 +14424,7 @@
     "name_clean": "multivitamin drops",
     "components": [
       {
-        "salt": "multivitamin drops",
+        "salt": "multivitamin",
         "strength": null,
         "unit": null,
         "parse_ok": false
@@ -14844,7 +14844,7 @@
     "name_clean": "lactulose solution ip 10g per 15ml",
     "components": [
       {
-        "salt": "lactulose solution",
+        "salt": "lactulose",
         "strength": 10.0,
         "unit": "g",
         "parse_ok": true
@@ -14898,7 +14898,7 @@
     "name_clean": "timolol maleate eye drops ip 0.5 %",
     "components": [
       {
-        "salt": "timolol maleate eye drops",
+        "salt": "timolol maleate",
         "strength": 0.5,
         "unit": "%",
         "parse_ok": true
@@ -14925,7 +14925,7 @@
     "name_clean": "ofloxacin eye drops ip 0.3% w/v",
     "components": [
       {
-        "salt": "ofloxacin eye drops",
+        "salt": "ofloxacin",
         "strength": 0.3,
         "unit": "%",
         "parse_ok": true
@@ -14952,7 +14952,7 @@
     "name_clean": "olopatadine hydrochloride ophthalmic solution ip 0.1% w/v",
     "components": [
       {
-        "salt": "olopatadine hydrochloride ophthalmic solution",
+        "salt": "olopatadine hydrochloride",
         "strength": 0.1,
         "unit": "%",
         "parse_ok": true
@@ -14979,7 +14979,7 @@
     "name_clean": "tropicamide eye drops ip 1% w/v",
     "components": [
       {
-        "salt": "tropicamide eye drops",
+        "salt": "tropicamide",
         "strength": 1.0,
         "unit": "%",
         "parse_ok": true
@@ -15045,7 +15045,7 @@
     "name_clean": "sulphacetamide eye drop ip 10 % w/v",
     "components": [
       {
-        "salt": "sulphacetamide eye drop",
+        "salt": "sulphacetamide",
         "strength": 10.0,
         "unit": "%",
         "parse_ok": true
@@ -15099,7 +15099,7 @@
     "name_clean": "pilocarpine eye drops ip 2% w/v",
     "components": [
       {
-        "salt": "pilocarpine eye drops",
+        "salt": "pilocarpine",
         "strength": 2.0,
         "unit": "%",
         "parse_ok": true
@@ -16701,7 +16701,7 @@
     "name_clean": "bromfenac sodium eye drop 0.09%w/v",
     "components": [
       {
-        "salt": "bromfenac sodium eye drop",
+        "salt": "bromfenac sodium",
         "strength": 0.09,
         "unit": "%",
         "parse_ok": true
@@ -17028,7 +17028,7 @@
     "name_clean": "cholecalciferol (vitamin d3) drops 800 iu per ml",
     "components": [
       {
-        "salt": "cholecalciferol (vitamin d3) drops",
+        "salt": "cholecalciferol",
         "strength": 800.0,
         "unit": "iu",
         "parse_ok": true
@@ -17055,7 +17055,7 @@
     "name_clean": "cholecalciferol (vitamin d3) drops 400 iu per ml",
     "components": [
       {
-        "salt": "cholecalciferol (vitamin d3) drops",
+        "salt": "cholecalciferol",
         "strength": 400.0,
         "unit": "iu",
         "parse_ok": true
@@ -18849,7 +18849,7 @@
     "name_clean": "nepafenac eye drop 0.1% w/v",
     "components": [
       {
-        "salt": "nepafenac eye drop",
+        "salt": "nepafenac",
         "strength": 0.1,
         "unit": "%",
         "parse_ok": true
@@ -19011,7 +19011,7 @@
     "name_clean": "ondansetron oral solution ip 2 mg per 5ml",
     "components": [
       {
-        "salt": "ondansetron solution",
+        "salt": "ondansetron",
         "strength": 2.0,
         "unit": "mg",
         "parse_ok": true
@@ -20301,7 +20301,7 @@
     "name_clean": "moxifloxacin hydrochloride eye drops ip 0.5% w/v",
     "components": [
       {
-        "salt": "moxifloxacin hydrochloride eye drops",
+        "salt": "moxifloxacin hydrochloride",
         "strength": 0.5,
         "unit": "%",
         "parse_ok": true
@@ -21330,7 +21330,7 @@
     "name_clean": "amino acid solution for iv",
     "components": [
       {
-        "salt": "amino acid solution for iv",
+        "salt": "amino acid for iv",
         "strength": null,
         "unit": null,
         "parse_ok": false
@@ -22482,7 +22482,7 @@
     "name_clean": "fluticasone furoate nasal spray 27.5mcg",
     "components": [
       {
-        "salt": "fluticasone furoate nasal spray",
+        "salt": "fluticasone furoate",
         "strength": 27.5,
         "unit": "mcg",
         "parse_ok": true
@@ -23310,7 +23310,7 @@
     "name_clean": "tobramycin eye drops 0.3%w/v",
     "components": [
       {
-        "salt": "tobramycin eye drops",
+        "salt": "tobramycin",
         "strength": 0.3,
         "unit": "%",
         "parse_ok": true
@@ -23781,7 +23781,7 @@
     "name_clean": "levetiracetam oral solution ip 100mg",
     "components": [
       {
-        "salt": "levetiracetam solution",
+        "salt": "levetiracetam",
         "strength": 100.0,
         "unit": "mg",
         "parse_ok": true
@@ -25740,7 +25740,7 @@
     "name_clean": "bimatoprost ophthalmic solution 0.01% w/v",
     "components": [
       {
-        "salt": "bimatoprost ophthalmic solution",
+        "salt": "bimatoprost",
         "strength": 0.01,
         "unit": "%",
         "parse_ok": true
@@ -25767,7 +25767,7 @@
     "name_clean": "bimatoprost ophthalmic solution 0.03% w/v",
     "components": [
       {
-        "salt": "bimatoprost ophthalmic solution",
+        "salt": "bimatoprost",
         "strength": 0.03,
         "unit": "%",
         "parse_ok": true
@@ -25854,7 +25854,7 @@
     "name_clean": "brimonidine tartrate eye drops ip 0.1% w/v",
     "components": [
       {
-        "salt": "brimonidine tartrate eye drops",
+        "salt": "brimonidine tartrate",
         "strength": 0.1,
         "unit": "%",
         "parse_ok": true
@@ -26187,7 +26187,7 @@
     "name_clean": "carboxymethlycellulose eye drops ip 1% w/v",
     "components": [
       {
-        "salt": "carboxymethlycellulose eye drops",
+        "salt": "carboxymethlycellulose",
         "strength": 1.0,
         "unit": "%",
         "parse_ok": true
@@ -27714,7 +27714,7 @@
     "name_clean": "dorzolamide eye drops ip 2% w/v",
     "components": [
       {
-        "salt": "dorzolamide eye drops",
+        "salt": "dorzolamide",
         "strength": 2.0,
         "unit": "%",
         "parse_ok": true
@@ -28995,7 +28995,7 @@
     "name_clean": "hydroxypropylmethylcellulose eye drop 0.3% w/v",
     "components": [
       {
-        "salt": "hydroxypropylmethylcellulose eye drop",
+        "salt": "hydroxypropylmethylcellulose",
         "strength": 0.3,
         "unit": "%",
         "parse_ok": true
@@ -29856,7 +29856,7 @@
     "name_clean": "levosalbutamol respules 0.63mg per 2.5ml",
     "components": [
       {
-        "salt": "levosalbutamol respules",
+        "salt": "levosalbutamol",
         "strength": 0.63,
         "unit": "mg",
         "parse_ok": true
@@ -30186,7 +30186,7 @@
     "name_clean": "minoxidil solution 5%",
     "components": [
       {
-        "salt": "minoxidil solution",
+        "salt": "minoxidil",
         "strength": 5.0,
         "unit": "%",
         "parse_ok": true
@@ -30996,7 +30996,7 @@
     "name_clean": "paracetamol drops 100 mg per ml",
     "components": [
       {
-        "salt": "paracetamol drops",
+        "salt": "paracetamol",
         "strength": 100.0,
         "unit": "mg",
         "parse_ok": true
@@ -32442,7 +32442,7 @@
     "name_clean": "sodium valproate oral solution ip 200mg per 5ml",
     "components": [
       {
-        "salt": "sodium valproate solution",
+        "salt": "sodium valproate",
         "strength": 200.0,
         "unit": "mg",
         "parse_ok": true
@@ -33021,7 +33021,7 @@
     "name_clean": "travoprost ophthalmic solution ip 0.004%w/v",
     "components": [
       {
-        "salt": "travoprost ophthalmic solution",
+        "salt": "travoprost",
         "strength": 0.004,
         "unit": "%",
         "parse_ok": true
@@ -33207,7 +33207,7 @@
     "name_clean": "vitamin d3 oral solution 60000 iu",
     "components": [
       {
-        "salt": "vitamin d3 solution",
+        "salt": "vitamin d3",
         "strength": 60000.0,
         "unit": "iu",
         "parse_ok": true
@@ -34182,7 +34182,7 @@
     "name_clean": "azithromycin eye drops 1% w/v",
     "components": [
       {
-        "salt": "azithromycin eye drops",
+        "salt": "azithromycin",
         "strength": 1.0,
         "unit": "%",
         "parse_ok": true
@@ -34209,7 +34209,7 @@
     "name_clean": "betaxolol eye drops ip 0.5% w/v",
     "components": [
       {
-        "salt": "betaxolol eye drops",
+        "salt": "betaxolol",
         "strength": 0.5,
         "unit": "%",
         "parse_ok": true
@@ -34236,7 +34236,7 @@
     "name_clean": "brinzolamide ophthalmic suspension ip 1% w/v",
     "components": [
       {
-        "salt": "brinzolamide ophthalmic",
+        "salt": "brinzolamide",
         "strength": 1.0,
         "unit": "%",
         "parse_ok": true
@@ -34455,7 +34455,7 @@
     "name_clean": "homatropine hydrobromide eye drops ip 2% w/v",
     "components": [
       {
-        "salt": "homatropine hydrobromide eye drops",
+        "salt": "homatropine hydrobromide",
         "strength": 2.0,
         "unit": "%",
         "parse_ok": true
@@ -34482,7 +34482,7 @@
     "name_clean": "levofloxacin eye drops 0.5 % w/v",
     "components": [
       {
-        "salt": "levofloxacin eye drops",
+        "salt": "levofloxacin",
         "strength": 0.5,
         "unit": "%",
         "parse_ok": true
@@ -34542,7 +34542,7 @@
     "name_clean": "natamycin ophthalmic suspension ip 5% w/v",
     "components": [
       {
-        "salt": "natamycin ophthalmic",
+        "salt": "natamycin",
         "strength": 5.0,
         "unit": "%",
         "parse_ok": true
@@ -38247,7 +38247,7 @@
     "name_clean": "sodium hyaluronate eye drops 0.1% w/v",
     "components": [
       {
-        "salt": "sodium hyaluronate eye drops",
+        "salt": "sodium hyaluronate",
         "strength": 0.1,
         "unit": "%",
         "parse_ok": true
@@ -40341,7 +40341,7 @@
     "name_clean": "ketorolac tromethamine ophthalmic solution 0.4% w/v",
     "components": [
       {
-        "salt": "ketorolac tromethamine ophthalmic solution",
+        "salt": "ketorolac tromethamine",
         "strength": 0.4,
         "unit": "%",
         "parse_ok": true
@@ -40569,7 +40569,7 @@
     "name_clean": "mometasone aqueous nasal spray ip 0.05%w/v (nasal suspension in a pressurise container)",
     "components": [
       {
-        "salt": "mometasone aqueous nasal spray",
+        "salt": "mometasone aqueous",
         "strength": 0.05,
         "unit": "%",
         "parse_ok": true
@@ -40857,7 +40857,7 @@
     "name_clean": "prednisolone sodium phosphate eye drops ip 1%w/v",
     "components": [
       {
-        "salt": "prednisolone sodium phosphate eye drops",
+        "salt": "prednisolone sodium phosphate",
         "strength": 1.0,
         "unit": "%",
         "parse_ok": true
@@ -51402,7 +51402,7 @@
     "name_clean": "povidone- iodine solution ip 10 % w/v",
     "components": [
       {
-        "salt": "povidone- iodine solution",
+        "salt": "povidone- iodine",
         "strength": 10.0,
         "unit": "%",
         "parse_ok": true
@@ -51702,7 +51702,7 @@
     "name_clean": "janaushadhi antiseptic bandage spray (cetrimide 0.10% w/w with lidocaine 1.0% w/w spray)",
     "components": [
       {
-        "salt": "janaushadhi antiseptic bandage spray",
+        "salt": "janaushadhi antiseptic bandage",
         "strength": 0.1,
         "unit": "%",
         "parse_ok": true
@@ -51915,7 +51915,7 @@
     "name_clean": "janaushadhi burn relief spray (lidocaine 3% w/w and benzethonium 0.20% w/w spray)",
     "components": [
       {
-        "salt": "janaushadhi burn relief spray",
+        "salt": "janaushadhi burn relief",
         "strength": 3.0,
         "unit": "%",
         "parse_ok": true
@@ -53724,7 +53724,7 @@
     "name_clean": "hydroxyzine hydrochloride drops 6mg per ml",
     "components": [
       {
-        "salt": "hydroxyzine hydrochloride drops",
+        "salt": "hydroxyzine hydrochloride",
         "strength": 6.0,
         "unit": "mg",
         "parse_ok": true
@@ -55284,7 +55284,7 @@
     "name_clean": "janaushadhi pain relief spray (wintergreen tel 20% w/w, karpura 10% w/w, turpentine oil 10% w/w, nilgiri ka tel 6% w/w, pudina ka phool 4% w/w, lavang ka tel 1% w/w, cinnamon oil 0.5% w/w)",
     "components": [
       {
-        "salt": "janaushadhi pain relief spray",
+        "salt": "janaushadhi pain relief",
         "strength": 20.0,
         "unit": "%",
         "parse_ok": true
@@ -56031,7 +56031,7 @@
     "name_clean": "throat spray (chamomile extract, peppermint oil, sage oil, pine needle oil, bergamot oil, cineole oil, methyl salicylate, ethyl alcohol, propylene glycol, glycerin, citric acid, polysorbate 80, water)",
     "components": [
       {
-        "salt": "throat spray",
+        "salt": "throat",
         "strength": null,
         "unit": null,
         "parse_ok": false
@@ -56424,7 +56424,7 @@
     "name_clean": "triclofos oral solution ip",
     "components": [
       {
-        "salt": "triclofos solution",
+        "salt": "triclofos",
         "strength": null,
         "unit": null,
         "parse_ok": false
@@ -57510,7 +57510,7 @@
     "name_clean": "feracrylum sterile antiseptic solution 1% w/v",
     "components": [
       {
-        "salt": "feracrylum sterile antiseptic solution",
+        "salt": "feracrylum sterile antiseptic",
         "strength": 1.0,
         "unit": "%",
         "parse_ok": true
@@ -57726,7 +57726,7 @@
     "name_clean": "itraconazole eye drops 1% w/v",
     "components": [
       {
-        "salt": "itraconazole eye drops",
+        "salt": "itraconazole",
         "strength": 1.0,
         "unit": "%",
         "parse_ok": true
@@ -59019,7 +59019,7 @@
         "parse_ok": false
       },
       {
-        "salt": "solvent for solution for",
+        "salt": "solvent for for",
         "strength": 250.0,
         "unit": "mcg",
         "parse_ok": true
@@ -59052,7 +59052,7 @@
         "parse_ok": false
       },
       {
-        "salt": "solvent for solution for",
+        "salt": "solvent for for",
         "strength": 500.0,
         "unit": "mcg",
         "parse_ok": true
@@ -59079,7 +59079,7 @@
     "name_clean": "latanoprost eye drops ip 0.005% w/v (50mcg per ml)",
     "components": [
       {
-        "salt": "latanoprost eye drops",
+        "salt": "latanoprost",
         "strength": 0.005,
         "unit": "%",
         "parse_ok": true
@@ -67080,7 +67080,7 @@
     "name_clean": "nasal oxygen cannula set, twin bore (adult)",
     "components": [
       {
-        "salt": "nasal oxygen cannula set",
+        "salt": "oxygen cannula set",
         "strength": null,
         "unit": null,
         "parse_ok": false

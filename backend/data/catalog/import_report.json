@@ -1,6 +1,6 @@
 {
   "input_sha256": "4ac1c0e8967e16de86aad74b0810fc06342d5f81bbe3e27bb7c6e5d46e02c4d3",
-  "output_sha256": "779df16a87e4f7d8cd7283ab461c1a416da504a355ed49df11033a9fa1dcf043",
+  "output_sha256": "4cac87391dbd481922221f2eb81079409f7fa58a27c1ee404d8e0493f2b14ded",
   "total_rows": 2445,
   "unique_drug_codes": 2445,
   "zero_mrp_rows": 345,

@@ -45,29 +45,29 @@ def test_loose_matches_have_is_concentration_true():
 def test_search_paracetamol_250_no_concentration_or_liquid():
     items = catalog.load_catalog()
     results = catalog.search("paracetamol 250", items)
-    assert not any(catalog.is_concentration_row(item) for item in results)
-    assert all(item.get("dosage_form") not in {"Liquid", "Drops"} for item in results)
+    assert {r["sr_no"] for r in results} == {519, 1051}
+    assert all(catalog.is_liquid_form(r) for r in results)
 
 
 def test_search_paracetamol_250_first_result():
     items = catalog.load_catalog()
-    # Data fact (verified in P08c): the PMBJP list has no solid (Tablet/Capsule) paracetamol 250 mg product.
-    # Only two liquid rows (sr_no 519 and 1051) carry paracetamol 250.
     liquid_250 = [
         item for item in items
         if item.get("dosage_form") == "Liquid"
         and any(c.get("salt") == "paracetamol" and c.get("strength") == 250.0 for c in item.get("components", []))
     ]
     assert len(liquid_250) == 2
-    # Current policy (D48): liquids are excluded from strength-qualified search.
-    # If the liquid policy changes (open decision, Gautam), this assertion must be updated in that prompt.
-    assert catalog.search("paracetamol 250", items) == []
+    results = catalog.search("paracetamol 250", items)
+    assert {r["sr_no"] for r in results} == {519, 1051}
+    assert all(catalog.is_liquid_form(r) for r in results)
 
 
 def test_search_ibuprofen_100_no_concentration():
     items = catalog.load_catalog()
     results = catalog.search("ibuprofen 100", items)
-    assert not any(item.get("is_concentration") is True for item in results)
+    assert len(results) > 0
+    ranks = [catalog._form_rank(r) for r in results]
+    assert ranks == sorted(ranks)
 
 
 def test_search_paracetamol_650_regression():

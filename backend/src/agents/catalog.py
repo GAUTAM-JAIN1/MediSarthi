@@ -23,6 +23,9 @@ _WORDS_TO_REMOVE = [
     "injection", "syrup", "suspension", "gel", "cream",
     "sr", "er", "prolonged", "sustained", "release",
     "delayed", "modified", "extended", "dispersible", "oral", "granules",
+    "paediatric", "pediatric",
+    "eye drops", "eye drop", "ear drops", "ear drop", "drops", "nasal", "ophthalmic", "opthalmic", "solution",
+    "spray", "respules", "respirator",
 ]
 _REMOVE_PATTERN = re.compile(
     r"\b(" + "|".join(re.escape(w) for w in sorted(_WORDS_TO_REMOVE, key=len, reverse=True)) + r")\b",
@@ -204,22 +207,30 @@ CONCENTRATION_RX = re.compile(
 )
 
 
-def is_concentration_row(item: Dict[str, Any]) -> bool:
+def is_liquid_form(item: Dict[str, Any]) -> bool:
     return bool(item.get("is_concentration")) or item.get("dosage_form") in {"Liquid", "Drops"}
+
+
+def is_concentration_row(item: Dict[str, Any]) -> bool:
+    return is_liquid_form(item)
+
+
+def _form_rank(item: Dict[str, Any]) -> int:
+    return 1 if is_liquid_form(item) else 0
 
 
 def search(query: str, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Search catalog items for query.
+    Liquids and drops are included; solid forms rank first; no silent fallback when a unit is given.
     If strength is specified:
-      - Excludes concentration and liquid/drops rows (is_concentration_row).
       - Returns exact salt and strength matches.
       - If no exact match and unit is None, falls back to items whose name_clean
-        contains the full normalized query (including number), excluding concentration rows.
+        contains the full normalized query (including number).
       - If unit is specified, never falls back.
     If strength is not specified, returns exact salt matches if any, or falls back to name_clean substring.
-    Results are sorted by single-ingredient first, non-concentration first, price_per_unit ascending (None last),
-    and drug_code.
+    Results are sorted by form rank (solid forms first), single-ingredient first,
+    price_per_unit ascending (None last), and drug_code.
     """
     name, strength, unit = parse_query(query)
     exact = [item for item in items if any(c.get("salt") == name for c in item.get("components", []))]
@@ -227,8 +238,7 @@ def search(query: str, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     if strength is not None:
         matches = [
             item for item in exact
-            if not is_concentration_row(item)
-            and any(
+            if any(
                 c.get("salt") == name
                 and c.get("strength") == strength
                 and (unit is None or c.get("unit") == unit)
@@ -240,15 +250,14 @@ def search(query: str, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             matches = [
                 item for item in items
                 if full_norm in item.get("name_clean", "")
-                and not is_concentration_row(item)
             ]
     else:
         matches = exact if exact else [item for item in items if name in item.get("name_clean", "")]
 
     matches.sort(
         key=lambda item: (
+            _form_rank(item),
             item.get("is_combination", False),
-            item.get("is_concentration", False),
             item.get("price_per_unit") is None,
             item.get("price_per_unit") or 0.0,
             item.get("drug_code", ""),

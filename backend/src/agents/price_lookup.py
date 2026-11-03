@@ -28,6 +28,10 @@ async def run_comparison(medicines: List[str]) -> Dict[str, Any]:
                 notes += " | combination"
             if h.get("is_concentration"):
                 notes += " | concentration (mg/ml)"
+            if h.get("dosage_form") == "Drops":
+                notes += " | drops: follow the label. Not a tablet strength."
+            elif catalog.is_liquid_form(h):
+                notes += " | liquid: strength is per volume. Dose is in ml, not tablets. Confirm the dose with a doctor or pharmacist."
             if not available:
                 notes += " | price not notified"
 
