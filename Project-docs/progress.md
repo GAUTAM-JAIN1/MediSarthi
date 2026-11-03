@@ -969,3 +969,4 @@ Status: CLOSED. Dump: dumps\P08f_dump.md. Raw evidence: dumps\raw\P08f\.
 - Open leftovers: "aqueous" (sr 1364), "throat" (sr 1866).
 - Open product decision: mixed-route results (cream, nasal spray, inhaler) under one medicine name. Route should be shown.
 - Also open (P08f): "throat" leftover (sr 1866), clinician review of safety copy, Playwright/browser-use package cleanup.
+- Note (P08f raw evidence): RAW FILE INDEX hashes in P08f_dump refer to the original UTF-16 files (commit d946d3b). The files were converted to UTF-8 in commit a6f712f; decoded content verified identical.
