@@ -25,6 +25,9 @@ Requires: pip install pyjwt
 """
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 from datetime import datetime, timedelta
 
 import jwt
@@ -34,14 +37,20 @@ from fastapi import Header, HTTPException
 # a real secret. Falls back to a fixed dev-only value so the app doesn't
 # crash if JWT_SECRET_KEY isn't set locally, but logs a loud warning so this
 # is never silently shipped as-is.
+APP_ENV = os.getenv("APP_ENV", "production").lower()
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-if not SECRET_KEY:
-    SECRET_KEY = "dev-only-insecure-secret-change-me"
-    print(
-        "[jwt_utils] WARNING: JWT_SECRET_KEY not set in environment — using "
-        "an insecure development default. Set JWT_SECRET_KEY before deploying "
-        "anywhere real users will use this."
-    )
+if not SECRET_KEY or len(SECRET_KEY) < 32:
+    if APP_ENV == "development":
+        SECRET_KEY = "dev-only-insecure-secret-change-me"
+        print(
+            "[jwt_utils] WARNING: JWT_SECRET_KEY not set in environment or shorter than 32 characters — using "
+            "an insecure development default. Set JWT_SECRET_KEY before deploying "
+            "anywhere real users will use this."
+        )
+    else:
+        raise RuntimeError(
+            "JWT_SECRET_KEY must be set to at least 32 characters. For local development only, set APP_ENV=development."
+        )
 
 ALGORITHM = "HS256"
 # 7 days by default — long enough that users aren't annoyingly logged out

@@ -1,0 +1,79 @@
+from fastapi import APIRouter, HTTPException, Depends
+from agents.jwt_utils import get_current_user_id, verify_owner
+from agents.errors import _server_error
+from agents.schemas import EmergencyProfileRequest
+from agents.health_records import (
+    save_emergency_profile,
+    get_emergency_profile,
+    generate_qr_token,
+    get_emergency_profile_public,
+)
+
+router = APIRouter()
+
+
+@router.post("/health/emergency-profile")
+def health_save_emergency_profile(
+    request: EmergencyProfileRequest,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, request.user_id)
+    try:
+        save_emergency_profile(
+            request.user_id, request.name, request.blood_group,
+            request.allergies, request.critical_conditions,
+            request.emergency_contact_name, request.emergency_contact_phone,
+            request.medicines,
+        )
+        return {"status": "saved"}
+    except Exception as e:
+        raise _server_error(e)
+
+
+@router.get("/health/emergency-profile/{user_id}")
+def health_get_emergency_profile(
+    user_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
+    try:
+        profile = get_emergency_profile(user_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Emergency profile nahi bana abhi tak.")
+        return profile
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise _server_error(e)
+
+
+@router.post("/health/generate-qr/{user_id}")
+def health_generate_qr(
+    user_id: str,
+    current_user_id: str = Depends(get_current_user_id),
+):
+    verify_owner(current_user_id, user_id)
+    try:
+        token = generate_qr_token(user_id)
+        qr_url = f"/health/qr/{token}"
+        return {"token": token, "qr_url": qr_url}
+    except Exception as e:
+        raise _server_error(e)
+
+
+@router.get("/health/qr/{token}")
+def health_qr_public(token: str):
+    """
+    Public, no auth — by design. `token` here is the separate
+    emergency_qr_tokens credential, not a JWT — do not touch.
+    """
+    try:
+        profile = get_emergency_profile_public(token)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Invalid QR code ya profile nahi mili.")
+        return profile
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise _server_error(e)
+
