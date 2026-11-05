@@ -41,7 +41,7 @@ const STATS = [
 
 const TRUST_ITEMS = [
   { key: 'pharmacies', icon: <LuFileText />, title: 'Official price list', sub: 'PMBJP Jan Aushadhi' },
-  { key: 'doctors', icon: <LuUsers />, title: 'Expert Doctors', sub: 'Experienced & trusted' },
+  { key: 'triage', icon: <LuMessageCircle />, title: 'Symptom Triage', sub: 'Check symptoms before you visit a doctor' },
   { key: 'support', icon: <LuMessageCircle />, title: '24/7 Customer Support', sub: "We're always here" },
 ];
 
