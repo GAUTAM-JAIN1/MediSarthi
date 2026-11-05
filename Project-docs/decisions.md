@@ -1202,3 +1202,13 @@ future endpoint), it doesn't expose that recovery to the end user today.
   - Issues a 2-hour JWT (120 minutes) vs standard 7-day user token.
   - Opportunistic purge on each session creation removes expired demo users across all 8 user-data collections.
 - **Embedder Candidate Decision Status:** PENDING Gautam's review. Candidate comparison harness (`scripts/compare_embedders.py`) measures latency, memory, and dimension without declaring a winner. Evidence recorded in `Project-docs/dumps/raw/P09/embedder_report.json`.
+
+
+## D54b: Embedder Retrieval Comparison Harness Rewritten to Spec (P09b)
+- **Context:** The initial comparison script in P09 measured embedder latency and process memory rather than retrieval relevance and document overlap. Retrieval accuracy on health queries is the critical medical and safety metric.
+- **Decision & Implementation:**
+  - `backend/scripts/compare_embedders.py` was rewritten to evaluate retrieval overlap and extract top-1 document snippets across the MediSarthi reference knowledge base (`backend/knowledge/medical_kb`, 126 chunks across 5 reference documents).
+  - Evaluates Collection A (`chromadb-default` / ONNX MiniLM-L6-v2) vs Collection B (`mxbai-embed-large` via local Ollama).
+  - No HuggingFace or sentence-transformers dependencies are used.
+  - Harness execution metrics: `doc_count=126`, `queries=10`, `B_status=mxbai-embed-large`, `runtime=32.4s`, `mean_top_5_overlap=2.5`.
+- **Decision Status:** PENDING human review of top-1 snippets by Gautam. No winner declared. Production embedder code remains untouched.

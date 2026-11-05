@@ -1,0 +1,2 @@
+﻿NAME                        ID              SIZE      MODIFIED     
+mxbai-embed-large:latest    468836162de7    669 MB    4 months ago    

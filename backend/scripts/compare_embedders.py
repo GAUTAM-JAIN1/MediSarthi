@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 """
-compare_embedders.py — Embedder comparison harness (evidence only).
+compare_embedders.py — Embedder retrieval overlap comparison harness.
 
-Measures latency, memory RSS, and dimension for candidate embedding models.
-DOES NOT rank, declare a winner, or make an architectural decision.
+Compares retrieval overlap and top-1 snippets between Chroma's default embedder (A)
+and Ollama's mxbai-embed-large (B) on the MediSarthi knowledge base.
+DOES NOT measure latency, RSS, or declare a winner.
 """
 
 import argparse
@@ -11,293 +12,238 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
-import time
+import re
+import shutil
+import tempfile
 from typing import Any, Dict, List, Optional
-import urllib.error
+import urllib.parse
 import urllib.request
 
-try:
-    import psutil
-except ImportError:
-    psutil = None
+import chromadb
+from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
+
+FIXED_NOTE = "EVIDENCE ONLY. No winner. Human review of top-1 snippets is required before any embedder decision."
 
 
-def get_rss_mb() -> Optional[float]:
-    """Return process resident set size in megabytes, or None if unavailable."""
-    if psutil is not None:
-        return round(psutil.Process().memory_info().rss / (1024 * 1024), 2)
-    return None
+def validate_localhost(host: str) -> str:
+    """Ensure ollama-host is strictly localhost or 127.0.0.1."""
+    parsed = urllib.parse.urlparse(host)
+    hostname = parsed.hostname or ""
+    if hostname not in ("localhost", "127.0.0.1", "::1"):
+        raise ValueError(f"Only localhost is allowed for ollama-host, got: {hostname}")
+    return host
 
 
-def percentile(vals: List[float], p: float) -> float:
-    """Compute p-th percentile of sorted values."""
-    if not vals:
-        return 0.0
-    s = sorted(vals)
-    k = (len(s) - 1) * (p / 100.0)
-    f = int(k)
-    c = min(f + 1, len(s) - 1)
-    d = k - f
-    return round(s[f] * (1 - d) + s[c] * d, 2)
+class OllamaEmbeddingFunction(EmbeddingFunction[Documents]):
+    """Custom Chroma embedding function querying a local Ollama instance."""
+
+    def __init__(self, host: str, model: str):
+        self.host = host.rstrip("/")
+        self.model = model
+
+    def __call__(self, input: Documents) -> Embeddings:
+        embeddings: Embeddings = []
+        for text in input:
+            url = f"{self.host}/api/embeddings"
+            payload = json.dumps({"model": self.model, "prompt": text}).encode("utf-8")
+            req = urllib.request.Request(
+                url,
+                data=payload,
+                headers={"Content-Type": "application/json", "User-Agent": "MediSarthi-Harness"},
+            )
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                embeddings.append(data["embedding"])
+        return embeddings
 
 
-def get_ollama_tags(host: str) -> List[str]:
-    """Retrieve list of model names currently available in Ollama."""
+def check_mxbai_available(host: str) -> bool:
+    """Check whether mxbai-embed-large is present in local Ollama tags."""
     url = f"{host.rstrip('/')}/api/tags"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "MediSarthi-Harness"})
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read().decode("utf-8"))
-            models = data.get("models", [])
-            names = []
-            for m in models:
+            for m in data.get("models", []):
                 name = m.get("name", "")
-                names.append(name)
-                if ":" in name:
-                    names.append(name.split(":")[0])
-            return names
+                if name == "mxbai-embed-large" or name.startswith("mxbai-embed-large:"):
+                    return True
+            return False
     except Exception:
-        return []
+        return False
 
 
-def query_ollama_embedding(host: str, model: str, text: str) -> Optional[List[float]]:
-    """Query Ollama /api/embeddings for a single text."""
-    url = f"{host.rstrip('/')}/api/embeddings"
-    payload = json.dumps({"model": model, "prompt": text}).encode("utf-8")
-    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        res = json.loads(resp.read().decode("utf-8"))
-        return res.get("embedding")
-
-
-def benchmark_ollama_candidate(
-    host: str,
-    candidate: str,
-    queries: List[str],
-) -> Dict[str, Any]:
-    """Benchmark an Ollama-backed model across given queries."""
-    before_rss = get_rss_mb()
-
-    # Load time / cold start
-    t0 = time.perf_counter()
-    cold_embedding = query_ollama_embedding(host, candidate, queries[0])
-    cold_latency_ms = round((time.perf_counter() - t0) * 1000, 2)
-
-    if not cold_embedding:
-        return {
-            "status": "UNAVAILABLE",
-            "reason": f"Ollama model {candidate} returned empty embedding",
-            "metrics": None,
-        }
-
-    dim = len(cold_embedding)
-    latencies_ms = [cold_latency_ms]
-
-    # Warm runs for remaining queries
-    for q in queries[1:]:
-        t_start = time.perf_counter()
-        emb = query_ollama_embedding(host, candidate, q)
-        elapsed_ms = round((time.perf_counter() - t_start) * 1000, 2)
-        if emb:
-            latencies_ms.append(elapsed_ms)
-
-    after_rss = get_rss_mb()
-    delta_rss = round(after_rss - before_rss, 2) if (after_rss and before_rss) else None
-
-    return {
-        "status": "AVAILABLE",
-        "backend": "ollama",
-        "reason": None,
-        "metrics": {
-            "output_dimension": dim,
-            "cold_start_latency_ms": cold_latency_ms,
-            "warm_latencies_ms": latencies_ms[1:],
-            "per_query_latency_ms": {
-                "min": min(latencies_ms),
-                "max": max(latencies_ms),
-                "mean": round(sum(latencies_ms) / len(latencies_ms), 2),
-                "p50": percentile(latencies_ms, 50),
-                "p95": percentile(latencies_ms, 95),
-            },
-            "memory_rss_before_mb": before_rss,
-            "memory_rss_after_mb": after_rss,
-            "memory_rss_delta_mb": delta_rss,
-        },
-    }
-
-
-def evaluate_candidate(
-    candidate: str,
-    queries: List[str],
-    ollama_host: str,
-    ollama_models: List[str],
-    device: str,
-) -> Dict[str, Any]:
-    """Check availability and benchmark candidate if available."""
-    # Check Ollama first
-    if candidate in ollama_models or f"{candidate}:latest" in ollama_models:
-        try:
-            return benchmark_ollama_candidate(ollama_host, candidate, queries)
-        except Exception as e:
-            return {
-                "status": "UNAVAILABLE",
-                "backend": "ollama",
-                "reason": f"Ollama error: {e}",
-                "metrics": None,
-            }
-
-    # Next check sentence-transformers
-    try:
-        from sentence_transformers import SentenceTransformer  # noqa: F401
-    except ImportError:
-        return {
-            "status": "UNAVAILABLE",
-            "backend": "none",
-            "reason": f"Not pulled in Ollama and sentence-transformers package not installed",
-            "metrics": None,
-        }
-
-    # If sentence_transformers is installed, try loading model
-    try:
-        before_rss = get_rss_mb()
-        t0 = time.perf_counter()
-        model = SentenceTransformer(candidate, device=device)
-        load_time_ms = round((time.perf_counter() - t0) * 1000, 2)
-
-        latencies_ms = []
-        cold_latency_ms = None
-        dim = None
-
-        for idx, q in enumerate(queries):
-            t_start = time.perf_counter()
-            vec = model.encode(q)
-            elapsed_ms = round((time.perf_counter() - t_start) * 1000, 2)
-            latencies_ms.append(elapsed_ms)
-            if idx == 0:
-                cold_latency_ms = elapsed_ms
-                dim = len(vec)
-
-        after_rss = get_rss_mb()
-        delta_rss = round(after_rss - before_rss, 2) if (after_rss and before_rss) else None
-
-        return {
-            "status": "AVAILABLE",
-            "backend": "sentence-transformers",
-            "reason": None,
-            "metrics": {
-                "load_time_ms": load_time_ms,
-                "output_dimension": dim,
-                "cold_start_latency_ms": cold_latency_ms,
-                "warm_latencies_ms": latencies_ms[1:],
-                "per_query_latency_ms": {
-                    "min": min(latencies_ms),
-                    "max": max(latencies_ms),
-                    "mean": round(sum(latencies_ms) / len(latencies_ms), 2),
-                    "p50": percentile(latencies_ms, 50),
-                    "p95": percentile(latencies_ms, 95),
-                },
-                "memory_rss_before_mb": before_rss,
-                "memory_rss_after_mb": after_rss,
-                "memory_rss_delta_mb": delta_rss,
-            },
-        }
-    except Exception as e:
-        return {
-            "status": "UNAVAILABLE",
-            "backend": "sentence-transformers",
-            "reason": f"SentenceTransformer load error: {e}",
-            "metrics": None,
-        }
+def load_kb_chunks(kb_dir: Path) -> List[tuple[str, str]]:
+    """Read all text files in KB directory, split on blank lines, keep chunks 40..1200 chars."""
+    chunks: List[tuple[str, str]] = []
+    for f in sorted(kb_dir.rglob("*.txt")):
+        rel_path = f.relative_to(kb_dir).as_posix()
+        text = f.read_text(encoding="utf-8")
+        raw_parts = re.split(r"\n\s*\n", text)
+        for idx, part in enumerate(raw_parts):
+            p_strip = part.strip()
+            if 40 <= len(p_strip) <= 1200:
+                doc_id = f"{rel_path}#{idx}"
+                chunks.append((doc_id, p_strip))
+    return chunks
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compare embedding model candidates (evidence only).")
-    parser.add_argument(
-        "--candidates",
-        type=str,
-        default="bge-m3,mxbai-embed-large,all-minilm,nomic-embed-text",
-        help="Comma-separated list of candidate model names.",
+    parser = argparse.ArgumentParser(
+        description="Compare retrieval overlap between Chroma default and Ollama mxbai-embed-large."
     )
     parser.add_argument(
-        "--device",
-        type=str,
-        default="cpu",
-        help="Device to use for sentence-transformers models (default: cpu).",
-    )
-    parser.add_argument(
-        "--queries-file",
+        "--queries",
         type=str,
         default="data/demo/embedder_queries.json",
-        help="Path to JSON file containing test queries.",
+        help="Path to JSON file containing queries array.",
     )
     parser.add_argument(
-        "--output",
+        "--out",
         type=str,
-        default="../Project-docs/dumps/raw/P09/embedder_report.json",
-        help="Path to write output JSON report.",
+        required=True,
+        help="Output path for the comparison JSON report (required).",
     )
     parser.add_argument(
         "--ollama-host",
         type=str,
         default="http://127.0.0.1:11434",
-        help="Ollama host endpoint URL.",
+        help="Localhost Ollama endpoint (default: http://127.0.0.1:11434).",
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=5,
+        help="Number of nearest neighbors to retrieve per query (default: 5).",
     )
 
     args = parser.parse_args()
 
-    candidates_list = [c.strip() for c in args.candidates.split(",") if c.strip()]
+    # Validate host
+    ollama_host = validate_localhost(args.ollama_host)
 
-    # Load queries
-    q_path = Path(args.queries_file)
+    # Locate paths
+    base_dir = Path(__file__).resolve().parents[1]
+    q_path = Path(args.queries)
     if not q_path.is_absolute():
-        q_path = Path(__file__).resolve().parents[1] / args.queries_file
+        q_path = base_dir / q_path
 
     if not q_path.is_file():
         raise FileNotFoundError(f"Queries file not found at: {q_path}")
 
     with open(q_path, "r", encoding="utf-8") as f:
-        q_data = json.load(f)
-    queries = q_data.get("queries", [])
+        q_raw = json.load(f)
 
-    # Check Ollama available models
-    ollama_models = get_ollama_tags(args.ollama_host)
+    if isinstance(q_raw, dict) and "queries" in q_raw:
+        queries = q_raw["queries"]
+    elif isinstance(q_raw, list):
+        queries = q_raw
+    else:
+        raise ValueError(f"Unrecognized queries file shape: {type(q_raw)}")
 
-    results: Dict[str, Any] = {}
-    for cand in candidates_list:
-        print(f"Evaluating candidate: {cand} ...")
-        res = evaluate_candidate(
-            candidate=cand,
-            queries=queries,
-            ollama_host=args.ollama_host,
-            ollama_models=ollama_models,
-            device=args.device,
+    # Locate KB directory
+    kb_dir = base_dir / "knowledge" / "medical_kb"
+    if not kb_dir.is_dir():
+        raise FileNotFoundError(f"KB directory not found: {kb_dir}")
+
+    chunks = load_kb_chunks(kb_dir)
+    doc_count = len(chunks)
+    if doc_count == 0:
+        raise RuntimeError(f"No valid chunks found in KB directory: {kb_dir}")
+
+    doc_ids = [c[0] for c in chunks]
+    doc_texts = [c[1] for c in chunks]
+
+    temp_dir = tempfile.mkdtemp(prefix="chroma_cmp_")
+
+    try:
+        # Collection A: chromadb default
+        db_path_a = os.path.join(temp_dir, "db_a")
+        client_a = chromadb.PersistentClient(path=db_path_a)
+        col_a = client_a.get_or_create_collection(name="kb_default")
+        col_a.add(ids=doc_ids, documents=doc_texts)
+        a_model = "chromadb-default"
+
+        # Collection B: Ollama mxbai-embed-large (if available)
+        mxbai_ok = check_mxbai_available(ollama_host)
+        col_b = None
+        if mxbai_ok:
+            b_status = "mxbai-embed-large"
+            db_path_b = os.path.join(temp_dir, "db_b")
+            client_b = chromadb.PersistentClient(path=db_path_b)
+            ef_b = OllamaEmbeddingFunction(host=ollama_host, model="mxbai-embed-large")
+            col_b = client_b.get_or_create_collection(name="kb_ollama_mxbai", embedding_function=ef_b)
+            col_b.add(ids=doc_ids, documents=doc_texts)
+        else:
+            b_status = "UNAVAILABLE: mxbai-embed-large not pulled"
+
+        # Query both collections
+        per_query_results = []
+        overlap_values = []
+
+        for q in queries:
+            # Query A
+            res_a = col_a.query(query_texts=[q], n_results=args.top_k)
+            a_top_k = res_a["ids"][0] if res_a.get("ids") else []
+            a_snippets = res_a["documents"][0] if res_a.get("documents") else []
+            a_top_1_snippet = a_snippets[0][:120] if a_snippets else ""
+
+            # Query B
+            if col_b is not None:
+                res_b = col_b.query(query_texts=[q], n_results=args.top_k)
+                b_top_k = res_b["ids"][0] if res_b.get("ids") else []
+                b_snippets = res_b["documents"][0] if res_b.get("documents") else []
+                b_top_1_snippet = b_snippets[0][:120] if b_snippets else ""
+
+                overlap = len(set(a_top_k) & set(b_top_k))
+                overlap_values.append(overlap)
+            else:
+                b_top_k = None
+                b_top_1_snippet = None
+                overlap = None
+
+            per_query_results.append({
+                "query": q,
+                "a_top_k": a_top_k,
+                "b_top_k": b_top_k,
+                "overlap": overlap,
+                "a_top_1_snippet": a_top_1_snippet,
+                "b_top_1_snippet": b_top_1_snippet,
+            })
+
+        mean_overlap = (
+            round(sum(overlap_values) / len(overlap_values), 2)
+            if overlap_values
+            else None
         )
-        results[cand] = res
-        print(f"  Status: {res['status']} ({res.get('backend')})")
-        if res["status"] == "AVAILABLE" and res.get("metrics"):
-            m = res["metrics"]["per_query_latency_ms"]
-            print(f"  Mean latency: {m['mean']} ms, p95: {m['p95']} ms, Dim: {res['metrics']['output_dimension']}")
-        elif res.get("reason"):
-            print(f"  Reason: {res['reason']}")
 
-    report = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
-        "device": args.device,
-        "ollama_host": args.ollama_host,
-        "queries_count": len(queries),
-        "candidates": results,
-        "note": "EVIDENCE ONLY. No winner declared. Decision on production embedder is pending.",
-    }
+        report = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "doc_count": doc_count,
+            "A_model": a_model,
+            "B_status": b_status,
+            "per_query": per_query_results,
+            "summary": {
+                "mean_overlap": mean_overlap,
+            },
+            "note": FIXED_NOTE,
+        }
 
-    out_path = Path(args.output)
-    if not out_path.is_absolute():
-        out_path = Path(__file__).resolve().parents[1] / args.output
+        out_path = Path(args.out)
+        if not out_path.is_absolute():
+            out_path = base_dir / out_path
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2)
 
-    print(f"\nReport written to: {out_path}")
+        print(f"Report written to: {out_path}")
+        print(f"Chunks indexed: {doc_count}, Queries: {len(queries)}, B status: {b_status}")
+        if mean_overlap is not None:
+            print(f"Mean top-{args.top_k} overlap: {mean_overlap}")
+
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 if __name__ == "__main__":

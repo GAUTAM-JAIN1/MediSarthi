@@ -1,0 +1,14 @@
+﻿usage: compare_embedders.py [-h] [--queries QUERIES] --out OUT
+                            [--ollama-host OLLAMA_HOST] [--top-k TOP_K]
+
+Compare retrieval overlap between Chroma default and Ollama mxbai-embed-large.
+
+options:
+  -h, --help            show this help message and exit
+  --queries QUERIES     Path to JSON file containing queries array.
+  --out OUT             Output path for the comparison JSON report (required).
+  --ollama-host OLLAMA_HOST
+                        Localhost Ollama endpoint (default:
+                        http://127.0.0.1:11434).
+  --top-k TOP_K         Number of nearest neighbors to retrieve per query
+                        (default: 5).

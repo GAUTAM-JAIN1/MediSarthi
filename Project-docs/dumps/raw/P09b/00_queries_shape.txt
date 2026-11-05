@@ -1,0 +1,9 @@
+﻿Top-level keys: status, queries
+Queries count: 10
+First 200 chars: {
+  "status": "PROPOSED - not approved",
+  "queries": [
+    "paracetamol safe for liver patient",
+    "amoxicillin 500mg daily dose",
+    "metformin empty stomach or after food",
+    "cetirizine makes

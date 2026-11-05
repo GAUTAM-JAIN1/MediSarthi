@@ -1,0 +1,212 @@
+{
+  "timestamp": "2026-11-05T07:20:07.201145Z",
+  "doc_count": 126,
+  "A_model": "chromadb-default",
+  "B_status": "mxbai-embed-large",
+  "per_query": [
+    {
+      "query": "paracetamol safe for liver patient",
+      "a_top_k": [
+        "drug_interactions.txt#16",
+        "drug_interactions.txt#23",
+        "symptom_red_flags.txt#2",
+        "medicine_response_timelines.txt#27",
+        "drug_interactions.txt#3"
+      ],
+      "b_top_k": [
+        "drug_interactions.txt#16",
+        "symptom_red_flags.txt#2",
+        "test_direction_reference.txt#23",
+        "drug_interactions.txt#23",
+        "lab_reference_ranges.txt#21"
+      ],
+      "overlap": 3,
+      "a_top_1_snippet": "Paracetamol (Acetaminophen) + Alcohol (regular, heavy use): Both are processed\nby the liver; regular heavy alcohol use a",
+      "b_top_1_snippet": "Paracetamol (Acetaminophen) + Alcohol (regular, heavy use): Both are processed\nby the liver; regular heavy alcohol use a"
+    },
+    {
+      "query": "amoxicillin 500mg daily dose",
+      "a_top_k": [
+        "drug_interactions.txt#3",
+        "lab_reference_ranges.txt#18",
+        "drug_interactions.txt#18",
+        "drug_interactions.txt#22",
+        "medicine_response_timelines.txt#11"
+      ],
+      "b_top_k": [
+        "drug_interactions.txt#17",
+        "drug_interactions.txt#15",
+        "symptom_red_flags.txt#2",
+        "medicine_response_timelines.txt#1",
+        "lab_reference_ranges.txt#18"
+      ],
+      "overlap": 1,
+      "a_top_1_snippet": "Warfarin + Antibiotics (Ciprofloxacin, Metronidazole, many others): Several\ncommon antibiotics inhibit the liver enzymes",
+      "b_top_1_snippet": "Antacids (containing Calcium, Magnesium, or Aluminum) + many antibiotics\n(Tetracyclines, Fluoroquinolones like Ciproflox"
+    },
+    {
+      "query": "metformin empty stomach or after food",
+      "a_top_k": [
+        "drug_interactions.txt#13",
+        "medicine_response_timelines.txt#5",
+        "medicine_response_timelines.txt#4",
+        "symptom_red_flags.txt#6",
+        "lab_reference_ranges.txt#7"
+      ],
+      "b_top_k": [
+        "lab_reference_ranges.txt#7",
+        "medicine_response_timelines.txt#5",
+        "drug_interactions.txt#13",
+        "test_direction_reference.txt#10",
+        "medicine_response_timelines.txt#6"
+      ],
+      "overlap": 3,
+      "a_top_1_snippet": "Metformin + Contrast dye (used in some imaging scans): Rare risk of lactic\nacidosis if kidney function is reduced around",
+      "b_top_1_snippet": "Post-Prandial (2hr after meal): Normal <140 mg/dL. Prediabetes 140\u2013199 mg/dL.\nDiabetes \u2265200 mg/dL."
+    },
+    {
+      "query": "cetirizine makes me sleepy alternatives",
+      "a_top_k": [
+        "drug_interactions.txt#11",
+        "drug_interactions.txt#23",
+        "drug_interactions.txt#18",
+        "drug_interactions.txt#14",
+        "drug_interactions.txt#22"
+      ],
+      "b_top_k": [
+        "drug_interactions.txt#23",
+        "drug_interactions.txt#21",
+        "drug_interactions.txt#18",
+        "drug_interactions.txt#20",
+        "drug_interactions.txt#22"
+      ],
+      "overlap": 3,
+      "a_top_1_snippet": "Beta-blockers (Atenolol, Metoprolol) + Verapamil/Diltiazem (calcium channel\nblockers): Both slow heart rate and reduce c",
+      "b_top_1_snippet": "Paracetamol (Acetaminophen) \u2014 Dolo 650, Crocin, Calpol, Paracip, P-500, Fepanil\nIbuprofen \u2014 Brufen, Combiflam (also cont"
+    },
+    {
+      "query": "atorvastatin side effects muscle pain",
+      "a_top_k": [
+        "medicine_response_timelines.txt#15",
+        "medicine_response_timelines.txt#14",
+        "drug_interactions.txt#11",
+        "medicine_response_timelines.txt#17",
+        "symptom_red_flags.txt#16"
+      ],
+      "b_top_k": [
+        "medicine_response_timelines.txt#15",
+        "medicine_response_timelines.txt#14",
+        "symptom_red_flags.txt#7",
+        "medicine_response_timelines.txt#19",
+        "medicine_response_timelines.txt#16"
+      ],
+      "overlap": 2,
+      "a_top_1_snippet": "Rosuvastatin\n  - Total Cholesterol / LDL Cholesterol / Triglycerides: same general\n    window as Atorvastatin above \u2014 4-",
+      "b_top_1_snippet": "Rosuvastatin\n  - Total Cholesterol / LDL Cholesterol / Triglycerides: same general\n    window as Atorvastatin above \u2014 4-"
+    },
+    {
+      "query": "azithromycin course 3 days or 5 days",
+      "a_top_k": [
+        "medicine_response_timelines.txt#28",
+        "drug_interactions.txt#17",
+        "medicine_response_timelines.txt#16",
+        "symptom_red_flags.txt#7",
+        "medicine_response_timelines.txt#29"
+      ],
+      "b_top_k": [
+        "medicine_response_timelines.txt#12",
+        "medicine_response_timelines.txt#28",
+        "medicine_response_timelines.txt#29",
+        "symptom_red_flags.txt#3",
+        "medicine_response_timelines.txt#11"
+      ],
+      "overlap": 2,
+      "a_top_1_snippet": "Allopurinol\n  - Uric Acid: gradual, dose-dependent lowering \u2014 meaningful reduction\n    typically takes 2-4 weeks, with t",
+      "b_top_1_snippet": "Carbimazole\n  - TSH: used for the opposite direction (overactive thyroid) \u2014 response\n    is often faster to begin (some "
+    },
+    {
+      "query": "pantoprazole 40mg before breakfast",
+      "a_top_k": [
+        "drug_interactions.txt#23",
+        "drug_interactions.txt#18",
+        "drug_interactions.txt#6",
+        "medicine_response_timelines.txt#34",
+        "symptom_red_flags.txt#6"
+      ],
+      "b_top_k": [
+        "drug_interactions.txt#23",
+        "lab_reference_ranges.txt#7",
+        "drug_interactions.txt#17",
+        "medicine_response_timelines.txt#5",
+        "symptom_red_flags.txt#2"
+      ],
+      "overlap": 1,
+      "a_top_1_snippet": "Paracetamol (Acetaminophen) \u2014 Dolo 650, Crocin, Calpol, Paracip, P-500, Fepanil\nIbuprofen \u2014 Brufen, Combiflam (also cont",
+      "b_top_1_snippet": "Paracetamol (Acetaminophen) \u2014 Dolo 650, Crocin, Calpol, Paracip, P-500, Fepanil\nIbuprofen \u2014 Brufen, Combiflam (also cont"
+    },
+    {
+      "query": "losartan potassium blood pressure normal range",
+      "a_top_k": [
+        "medicine_response_timelines.txt#20",
+        "medicine_response_timelines.txt#19",
+        "drug_interactions.txt#10",
+        "medicine_response_timelines.txt#17",
+        "lab_reference_ranges.txt#19"
+      ],
+      "b_top_k": [
+        "medicine_response_timelines.txt#19",
+        "drug_interactions.txt#10",
+        "medicine_response_timelines.txt#20",
+        "medicine_response_timelines.txt#21",
+        "lab_reference_ranges.txt#19"
+      ],
+      "overlap": 4,
+      "a_top_1_snippet": "Telmisartan\n  - Creatinine / Blood Urea: same ARB-class pattern as Losartan above \u2014\n    a small expected initial rise th",
+      "b_top_1_snippet": "Losartan\n  - Creatinine / Blood Urea: Losartan (an ARB) can cause a small, often\n    expected initial rise in Creatinine"
+    },
+    {
+      "query": "ciprofloxacin interaction with milk dairy",
+      "a_top_k": [
+        "drug_interactions.txt#3",
+        "drug_interactions.txt#17",
+        "test_direction_reference.txt#8",
+        "drug_interactions.txt#23",
+        "symptom_red_flags.txt#19"
+      ],
+      "b_top_k": [
+        "drug_interactions.txt#17",
+        "drug_interactions.txt#3",
+        "drug_interactions.txt#20",
+        "drug_interactions.txt#22",
+        "drug_interactions.txt#15"
+      ],
+      "overlap": 2,
+      "a_top_1_snippet": "Warfarin + Antibiotics (Ciprofloxacin, Metronidazole, many others): Several\ncommon antibiotics inhibit the liver enzymes",
+      "b_top_1_snippet": "Antacids (containing Calcium, Magnesium, or Aluminum) + many antibiotics\n(Tetracyclines, Fluoroquinolones like Ciproflox"
+    },
+    {
+      "query": "aspirin 75mg blood thinner bruising",
+      "a_top_k": [
+        "lab_reference_ranges.txt#4",
+        "drug_interactions.txt#2",
+        "drug_interactions.txt#4",
+        "drug_interactions.txt#3",
+        "drug_interactions.txt#8"
+      ],
+      "b_top_k": [
+        "drug_interactions.txt#2",
+        "lab_reference_ranges.txt#4",
+        "drug_interactions.txt#4",
+        "drug_interactions.txt#8",
+        "drug_interactions.txt#21"
+      ],
+      "overlap": 4,
+      "a_top_1_snippet": "Platelet count: ~150,000\u2013450,000/\u00b5L. Low = increased bleeding/bruising risk\n(causes: viral infection like dengue, some m",
+      "b_top_1_snippet": "Warfarin + Aspirin (or other NSAIDs like Ibuprofen, Diclofenac): Both increase\nbleeding risk through different mechanism"
+    }
+  ],
+  "summary": {
+    "mean_overlap": 2.5
+  },
+  "note": "EVIDENCE ONLY. No winner. Human review of top-1 snippets is required before any embedder decision."
+}

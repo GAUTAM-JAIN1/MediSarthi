@@ -1,0 +1,7 @@
+﻿CHECK 1 (per_query len == 10): PASS
+CHECK 2 (overlaps in 0..5): PASS
+CHECK 3 (B status recorded): PASS -> mxbai-embed-large
+CHECK 4 (doc_count > 0): PASS -> 126
+CHECK 5 (note field exact): PASS
+
+OVERALL: ALL CHECKS PASSED

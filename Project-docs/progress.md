@@ -985,3 +985,19 @@ Status: CLOSED. Dump: dumps\P09_dump.md. Raw evidence: dumps\raw\P09\.
 - **Invariants:** 44 operations (was 43). Canonical OpenAPI SHA256 (separators `(',', ':')`): `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42`. Indent=2 hash in `test_price_lookup.py`: `c2836fbe8a1a893c4e7f40c5485c16f4b6402347a2b6f100b4d02691ac8bdd67`.
 - **Embedder Harness:** `scripts/compare_embedders.py` executed across 10 proposed queries. Measured `mxbai-embed-large` via local Ollama (1024 dim, mean 2473.69 ms, p95 7660.66 ms). Other candidates (`bge-m3`, `all-minilm`, `nomic-embed-text`) recorded as UNAVAILABLE (not pulled in Ollama / sentence-transformers not installed).
 - **Pending Decision:** Production embedder choice remains PENDING Gautam's review (D54).
+
+
+---
+
+## Prompt 09b - Embedder harness retrieval overlap rewrite (5 Nov 2026)
+Status: CLOSED. Dump: dumps\P09b_dump.md. Raw evidence: dumps\raw\P09b\.
+- **Harness Rewrite:** `backend/scripts/compare_embedders.py` completely rewritten to measure top-5 document retrieval overlap and top-1 snippets on the MediSarthi knowledge base (126 chunks across 5 files in `backend/knowledge/medical_kb`).
+- **Results:**
+  - Queries: 10
+  - Chunks indexed: 126
+  - Candidate A: `chromadb-default`
+  - Candidate B status: `mxbai-embed-large` (available via Ollama)
+  - Mean top-5 overlap: 2.5
+  - Runtime: 32.4 seconds
+- **Invariants:** 44 operations; OpenAPI SHA256 `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42` verified identical to P09.
+- **Decision:** PENDING Gautam's review of top-1 snippets.

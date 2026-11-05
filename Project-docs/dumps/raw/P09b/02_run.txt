@@ -1,0 +1,4 @@
+﻿Report written to: C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\Project-docs\dumps\raw\P09b\embedder_report_v2.json
+Chunks indexed: 126, Queries: 10, B status: mxbai-embed-large
+Mean top-5 overlap: 2.5
+runtime_seconds=32.4
