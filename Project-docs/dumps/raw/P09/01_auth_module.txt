@@ -1,0 +1,127 @@
+"""
+auth.py â€” Email + password auth, replaces face_recognize.py
+
+Reuses db_connect.py ka existing MongoDB connection (medical_db on Atlas),
+sirf ek nayi 'Members' collection add karta hai usi DB ke andar.
+Isse alag MongoDB target nahi banana pada.
+
+Profile dict shape (build_user_profile ka return) wohi hai jo
+face_recognize.py deta tha (ID, Name, Age, Gender, Allergies, City, State, Email)
+taaki crew.py ko profile read karne ka tarika nahi badalna pada.
+"""
+
+from datetime import datetime
+from pathlib import Path
+
+import bcrypt
+from bson import ObjectId
+from bson.errors import InvalidId
+
+from agents.db_connect import get_database  # existing connection reuse kar rahe hain
+
+COLLECTION_NAME = "Members"
+
+
+def _get_collection():
+    db = get_database()
+    return db[COLLECTION_NAME]
+
+
+def _hash_password(plain: str) -> bytes:
+    return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt())
+
+
+def _verify_password(plain: str, hashed) -> bool:
+    if isinstance(hashed, str):
+        hashed = hashed.encode("utf-8")
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed)
+
+
+def build_user_profile(doc: dict) -> dict:
+    """Mongo document ko stable profile dict mein convert karta hai.
+    Shape wohi rakhi jo face_recognize.py deta tha â€” taaki crew.py ko touch na karna pade."""
+    return {
+        "ID": str(doc["_id"]),
+        "Name": doc.get("Name"),
+        "Age": doc.get("Age"),
+        "Gender": doc.get("Gender"),
+        "Allergies": doc.get("Allergies"),
+        "City": doc.get("City"),
+        "State": doc.get("State"),
+        "Email": doc.get("Email"),
+    }
+
+
+def signup_user(name: str, age: int, gender: str, allergies: str,
+                city: str, state: str, email: str, password: str) -> dict:
+    """Naya account banata hai. ValueError raise karta hai agar email already registered ho."""
+    collection = _get_collection()
+
+    if collection.find_one({"Email": email}):
+        raise ValueError(f"Is email se account pehle se exist karta hai: '{email}'")
+
+    doc = {
+        "Name": name,
+        "Age": age,
+        "Gender": gender,
+        "Allergies": allergies,
+        "City": city,
+        "State": state,
+        "Email": email,
+        "Password": _hash_password(password),
+        "created_at": datetime.utcnow(),
+    }
+    result = collection.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return build_user_profile(doc)
+
+
+def login_user(email: str, password: str) -> dict:
+    """Credentials verify karta hai. ValueError on wrong email ya password."""
+    collection = _get_collection()
+    doc = collection.find_one({"Email": email})
+    if not doc:
+        raise ValueError("Is email se koi account nahi mila.")
+    if not _verify_password(password, doc["Password"]):
+        raise ValueError("Password galat hai.")
+    return build_user_profile(doc)
+
+
+def get_user_by_id(user_id: str) -> dict:
+    """MongoDB ObjectId string se user fetch karta hai."""
+    collection = _get_collection()
+    try:
+        oid = ObjectId(user_id)
+    except (InvalidId, TypeError):
+        raise ValueError(f"'{user_id}' valid user id nahi hai.")
+    doc = collection.find_one({"_id": oid})
+    if not doc:
+        raise ValueError(f"ID {user_id} wala user nahi mila.")
+    return build_user_profile(doc)
+
+
+def get_user_knowledge_profile(user_id: str):
+    """
+    face_recognize.py ke get_user_knowledge_profile() ka direct replacement.
+
+    PURANA: zero arguments leta tha, andar se webcam kholta tha aur
+            blocking input() calls se user ka naam/age/etc maangta tha.
+    NAYA:   logged-in user ka user_id leta hai (no webcam, no blocking),
+            aur wohi knowledge/user_<id>/profile.txt file likhta hai
+            jo crew.py ki saari 4 classes pehle se expect karti hain.
+
+    Returns: (user_data dict, profile_file_path string) â€” same 2-tuple shape.
+    """
+    user_data = get_user_by_id(user_id)
+
+    # crew.py mein Path(__file__).resolve().parents[2] se project_root = backend/ aata hai
+    # (backend/src/agents/auth.py -> parents[0]=agents, parents[1]=src, parents[2]=backend)
+    project_root = Path(__file__).resolve().parents[2]
+    profile_dir = project_root / "knowledge" / f"user_{user_data['ID']}"
+    profile_dir.mkdir(parents=True, exist_ok=True)
+    profile_file = profile_dir / "profile.txt"
+
+    lines = [f"{key}: {value}" for key, value in user_data.items()]
+    profile_file.write_text("\n".join(lines), encoding="utf-8")
+
+    return user_data, str(profile_file)

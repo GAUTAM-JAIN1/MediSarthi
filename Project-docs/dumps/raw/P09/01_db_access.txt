@@ -1,0 +1,23 @@
+
+MediSarthi\backend\src\agents\auth.py:4:Reuses db_connect.py ka existing MongoDB connection (medical_db on Atlas),
+MediSarthi\backend\src\agents\auth.py:20:from agents.db_connect import get_database  # existing connection reuse kar 
+rahe hain
+MediSarthi\backend\src\agents\auth.py:26:    db = get_database()
+MediSarthi\backend\src\agents\db_connect.py:1:from pymongo import MongoClient
+MediSarthi\backend\src\agents\db_connect.py:11:def get_database():
+MediSarthi\backend\src\agents\db_connect.py:17:        _client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+MediSarthi\backend\src\agents\db_connect.py:40:    db = get_database()
+MediSarthi\backend\src\agents\donor.py:15:from agents.db_connect import get_database
+MediSarthi\backend\src\agents\donor.py:41:    return get_database()[DONORS_COLLECTION]
+MediSarthi\backend\src\agents\donor.py:45:    return get_database()[REQUESTS_COLLECTION]
+MediSarthi\backend\src\agents\health_records.py:15:    from agents.db_connect import get_database
+MediSarthi\backend\src\agents\health_records.py:16:    db = get_database()
+MediSarthi\backend\src\agents\health_records.py:685:# db_connect.ensure_indexes()'s TTL index on this field to 
+actually work —
+MediSarthi\backend\src\agents\health_records.py:708:    delete kar deta hai (see db_connect.ensure_indexes(), D33) — 
+~60
+MediSarthi\backend\src\agents\main.py:12:from agents.db_connect import ensure_indexes
+MediSarthi\backend\src\agents\routes\system.py:4:from agents.db_connect import get_database
+MediSarthi\backend\src\agents\routes\system.py:30:            db = get_database()
+
+

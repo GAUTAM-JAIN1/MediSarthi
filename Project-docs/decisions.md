@@ -1191,3 +1191,14 @@ future endpoint), it doesn't expose that recovery to the end user today.
 - Route count 43 is unchanged. Earlier parity checks (P03 to P08) each compared before and after inside one environment, so those results stay valid.
 - uv.lock was regenerated with uv 0.13.7 (lock revision 3 to 5). Against the committed lock, cmake, dlib, face-recognition and face-recognition-models were removed (already absent from pyproject.toml; the committed lock was stale), and pyobjc-framework-pubsub 12.1 was added (macOS-only marker). No version of fastapi, pydantic, starlette or any other runtime package changed.
 - Follow-up: pin uv to 0.13.7 in the CI install step so the lock format stays consistent.
+
+
+## D54: Demo Session Architecture and Embedder Decision Process (P09)
+- **Context:** MediSarthi needs a frictionless demo mode so evaluators can try the app without creating personal accounts, while ensuring zero collision with real patient data. In parallel, the knowledge base embedder must be upgraded from legacy CrewAI default embeddings.
+- **Demo Session Decision:**
+  - Route: `POST /demo/session`, gated behind `DEMO_MODE_ENABLED` env flag (default: `false` in production).
+  - Rate limited to 10 requests / minute per client IP.
+  - Generates a synthetic persona (`Rahul Kumar (demo)`), random discarded password (cannot log in via `/auth/login`), unique demo email, and seeds vitals, prescriptions, and emergency profile with `is_demo: true`.
+  - Issues a 2-hour JWT (120 minutes) vs standard 7-day user token.
+  - Opportunistic purge on each session creation removes expired demo users across all 8 user-data collections.
+- **Embedder Candidate Decision Status:** PENDING Gautam's review. Candidate comparison harness (`scripts/compare_embedders.py`) measures latency, memory, and dimension without declaring a winner. Evidence recorded in `Project-docs/dumps/raw/P09/embedder_report.json`.

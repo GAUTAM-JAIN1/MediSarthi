@@ -23,6 +23,7 @@ PUBLIC = {
     ("GET", "/call/status"),               # public while H1 is open (D40)
     ("GET", "/health/qr/{token}"),         # emergency QR, token-based (D12, D13)
     ("GET", "/health/doctor-qr/{token}"),  # doctor visit QR, token-based (D32)
+    ("POST", "/demo/session"),             # demo session backend, unauthenticated (D54)
 }
 
 
@@ -55,4 +56,3 @@ def test_protected_route_rejects_missing_token(method, path):
     concrete = re.sub(r"\{[^}]+\}", "dummy", path)
     res = client.request(method, concrete)
     assert res.status_code == 401, f"{method} {path} returned {res.status_code} without a token"
-

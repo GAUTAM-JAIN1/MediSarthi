@@ -1,0 +1,17 @@
+﻿usage: compare_embedders.py [-h] [--candidates CANDIDATES] [--device DEVICE]
+                            [--queries-file QUERIES_FILE] [--output OUTPUT]
+                            [--ollama-host OLLAMA_HOST]
+
+Compare embedding model candidates (evidence only).
+
+options:
+  -h, --help            show this help message and exit
+  --candidates CANDIDATES
+                        Comma-separated list of candidate model names.
+  --device DEVICE       Device to use for sentence-transformers models
+                        (default: cpu).
+  --queries-file QUERIES_FILE
+                        Path to JSON file containing test queries.
+  --output OUTPUT       Path to write output JSON report.
+  --ollama-host OLLAMA_HOST
+                        Ollama host endpoint URL.

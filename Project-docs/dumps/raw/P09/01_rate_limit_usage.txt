@@ -1,0 +1,22 @@
+
+MediSarthi\backend\src\agents\rate_limit.py:8:def get_client_ip(req) -> str:
+MediSarthi\backend\src\agents\rate_limit.py:30:class RateLimiter:
+MediSarthi\backend\src\agents\rate_limit.py:32:    In-memory fixed-window rate limiter guarded by a lock with periodic 
+pruning.
+MediSarthi\backend\src\agents\rate_limit.py:61:    def check(self, key: str) -> bool:
+MediSarthi\backend\src\agents\rate_limit.py:96:# Module-level limiters per requirement 2d:
+MediSarthi\backend\src\agents\rate_limit.py:97:LOGIN_LIMITER = RateLimiter(max_requests=10, window_seconds=60)
+MediSarthi\backend\src\agents\rate_limit.py:98:SIGNUP_LIMITER = RateLimiter(max_requests=10, window_seconds=60)
+MediSarthi\backend\src\agents\rate_limit.py:99:COMPARE_LIMITER = RateLimiter(max_requests=5, window_seconds=60)
+MediSarthi\backend\src\agents\routes\auth.py:3:from agents.rate_limit import LOGIN_LIMITER, SIGNUP_LIMITER, 
+get_client_ip
+MediSarthi\backend\src\agents\routes\auth.py:13:    client_ip = get_client_ip(req)
+MediSarthi\backend\src\agents\routes\auth.py:14:    if not SIGNUP_LIMITER.check(client_ip):
+MediSarthi\backend\src\agents\routes\auth.py:31:    client_ip = get_client_ip(req)
+MediSarthi\backend\src\agents\routes\auth.py:32:    if not LOGIN_LIMITER.check(client_ip):
+MediSarthi\backend\src\agents\routes\medicine.py:5:from agents.rate_limit import COMPARE_LIMITER, get_client_ip
+MediSarthi\backend\src\agents\routes\medicine.py:82:    client_ip = get_client_ip(req)
+MediSarthi\backend\src\agents\routes\medicine.py:83:    if not COMPARE_LIMITER.check(client_ip):
+MediSarthi\backend\src\agents\routes\system.py:12:def health_check():
+
+

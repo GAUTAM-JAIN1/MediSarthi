@@ -1,4 +1,4 @@
-﻿# progress.md
+# progress.md
 
 ## 🆕 Latest session — Docker adaptability fixes: ngrok binary, hardcoded Windows paths removed, Ollama container networking confirmed, Groq model swap surfaces a new TPM rate-limit issue
 
@@ -970,3 +970,18 @@ Status: CLOSED. Dump: dumps\P08f_dump.md. Raw evidence: dumps\raw\P08f\.
 - Open product decision: mixed-route results (cream, nasal spray, inhaler) under one medicine name. Route should be shown.
 - Also open (P08f): "throat" leftover (sr 1866), clinician review of safety copy, Playwright/browser-use package cleanup.
 - Note (P08f raw evidence): RAW FILE INDEX hashes in P08f_dump refer to the original UTF-16 files (commit d946d3b). The files were converted to UTF-8 in commit a6f712f; decoded content verified identical.
+
+
+---
+
+## Prompt 09 - Demo session backend & embedder comparison harness (5 Nov 2026)
+Status: CLOSED. Dump: dumps\P09_dump.md. Raw evidence: dumps\raw\P09\.
+- **Demo Session Endpoint:** `POST /demo/session` added and registered unconditionally in OpenAPI. Returns 403 when `DEMO_MODE_ENABLED` is false.
+- **Rate Limit & Security:** 10 requests/min sliding window rate limit per client IP. Generates discarded bcrypt password (login via `/auth/login` rejected with 401).
+- **Synthetic Persona:** Seeded with Rahul Kumar (demo) vitals (2 entries), prescriptions (2 entries: Paracetamol Tablets IP 650 mg, Amlodipine), and emergency profile.
+- **Token Expiry:** 120 minutes (2 hours) vs standard 7-day user token.
+- **Expiry Purge:** Automatic opportunistic purge of expired demo records across `Members` and all 8 user-associated collections (`health_vitals`, `health_prescriptions`, `emergency_profiles`, `emergency_qr_tokens`, `prescription_analyses`, `lab_report_analyses`, `blood_donors`, `doctor_qr_tokens`).
+- **Tests:** 8 new tests in `test_demo_session.py`. Full suite: 192 passed, 0 failed in 33.54s.
+- **Invariants:** 44 operations (was 43). Canonical OpenAPI SHA256 (separators `(',', ':')`): `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42`. Indent=2 hash in `test_price_lookup.py`: `c2836fbe8a1a893c4e7f40c5485c16f4b6402347a2b6f100b4d02691ac8bdd67`.
+- **Embedder Harness:** `scripts/compare_embedders.py` executed across 10 proposed queries. Measured `mxbai-embed-large` via local Ollama (1024 dim, mean 2473.69 ms, p95 7660.66 ms). Other candidates (`bge-m3`, `all-minilm`, `nomic-embed-text`) recorded as UNAVAILABLE (not pulled in Ollama / sentence-transformers not installed).
+- **Pending Decision:** Production embedder choice remains PENDING Gautam's review (D54).

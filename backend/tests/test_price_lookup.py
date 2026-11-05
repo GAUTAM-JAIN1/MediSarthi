@@ -103,5 +103,4 @@ def test_openapi_hash_invariant():
     spec_obj = app.openapi()
     spec = json.dumps(spec_obj, sort_keys=True, indent=2)
     computed_hash = hashlib.sha256(spec.encode("utf-8")).hexdigest()
-    assert computed_hash == "8ae125ca82c88c78289a555f5727873a7f902f5fe37000c04185c3c23dc411e8"
-
+    assert computed_hash == "c2836fbe8a1a893c4e7f40c5485c16f4b6402347a2b6f100b4d02691ac8bdd67"
