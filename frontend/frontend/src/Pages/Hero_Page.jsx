@@ -8,8 +8,8 @@ import Layout, { LogoMark } from '../components/Layout.jsx';
 import './Hero_Page.css';
 
 const SEGMENTS = [
-  { key: 'medicines', icon: <LuPill />, title: 'Medicines', sub: '10K+', x: 0, y: -147.5, path: '/find-medicine' },
-  { key: 'doctors', icon: <LuUsers />, title: 'Doctors', sub: '200+', x: 127.7, y: -73.7, path: '/appointments' },
+  { key: 'medicines', icon: <LuPill />, title: 'Medicines', sub: '2,095 product listings', x: 0, y: -147.5, path: '/find-medicine' },
+  { key: 'doctors', icon: <LuUsers />, title: 'Consult', sub: 'Symptom triage and nearby hospitals', x: 127.7, y: -73.7, path: '/appointments' },
   { key: 'compare', icon: <LuShuffle />, title: 'Compare', sub: 'Best Prices', x: 127.7, y: 73.7, path: '/compare' },
   { key: 'appointments', icon: <LuCalendar />, title: 'Appointments', sub: 'Book instantly', x: 0, y: 147.5, path: '/appointments' },
   { key: 'records', icon: <LuFolder />, title: 'Health Records', sub: 'Secure & private', x: -127.7, y: 73.7, path: '/health-info' },
@@ -27,23 +27,21 @@ const DONUT_PATHS = [
 
 const FEATURES = [
   { key: 'discovery', color: 'purple', icon: <LuPill />, title: 'Smart Medicine Discovery', sub: 'Find the right medicine with AI suggestions.', path: '/find-medicine' },
-  { key: 'compare-save', color: 'olive', icon: <LuShuffle />, title: 'Compare & Save', sub: 'Compare prices across 500+ pharmacies.', path: '/compare' },
+  { key: 'compare-save', color: 'olive', icon: <LuShuffle />, title: 'Compare & Save', sub: 'Compare Jan Aushadhi generic prices.', path: '/compare' },
   { key: 'trusted', color: 'blue', icon: <LuUsers />, title: 'Trusted Healthcare', sub: 'Connect with verified doctors near you.', path: '/appointments' },
   { key: 'insights', color: 'orange', icon: <LuMessageCircle />, title: 'Health Insights', sub: 'Personalized tips and health tracking.', path: '/health-info' },
-  { key: 'secure', color: 'teal', icon: <LuFolder />, title: 'Secure & Private', sub: 'Your data is 100% safe and encrypted.', path: '/health-info' },
+  { key: 'secure', color: 'teal', icon: <LuFolder />, title: 'Secure & Private', sub: 'Your records are saved to your account and protected by login.', path: '/health-info' },
 ];
 
 const STATS = [
-  { key: 'medicines', icon: <LuPill />, num: '10K+', label: 'Medicines' },
-  { key: 'pharmacies', icon: <LuFolder />, num: '500+', label: 'Partner Pharmacies' },
-  { key: 'doctors', icon: <LuUsers />, num: '200+', label: 'Trusted Doctors' },
+  { key: 'medicines', icon: <LuPill />, num: '2,095', label: 'Jan Aushadhi listings' },
+  { key: 'pharmacies', icon: <LuFolder />, num: '2 Nov 2026', label: 'Price list date' },
   { key: 'support', icon: <LuMessageCircle />, num: '24/7', label: 'Support Available' },
 ];
 
 const TRUST_ITEMS = [
-  { key: 'pharmacies', icon: <LuFileText />, title: 'Verified Pharmacies', sub: 'Genuine medicines only' },
+  { key: 'pharmacies', icon: <LuFileText />, title: 'Official price list', sub: 'PMBJP Jan Aushadhi' },
   { key: 'doctors', icon: <LuUsers />, title: 'Expert Doctors', sub: 'Experienced & trusted' },
-  { key: 'transactions', icon: <LuShuffle />, title: 'Secure Transactions', sub: '100% safe payments' },
   { key: 'support', icon: <LuMessageCircle />, title: '24/7 Customer Support', sub: "We're always here" },
 ];
 
