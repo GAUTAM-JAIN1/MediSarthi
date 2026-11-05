@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 // ============================================================================
 // NEW FILE: frontend/frontend/src/pages/DoctorVisitView.jsx
 // Modeled directly on EmergencyView.jsx (same "public, no Layout, no auth"
@@ -41,7 +42,7 @@ export default function DoctorVisitView() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`http://localhost:8080/health/doctor-qr/${token}`);
+      const res = await fetch(API_BASE + `/health/doctor-qr/${token}`);
       const data = await res.json();
       if (!res.ok) {
         setError(extractErrorMessage(data.detail, "Ye QR invalid hai ya expire ho gaya hai."));

@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -73,8 +74,8 @@ export default function Auth() {
     try {
       const endpoint =
         mode === "login"
-          ? "http://localhost:8080/auth/login"
-          : "http://localhost:8080/auth/signup";
+          ? API_BASE + "/auth/login"
+          : API_BASE + "/auth/signup";
 
       // Backend Pydantic model (JSON body) expect karta hai, FormData nahi.
       const payload =

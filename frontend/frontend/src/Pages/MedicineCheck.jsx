@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import React, { useState } from 'react';
 import {
   LuPill, LuPlus, LuX, LuLoader, LuTriangleAlert, LuShieldCheck,
@@ -71,7 +72,7 @@ function InteractionChecker({ userId, isLoggedIn, authFetch }) {
     setResult(null);
 
     try {
-      const res = await authFetch('http://localhost:8080/medicine/interactions', {
+      const res = await authFetch(API_BASE + '/medicine/interactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, medicines: filled }),
@@ -259,7 +260,7 @@ function SymptomTriage({ userId, isLoggedIn, authFetch }) {
     setResult(null);
 
     try {
-      const res = await authFetch('http://localhost:8080/triage/symptoms', {
+      const res = await authFetch(API_BASE + '/triage/symptoms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, symptoms }),

@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   LuUpload, LuFileText, LuX, LuLoader, LuTriangleAlert,
@@ -172,7 +173,7 @@ function LabAnalysisResult({ analysis, rawText, userId, onSaved, authFetch }) {
         raw_text: rawText || '',
         report_date: analysis.report_date || '',
       };
-      const res = await authFetch('http://localhost:8080/lab/save', {
+      const res = await authFetch(API_BASE + '/lab/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -530,7 +531,7 @@ function EffectivenessCard({ userId, testName, normalRange, annotation, numericP
         })),
         normal_range: normalRange || '',
       };
-      const res = await authFetch('http://localhost:8080/medicine/effectiveness', {
+      const res = await authFetch(API_BASE + '/medicine/effectiveness', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -686,7 +687,7 @@ function PastReportItem({ report, userId, onDeleted, authFetch }) {
     setDeleting(true);
     setDeleteError('');
     try {
-      const res = await authFetch(`http://localhost:8080/lab/analyses/${userId}/${report._id}`, {
+      const res = await authFetch(API_BASE + `/lab/analyses/${userId}/${report._id}`, {
         method: 'DELETE',
       });
       const data = await res.json().catch(() => ({}));
@@ -795,8 +796,8 @@ function HealthHistorySection({ userId, isLoggedIn, refreshKey, authFetch }) {
     setError('');
 
     Promise.all([
-      authFetch(`http://localhost:8080/lab/analyses/${userId}`).then((r) => r.json()),
-      authFetch(`http://localhost:8080/health/trends-annotated/${userId}`).then((r) => r.json()),
+      authFetch(API_BASE + `/lab/analyses/${userId}`).then((r) => r.json()),
+      authFetch(API_BASE + `/health/trends-annotated/${userId}`).then((r) => r.json()),
     ])
       .then(([analysesData, trendsData]) => {
         if (cancelled) return;
@@ -819,7 +820,7 @@ function HealthHistorySection({ userId, isLoggedIn, refreshKey, authFetch }) {
 
   const handleReportDeleted = useCallback((deletedId) => {
     setReports((prev) => prev.filter((r) => r._id !== deletedId));
-    authFetch(`http://localhost:8080/health/trends-annotated/${userId}`)
+    authFetch(API_BASE + `/health/trends-annotated/${userId}`)
       .then((r) => r.json())
       .then((data) => setTrends(data.trends || []))
       .catch(() => {
@@ -949,7 +950,7 @@ export default function LabReport() {
       formData.append('file', file);
       formData.append('user_id', userId);
 
-      const res = await authFetch('http://localhost:8080/lab/analyse', {
+      const res = await authFetch(API_BASE + '/lab/analyse', {
         method: 'POST',
         body: formData,
       });

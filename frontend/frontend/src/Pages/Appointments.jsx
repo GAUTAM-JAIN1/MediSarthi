@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import { useState, useEffect, useRef } from "react";
 import {
   LuPhone, LuMapPin, LuSearch, LuLoader, LuBot,
@@ -72,7 +73,7 @@ export default function Appointments() {
     setHospitals([]);
     setVisibleCount(HOSPITALS_PAGE_SIZE);
     try {
-      const res = await authFetch("http://localhost:8080/hospitals/nearby", {
+      const res = await authFetch(API_BASE + "/hospitals/nearby", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -143,7 +144,7 @@ export default function Appointments() {
     stopPolling();
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch("http://localhost:8080/call/status");
+        const res = await fetch(API_BASE + "/call/status");
         if (!res.ok) return;
         const data = await res.json();
 
@@ -184,7 +185,7 @@ export default function Appointments() {
     setActiveStep(0);
     if (!targetHospitalName) setTargetHospitalName(callForm.number.trim());
     try {
-      const res = await authFetch("http://localhost:8080/call/schedule", {
+      const res = await authFetch(API_BASE + "/call/schedule", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

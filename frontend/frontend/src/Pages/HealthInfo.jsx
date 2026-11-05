@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
@@ -46,15 +47,15 @@ const PANEL_META = {
 // has report_type/overall_summary/date/tests (see health_records.py's
 // save_lab_report_analysis), NOT a generic `summary` field — the Reports
 // drawer below reads `overall_summary` accordingly now.
-const LAB_ANALYSES_URL = (userId) => `http://localhost:8080/lab/analyses/${userId}`;
+const LAB_ANALYSES_URL = (userId) => API_BASE + `/lab/analyses/${userId}`;
 
 // DELETE endpoints per section — used by the shared confirmDelete() handler
 // below. `report` reuses the same endpoint LabReport.jsx's delete flow hits
 // (DELETE /lab/analyses/{user_id}/{analysis_id}, decisions.md D30).
 const DELETE_ENDPOINTS = {
-  vital: (uid, id) => `http://localhost:8080/health/vitals/${uid}/${id}`,
-  prescription: (uid, id) => `http://localhost:8080/health/prescriptions/${uid}/${id}`,
-  report: (uid, id) => `http://localhost:8080/lab/analyses/${uid}/${id}`,
+  vital: (uid, id) => API_BASE + `/health/vitals/${uid}/${id}`,
+  prescription: (uid, id) => API_BASE + `/health/prescriptions/${uid}/${id}`,
+  report: (uid, id) => API_BASE + `/lab/analyses/${uid}/${id}`,
 };
 
 export default function HealthInfo() {
@@ -126,7 +127,7 @@ export default function HealthInfo() {
     setLoadingRecords(true);
     setRecordsError("");
     try {
-      const res = await authFetch(`http://localhost:8080/health/timeline/${userId}`);
+      const res = await authFetch(API_BASE + `/health/timeline/${userId}`);
       const data = await res.json();
       if (!res.ok) {
         setRecordsError(extractErrorMessage(data.detail, "Records load nahi ho sake."));
@@ -179,7 +180,7 @@ export default function HealthInfo() {
         weight: vitalForm.weight ? parseFloat(vitalForm.weight) : null,
       };
 
-      const res = await authFetch("http://localhost:8080/health/vital", {
+      const res = await authFetch(API_BASE + "/health/vital", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -270,7 +271,7 @@ export default function HealthInfo() {
   const fetchEmergencyProfile = async () => {
     setLoadingEmergency(true);
     try {
-      const res = await authFetch(`http://localhost:8080/health/emergency-profile/${userId}`);
+      const res = await authFetch(API_BASE + `/health/emergency-profile/${userId}`);
       const data = await res.json();
       if (res.ok && data) {
         setEmergencyForm({
@@ -317,7 +318,7 @@ export default function HealthInfo() {
         medicines: emergencyForm.medicines,
       };
 
-      const res = await authFetch("http://localhost:8080/health/emergency-profile", {
+      const res = await authFetch(API_BASE + "/health/emergency-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -340,7 +341,7 @@ export default function HealthInfo() {
     setGeneratingQr(true);
     setQrMsg({ text: "", type: "" });
     try {
-      const res = await authFetch(`http://localhost:8080/health/generate-qr/${userId}`, {
+      const res = await authFetch(API_BASE + `/health/generate-qr/${userId}`, {
         method: "POST",
       });
       const data = await res.json();
@@ -363,7 +364,7 @@ export default function HealthInfo() {
     setGeneratingDoctorQr(true);
     setDoctorQrMsg({ text: "", type: "" });
     try {
-      const res = await authFetch(`http://localhost:8080/health/doctor-qr/${userId}`, {
+      const res = await authFetch(API_BASE + `/health/doctor-qr/${userId}`, {
         method: "POST",
       });
       const data = await res.json();
