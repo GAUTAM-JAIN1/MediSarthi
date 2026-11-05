@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import React, { useState, useEffect } from 'react';
 import {
   LuSearch, LuExternalLink, LuTrendingDown, LuTruck, LuLoader,
@@ -426,7 +427,7 @@ export default function Compare() {
     setExpandedRows({});
 
     try {
-      const res = await fetch('http://localhost:8080/medicine/compare', {
+      const res = await fetch(API_BASE + '/medicine/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ medicines, user_id: userId }),

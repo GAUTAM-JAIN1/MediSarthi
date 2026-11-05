@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -93,7 +94,7 @@ function PrescriptionAnalysisCard({ analysis, rawMedicines, source, userId, onSa
         source,
         raw_medicines: rawMedicines || [],
       };
-      const res = await authFetch('http://localhost:8080/health/prescription-analysis', {
+      const res = await authFetch(API_BASE + '/health/prescription-analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -319,7 +320,7 @@ export default function FindMedicine() {
     setTextError('');
     setTriageResult(null);
     try {
-      const res = await authFetch('http://localhost:8080/triage/symptoms', {
+      const res = await authFetch(API_BASE + '/triage/symptoms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, symptoms: combinedQuery }),
@@ -377,7 +378,7 @@ export default function FindMedicine() {
       formData.append('audio_file', audioBlob, 'recording.webm');
       formData.append('user_id', userId);
 
-      const res = await authFetch('http://localhost:8080/consultation/speech', {
+      const res = await authFetch(API_BASE + '/consultation/speech', {
         method: 'POST',
         body: formData,
       });
@@ -425,7 +426,7 @@ export default function FindMedicine() {
       formData.append('file', file);
       formData.append('user_id', userId);
 
-      const res = await authFetch('http://localhost:8080/consultation/document', {
+      const res = await authFetch(API_BASE + '/consultation/document', {
         method: 'POST',
         body: formData,
       });

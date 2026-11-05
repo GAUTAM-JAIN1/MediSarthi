@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import "./EmergencyView.css";
@@ -31,7 +32,7 @@ export default function EmergencyView() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`http://localhost:8080/health/qr/${token}`);
+      const res = await fetch(API_BASE + `/health/qr/${token}`);
       const data = await res.json();
       if (!res.ok) {
         setError(extractErrorMessage(data.detail, "Ye QR valid nahi hai ya expire ho gaya hai."));

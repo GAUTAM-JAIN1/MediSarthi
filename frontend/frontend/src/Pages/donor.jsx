@@ -1,3 +1,4 @@
+import { API_BASE } from "../config";
 import { useState, useEffect, useRef } from "react";
 import Layout from "../components/Layout";
 import { useUser } from "../hooks/useUser";
@@ -15,7 +16,6 @@ import {
 } from "react-icons/lu";
 import "./donor.css";
 
-const API_BASE = "http://localhost:8080";
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 const COMPATIBILITY = {
