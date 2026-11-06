@@ -1001,3 +1001,13 @@ Status: CLOSED. Dump: dumps\P09b_dump.md. Raw evidence: dumps\raw\P09b\.
   - Runtime: 32.4 seconds
 - **Invariants:** 44 operations; OpenAPI SHA256 `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42` verified identical to P09.
 - **Decision:** PENDING Gautam's review of top-1 snippets.
+
+
+---
+
+## Prompt 09c - Review pack for embedder decision (6 Nov 2026)
+Status: CLOSED. Dump: dumps\P09c_dump.md. Raw evidence: dumps\raw\P09c\.
+- **Review Pack Generator:** `backend/scripts/review_pack.py` created to resolve all A and B top-1 retrieved documents to full chunk text from the reference knowledge base (`backend/knowledge/medical_kb`).
+- **Review Pack Output:** `Project-docs/dumps/raw/P09c/review_pack.md` with all 10 query sections, full top-5 ID listings, top-1 texts, and empty `RATING_A: ____   RATING_B: ____   (sahi / partial / galat)` evaluation lines.
+- **Verification:** 10 of 10 queries resolved without drift. 0 ratings filled.
+- **Decision:** PENDING Gautam's rating input on `review_pack.md`.
