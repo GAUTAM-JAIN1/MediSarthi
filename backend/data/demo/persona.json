@@ -18,37 +18,37 @@
   "vitals": [
     {
       "days_ago": 14,
-      "BloodPressure": "125/82",
-      "HeartRate": 74,
-      "BloodSugar": 104,
-      "Weight": 68.0,
-      "RecordedAt": "morning"
+      "bp_systolic": 125,
+      "bp_diastolic": 82,
+      "blood_sugar": 104,
+      "weight": 68.0,
+      "notes": "Routine morning check"
     },
     {
       "days_ago": 2,
-      "BloodPressure": "120/80",
-      "HeartRate": 70,
-      "BloodSugar": 98,
-      "Weight": 67.5,
-      "RecordedAt": "morning"
+      "bp_systolic": 120,
+      "bp_diastolic": 80,
+      "blood_sugar": 98,
+      "weight": 67.5,
+      "notes": "Routine morning check"
     }
   ],
   "prescriptions": [
     {
-      "MedicineName": "Paracetamol Tablets IP 650 mg",
-      "Dosage": "650mg",
-      "Frequency": "SOS (as needed)",
-      "Days": 5,
-      "PrescribedBy": "Dr. Sharma",
-      "days_ago": 14
+      "days_ago": 14,
+      "medicines": [
+        "Paracetamol Tablets IP 650 mg"
+      ],
+      "symptoms": "Mild fever and body ache",
+      "doctor_notes": "Paracetamol Tablets IP 650 mg, SOS (as needed) for 5 days"
     },
     {
-      "MedicineName": "Amlodipine",
-      "Dosage": "5mg",
-      "Frequency": "Once daily",
-      "Days": 30,
-      "PrescribedBy": "Dr. Sharma",
-      "days_ago": 30
+      "days_ago": 30,
+      "medicines": [
+        "Amlodipine"
+      ],
+      "symptoms": "Mild hypertension management",
+      "doctor_notes": "Amlodipine 5mg, once daily for 30 days"
     }
   ],
   "emergency_profile": {
@@ -66,4 +66,3 @@
     "EmergencyContactRelation": "Spouse"
   }
 }
-
