@@ -1,0 +1,130 @@
+﻿from crewai import Agent, Crew, Process, Task
+from crewai.project import CrewBase, agent, crew, task
+from typing import Type, Optional, List
+from crewai import LLM
+from pydantic import BaseModel, Field
+from agents.auth import get_user_knowledge_profile
+from agents.health_records import get_emergency_profile
+import os
+from dotenv import load_dotenv
+from crewai.agents.agent_builder.base_agent import BaseAgent
+from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource
+from pathlib import Path
+from .tools.custom_tool import MyCustomTool
+from .tools.google_cal import GoogleCalendarTool
+
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+# NOTE (Groq migration): All 7 crews below were moved off gemini/gemini-2.5-flash
+# to groq/openai/gpt-oss-120b because the Gemini free tier on this project hit
+# a daily 20-requests/day wall (GenerateRequestsPerDayPerProjectPerModel-FreeTier),
+# which made iterative dev/testing unworkable. GEMINI_API_KEY is left loaded above
+# in case anything else in the project still needs it -- it is just no longer used
+# by any LLM() call in this file. GROQ_API_KEY must exist in backend/.env for any
+# of these crews to run now.
+
+
+# ---- Shared helper ----------------------------------------------------------
+
+def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = False, shared_kb_files: Optional[List[str]] = None):
+    """
+    Common setup for all crews - reads user profile, writes knowledge file,
+    optionally injects allergy info, returns (knowledge_sources, embedder_config).
+    Centralised here so each crew.crew() method stays clean.
+
+    IMPORTANT: `crew_name` isolates each crew's ChromaDB memory storage. Without
+    this, every crew for a given user shared the SAME CREWAI_STORAGE_DIR, so
+    e.g. SpeechCrew's `doctor` agent (memory=True) could retrieve/reuse
+    memories that were actually written by FileCrew (prescription photo scan)
+    for the same user â€” causing symptom-only queries (like a "Diarrhea" bubble
+    click) to return stale, unrelated medicine combinations from a totally
+    different past interaction. Each crew now gets its own memory subfolder.
+
+    `shared_kb_files` (new): optional list of file paths (relative to the
+    project's `knowledge/` folder, same convention as the per-user profile
+    file) pointing at a SHARED, non-user-specific reference knowledge base â€”
+    e.g. `["medical_kb/drug_interactions.txt"]`. When provided, a second
+    TextFileKnowledgeSource is added alongside the per-user profile source,
+    so the crew's agent can retrieve from both the user's own profile AND a
+    curated reference set via the same embedding pipeline. See decisions.md
+    D26 for why this exists and why it's scoped to only the crews that
+    benefit from a real external reference (LabReportCrew,
+    MedicineInteractionCrew, SymptomTriageCrew, MedicineEffectivenessCrew,
+    ClinicalSummaryCrew).
+    """
+    user_data, _ = get_user_knowledge_profile(user_id)
+
+    if inject_allergies:
+        try:
+            emergency_profile = get_emergency_profile(user_data["ID"])
+        except Exception:
+            emergency_profile = None
+        allergy_line = emergency_profile.get("allergies", "") if emergency_profile else ""
+    else:
+        allergy_line = ""
+
+    os.environ["EMBEDDINGS_OLLAMA_MODEL_NAME"] = "mxbai-embed-large"
+    project_root = Path(__file__).resolve().parents[2]
+    storage_dir = project_root / f"./medical_memory/{user_data['ID']}/{crew_name}"
+    os.environ["CREWAI_STORAGE_DIR"] = str(storage_dir)
+    profile_file_rel = f"user_{user_data['ID']}/profile.txt"
+
+    if inject_allergies and allergy_line:
+        try:
+            full_profile_path = project_root / "knowledge" / profile_file_rel
+            existing = full_profile_path.read_text(encoding="utf-8") if full_profile_path.exists() else ""
+            if "Known Allergies (for analysis):" not in existing:
+                with open(full_profile_path, "a", encoding="utf-8") as f:
+                    f.write(f"\nKnown Allergies (for analysis): {allergy_line or 'None recorded'}\n")
+        except Exception:
+            pass
+
+    knowledge_sources = [TextFileKnowledgeSource(file_paths=[str(profile_file_rel)])]
+
+    if shared_kb_files:
+        # Separate TextFileKnowledgeSource instance (not merged into the same
+        # file_paths list) so the per-user profile source and the shared
+        # reference source are chunked/embedded independently â€” a large,
+        # mostly-static reference file shouldn't affect chunking behavior for
+        # the small, frequently-changing per-user profile file.
+        knowledge_sources.append(TextFileKnowledgeSource(file_paths=shared_kb_files))
+
+    # FIX (Docker adaptability): this used to be hardcoded to
+    # "http://localhost:11434/api/embeddings", which works on bare-metal
+    # (Ollama running on the same machine) but breaks inside Docker â€”
+    # "localhost" inside a container refers to the CONTAINER itself, not
+    # the host machine actually running Ollama. That's why RAG-backed
+    # crews (which is now ALL crews, since embedder is always set below
+    # regardless of shared_kb_files) were failing/hanging as soon as this
+    # project moved into Docker.
+    #
+    # Fix: read the URL from an env var, defaulting to the old bare-metal
+    # value so nothing changes for non-Docker runs. Set
+    # OLLAMA_EMBED_URL=http://host.docker.internal:11434/api/embeddings in
+    # backend/.env when running via docker-compose (see updated
+    # docker-compose.yml, which also adds the extra_hosts mapping needed
+    # for host.docker.internal to resolve on Linux Docker hosts â€” it works
+    # out of the box on Docker Desktop for Windows/Mac).
+    ollama_url = os.getenv("OLLAMA_EMBED_URL", "http://localhost:11434/api/embeddings")
+
+    embedder = {
+        "provider": "ollama",
+        "config": {
+            "model": "mxbai-embed-large",
+            "url": ollama_url
+        }
+    }
+    return knowledge_sources, embedder
+
+
+# ---- Pydantic Schemas --------------------------------------------------------
+
+class MedicineItem(BaseModel):
+    name: str = Field(..., description="Exact medicine name, as close as possible to how it's listed on an e-commerce pharmacy platform.")
+    start_time: str = Field(..., description="Start time in ISO 8601 format (e.g., '2025-12-08T10:00:00').")
+    end_time: str = Field(..., description="End time in ISO 8601 format (e.g., '2025-12-08T10:15:00').")
+    description: str = Field("", description="Dosage instructions or notes (e.g., 'Take after food, twice daily').")
+
+

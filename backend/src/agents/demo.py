@@ -6,8 +6,10 @@ from datetime import datetime, timedelta
 import json
 import logging
 from pathlib import Path
+import re
 import secrets
-from typing import Callable, Dict, Optional
+import shutil
+from typing import Callable, Dict, List, Optional, Union
 import uuid
 
 import bcrypt
@@ -142,13 +144,80 @@ def create_demo_session(
     }
 
 
-def purge_expired_demo_users(db, now: Optional[datetime] = None, batch: int = 200) -> int:
-    """Purge expired demo users and all their associated records.
+class PurgeResult(dict):
+    """Result dict subclass that also compares equal to integer users_purged count for backward compatibility."""
 
-    Returns the count of purged demo users.
+    def __eq__(self, other):
+        if isinstance(other, int):
+            return self.get("users_purged") == other
+        return super().__eq__(other)
+
+    def __int__(self):
+        return int(self.get("users_purged", 0))
+
+
+def _user_knowledge_targets(user_id: str, knowledge_root: Path) -> List[Path]:
+    """Return verified existing knowledge paths on disk for a given user.
+
+    Validates that user_id is a valid 24-character hexadecimal ObjectId string.
+    Generates candidates strictly from discovered templates:
+      - user_{user_id} (directory)
+      - user_{user_id}/profile.txt (file)
+    Ensures resolved candidates reside strictly inside knowledge_root and
+    are not knowledge_root/medical_kb. Only returns existing paths.
+    """
+    if not isinstance(user_id, str):
+        return []
+    if not re.fullmatch(r"^[0-9a-fA-F]{24}$", user_id):
+        return []
+
+    root_resolved = Path(knowledge_root).resolve()
+    medical_kb_resolved = (root_resolved / "medical_kb").resolve()
+
+    candidates = [
+        root_resolved / f"user_{user_id}",
+        root_resolved / f"user_{user_id}" / "profile.txt",
+    ]
+
+    targets = []
+    for cand in candidates:
+        if not cand.exists():
+            continue
+        try:
+            cand_resolved = cand.resolve()
+        except OSError:
+            continue
+        try:
+            cand_resolved.relative_to(root_resolved)
+        except ValueError:
+            continue
+        if cand_resolved == root_resolved:
+            continue
+        if cand_resolved == medical_kb_resolved or medical_kb_resolved in cand_resolved.parents:
+            continue
+        if cand_resolved not in targets:
+            targets.append(cand_resolved)
+
+    return targets
+
+
+def purge_expired_demo_users(
+    db,
+    now: Optional[datetime] = None,
+    batch: int = 200,
+    knowledge_root: Optional[Path] = None,
+) -> Dict[str, int]:
+    """Purge expired demo users, all their associated Mongo records, and crew knowledge files.
+
+    Returns a dict with 'users_purged', 'files_removed', and 'file_errors'.
     """
     if now is None:
         now = datetime.utcnow()
+
+    if knowledge_root is None:
+        knowledge_root = Path(__file__).resolve().parents[2] / "knowledge"
+    else:
+        knowledge_root = Path(knowledge_root)
 
     cursor = db["Members"].find(
         {"is_demo": True, "demo_expires_at": {"$lt": now}},
@@ -157,7 +226,7 @@ def purge_expired_demo_users(db, now: Optional[datetime] = None, batch: int = 20
 
     expired_ids = [doc["_id"] for doc in cursor]
     if not expired_ids:
-        return 0
+        return PurgeResult({"users_purged": 0, "files_removed": 0, "file_errors": 0})
 
     expired_str_ids = [str(x) for x in expired_ids]
 
@@ -179,5 +248,28 @@ def purge_expired_demo_users(db, now: Optional[datetime] = None, batch: int = 20
             logger.warning("Error deleting records from %s for expired demo users: %s", col, e)
 
     db["Members"].delete_many({"_id": {"$in": expired_ids}})
-    return len(expired_ids)
+
+    files_removed = 0
+    file_errors = 0
+
+    for uid in expired_str_ids:
+        targets = _user_knowledge_targets(uid, knowledge_root)
+        for target in targets:
+            if not target.exists():
+                continue
+            try:
+                if target.is_dir():
+                    shutil.rmtree(target)
+                    files_removed += 1
+                elif target.is_file():
+                    target.unlink()
+                    files_removed += 1
+            except OSError:
+                file_errors += 1
+
+    return PurgeResult({
+        "users_purged": len(expired_ids),
+        "files_removed": files_removed,
+        "file_errors": file_errors,
+    })
 

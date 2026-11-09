@@ -1212,3 +1212,13 @@ future endpoint), it doesn't expose that recovery to the end user today.
   - No HuggingFace or sentence-transformers dependencies are used.
   - Harness execution metrics: `doc_count=126`, `queries=10`, `B_status=mxbai-embed-large`, `runtime=32.4s`, `mean_top_5_overlap=2.5`.
 - **Decision Status:** PENDING human review of top-1 snippets by Gautam. No winner declared. Production embedder code remains untouched.
+
+
+## D54: Embedder Decision - chromadb-default (Option A) (P09d)
+- "D54 - Embedder decision: chromadb-default (Option A), 3 Nov 2026. Decided by Gautam from raw/P09b/embedder_report_v2.json. Known limits: (1) The 10 top-1 ratings (sahi/partial/galat) were NOT recorded before the decision, so the decision is PROVISIONAL until they are. (2) Chroma's default ONNX model downloads on first use. P11 must bake it into the image, or cold start depends on the network. (3) Production crews still use the Ollama embedder config. Changing them is P11, not P09d. (4) Grounding is PARTIAL: task YAML has 'do not invent' rules (raw evidence), but no rule restricts answers to the knowledge source, and general_que_task allows general knowledge. A grounding instruction for lab, triage, interactions and effectiveness is P10b."
+
+
+## D55: Demo Purge Removes Per-User Knowledge Files (P09d)
+- "Demo purge removes per-user crew knowledge files, path-checked against the knowledge root, never touching medical_kb. Errors are counted and never exposed."
+- **Known Limit & Error Behavior:** If `shutil.rmtree` fails with `OSError` (e.g. read-only filesystem or locked file), the database deletion still completes, `file_errors` is incremented, and the per-user directory remains orphaned on disk until manual intervention or subsequent purge.
+- **Test Isolation Note:** `backend/tests/test_demo_purge_files.py` maintains an isolated copy of `FakeDB` to avoid editing `backend/tests/test_demo_session.py` outside the permitted commit scope.

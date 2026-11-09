@@ -1011,3 +1011,15 @@ Status: CLOSED. Dump: dumps\P09c_dump.md. Raw evidence: dumps\raw\P09c\.
 - **Review Pack Output:** `Project-docs/dumps/raw/P09c/review_pack.md` with all 10 query sections, full top-5 ID listings, top-1 texts, and empty `RATING_A: ____   RATING_B: ____   (sahi / partial / galat)` evaluation lines.
 - **Verification:** 10 of 10 queries resolved without drift. 0 ratings filled.
 - **Decision:** PENDING Gautam's rating input on `review_pack.md`.
+
+
+---
+
+## Prompt 09d - Demo purge removes per-user knowledge files & D54 embedder decision (9 Nov 2026)
+Status: CLOSED. Dump: dumps\P09d_dump.md. Raw evidence: dumps\raw\P09d\.
+- **Per-User Knowledge File Purge:** `_user_knowledge_targets()` in `backend/src/agents/demo.py` safely identifies per-user knowledge directories (`knowledge/user_<id>/`) and files (`profile.txt`) strictly matching valid 24-char ObjectId format. Prevents path traversal (`..` rejected) and guards `medical_kb` from deletion.
+- **Safe Purge Deletion:** `purge_expired_demo_users()` cleans up per-user knowledge targets with `shutil.rmtree()` / `unlink()`, trapping `OSError` without escaping exceptions or leaking paths. Returns `PurgeResult` dict (`users_purged`, `files_removed`, `file_errors`) maintaining int-equality backward compatibility with existing tests.
+- **Unit Tests:** `backend/tests/test_demo_purge_files.py` added with 5 test scenarios (12 passed, 1 skipped on Windows due to symlink privilege, 0 failed across purge and session tests).
+- **Invariants:** 44 OpenAPI operations; canonical SHA256 `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42` unchanged. Zero diff on `crew.py` or `routes/`.
+- **Decisions Recorded:** D54 (Option A provisional decision with 4 recorded known limits) and D55 (knowledge file deletion and error semantics).
+- **Blockers & Deviations:** None.

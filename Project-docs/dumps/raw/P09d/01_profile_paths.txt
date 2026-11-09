@@ -1,0 +1,423 @@
+﻿
+MediSarthi\backend\src\agents\auth.py:8:Profile dict shape (build_user_profile ka return) wohi hai jo
+MediSarthi\backend\src\agents\auth.py:40:def build_user_profile(doc: dict) -> dict:
+MediSarthi\backend\src\agents\auth.py:76:    return build_user_profile(doc)
+MediSarthi\backend\src\agents\auth.py:87:    return build_user_profile(doc)
+MediSarthi\backend\src\agents\auth.py:90:def get_user_by_id(user_id: str) -> dict:
+MediSarthi\backend\src\agents\auth.py:94:        oid = ObjectId(user_id)
+MediSarthi\backend\src\agents\auth.py:96:        raise ValueError(f"'{user_id}' valid user id nahi hai.")
+MediSarthi\backend\src\agents\auth.py:99:        raise ValueError(f"ID {user_id} wala user nahi mila.")
+MediSarthi\backend\src\agents\auth.py:100:    return build_user_profile(doc)
+MediSarthi\backend\src\agents\auth.py:103:def get_user_knowledge_profile(user_id: str):
+MediSarthi\backend\src\agents\auth.py:105:    face_recognize.py ke get_user_knowledge_profile() ka direct replacement.
+MediSarthi\backend\src\agents\auth.py:109:    NAYA:   logged-in user ka user_id leta hai (no webcam, no blocking),
+MediSarthi\backend\src\agents\auth.py:110:            aur wohi knowledge/user_<id>/profile.txt file likhta hai
+MediSarthi\backend\src\agents\auth.py:113:    Returns: (user_data dict, profile_file_path string) — same 2-tuple shape.
+MediSarthi\backend\src\agents\auth.py:115:    user_data = get_user_by_id(user_id)
+MediSarthi\backend\src\agents\auth.py:117:    # crew.py mein Path(__file__).resolve().parents[2] se project_root = 
+backend/ aata hai
+MediSarthi\backend\src\agents\auth.py:119:    project_root = Path(__file__).resolve().parents[2]
+MediSarthi\backend\src\agents\auth.py:120:    profile_dir = project_root / "knowledge" / f"user_{user_data['ID']}"
+MediSarthi\backend\src\agents\auth.py:122:    profile_file = profile_dir / "profile.txt"
+MediSarthi\backend\src\agents\auth.py:124:    lines = [f"{key}: {value}" for key, value in user_data.items()]
+MediSarthi\backend\src\agents\auth.py:125:    profile_file.write_text("\n".join(lines), encoding="utf-8")
+MediSarthi\backend\src\agents\auth.py:127:    return user_data, str(profile_file)
+MediSarthi\backend\src\agents\crew.py:6:from agents.auth import get_user_knowledge_profile
+MediSarthi\backend\src\agents\crew.py:31:def _build_crew_base(user_id: str, crew_name: str, inject_allergies: bool = 
+False, shared_kb_files: Optional[List[str]] = None):
+MediSarthi\backend\src\agents\crew.py:48:    e.g. `["medical_kb/drug_interactions.txt"]`. When provided, a second
+MediSarthi\backend\src\agents\crew.py:57:    user_data, _ = get_user_knowledge_profile(user_id)
+MediSarthi\backend\src\agents\crew.py:61:            emergency_profile = get_emergency_profile(user_data["ID"])
+MediSarthi\backend\src\agents\crew.py:69:    project_root = Path(__file__).resolve().parents[2]
+MediSarthi\backend\src\agents\crew.py:70:    storage_dir = project_root / 
+f"./medical_memory/{user_data['ID']}/{crew_name}"
+MediSarthi\backend\src\agents\crew.py:72:    profile_file_rel = f"user_{user_data['ID']}/profile.txt"
+MediSarthi\backend\src\agents\crew.py:76:            full_profile_path = project_root / "knowledge" / profile_file_rel
+MediSarthi\backend\src\agents\crew.py:84:    knowledge_sources = 
+[TextFileKnowledgeSource(file_paths=[str(profile_file_rel)])]
+MediSarthi\backend\src\agents\crew.py:136:    user_id: str = Field(..., description="Unique ID for the user.")
+MediSarthi\backend\src\agents\crew.py:326:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:327:        knowledge_sources, embedder = _build_crew_base(user_id, "speech", 
+inject_allergies=True)
+MediSarthi\backend\src\agents\crew.py:405:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:406:        knowledge_sources, embedder = _build_crew_base(user_id, "file", 
+inject_allergies=True)
+MediSarthi\backend\src\agents\crew.py:456:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:457:        knowledge_sources, embedder = _build_crew_base(user_id, "hospitals")
+MediSarthi\backend\src\agents\crew.py:494:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:495:        knowledge_sources, embedder = _build_crew_base(user_id, "general")
+MediSarthi\backend\src\agents\crew.py:539:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:544:            user_id, "lab_report", inject_allergies=False,
+MediSarthi\backend\src\agents\crew.py:545:            shared_kb_files=["medical_kb/lab_reference_ranges.txt"],
+MediSarthi\backend\src\agents\crew.py:589:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:594:            user_id, "med_interaction", inject_allergies=True,
+MediSarthi\backend\src\agents\crew.py:595:            shared_kb_files=["medical_kb/drug_interactions.txt"],
+MediSarthi\backend\src\agents\crew.py:639:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:646:            user_id, "symptom_triage", inject_allergies=False,
+MediSarthi\backend\src\agents\crew.py:647:            shared_kb_files=["medical_kb/symptom_red_flags.txt"],
+MediSarthi\backend\src\agents\crew.py:678:    at knowledge/medical_kb/test_direction_reference.txt, matching where the
+MediSarthi\backend\src\agents\crew.py:712:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:717:            user_id, "medicine_effectiveness", inject_allergies=False,
+MediSarthi\backend\src\agents\crew.py:719:                "medical_kb/test_direction_reference.txt",
+MediSarthi\backend\src\agents\crew.py:720:                "medical_kb/medicine_response_timelines.txt",
+MediSarthi\backend\src\agents\crew.py:749:    Called from main.py's POST /health/doctor-qr/{user_id} at QR-generation
+MediSarthi\backend\src\agents\crew.py:777:    def crew(self, user_id: str) -> Crew:
+MediSarthi\backend\src\agents\crew.py:784:            user_id, "clinical_summary", inject_allergies=True,
+MediSarthi\backend\src\agents\crew.py:786:                "medical_kb/lab_reference_ranges.txt",
+MediSarthi\backend\src\agents\crew.py:787:                "medical_kb/test_direction_reference.txt",
+MediSarthi\backend\src\agents\demo.py:76:    user_fields = dict(persona.get("user", {}))
+MediSarthi\backend\src\agents\demo.py:77:    user_doc = {
+MediSarthi\backend\src\agents\demo.py:78:        **user_fields,
+MediSarthi\backend\src\agents\demo.py:86:    res = db["Members"].insert_one(user_doc)
+MediSarthi\backend\src\agents\demo.py:87:    user_id = str(getattr(res, "inserted_id", None) or user_doc.get("_id"))
+MediSarthi\backend\src\agents\demo.py:94:            "user_id": user_id,
+MediSarthi\backend\src\agents\demo.py:109:            "user_id": user_id,
+MediSarthi\backend\src\agents\demo.py:122:            "user_id": user_id,
+MediSarthi\backend\src\agents\demo.py:131:        token = make_token(user_id, expires_minutes=expires_minutes)
+MediSarthi\backend\src\agents\demo.py:133:        token = create_access_token(user_id, expires_minutes=expires_minutes)
+MediSarthi\backend\src\agents\demo.py:136:        "user_id": user_id,
+MediSarthi\backend\src\agents\demo.py:137:        "name": user_fields.get("Name", "Rahul Kumar (demo)"),
+MediSarthi\backend\src\agents\demo.py:164:    collections_with_user_id = [
+MediSarthi\backend\src\agents\demo.py:175:    for col in collections_with_user_id:
+MediSarthi\backend\src\agents\demo.py:177:            db[col].delete_many({"user_id": {"$in": expired_str_ids}})
+MediSarthi\backend\src\agents\donor.py:50:def register_donor(user_id: str, name: str, blood_group: str,
+MediSarthi\backend\src\agents\donor.py:60:    if col.find_one({"user_id": user_id}):
+MediSarthi\backend\src\agents\donor.py:64:        "user_id": user_id,
+MediSarthi\backend\src\agents\donor.py:80:def get_donor_by_user_id(user_id: str) -> dict:
+MediSarthi\backend\src\agents\donor.py:81:    """Fetch donor profile by user_id. Raises ValueError if not found."""
+MediSarthi\backend\src\agents\donor.py:83:    doc = col.find_one({"user_id": user_id})
+MediSarthi\backend\src\agents\donor.py:92:def record_donation(user_id: str) -> dict:
+MediSarthi\backend\src\agents\donor.py:98:    donor = col.find_one({"user_id": user_id})
+MediSarthi\backend\src\agents\donor.py:106:        {"user_id": user_id},
+MediSarthi\backend\src\agents\donor.py:116:def toggle_availability(user_id: str, available: bool) -> dict:
+MediSarthi\backend\src\agents\donor.py:119:    col.update_one({"user_id": user_id}, {"$set": {"available": available}})
+MediSarthi\backend\src\agents\donor.py:120:    return get_donor_by_user_id(user_id)
+MediSarthi\backend\src\agents\donor.py:125:def create_donation_request(requester_user_id: str, blood_group: str,
+MediSarthi\backend\src\agents\donor.py:133:        "requester_user_id": requester_user_id,
+MediSarthi\backend\src\agents\eval_harness.py:51:    python eval_harness.py --suite triage --user-id <mongo_user_id>
+MediSarthi\backend\src\agents\eval_harness.py:52:    python eval_harness.py --suite interactions --user-id 
+<mongo_user_id>
+MediSarthi\backend\src\agents\eval_harness.py:55:crews' `.crew(user_id=...)` loads a real user profile (see auth.py
+MediSarthi\backend\src\agents\eval_harness.py:56:`get_user_knowledge_profile`). Use any existing test account's 
+user_id.
+MediSarthi\backend\src\agents\eval_harness.py:154:def run_triage_case(label, symptom_text, expected_bucket, user_id):
+MediSarthi\backend\src\agents\eval_harness.py:159:        crew_instance = SymptomTriageCrew().crew(user_id=user_id)
+MediSarthi\backend\src\agents\eval_harness.py:185:def run_interaction_case(label, medicines, expect_conflict, user_id):
+MediSarthi\backend\src\agents\eval_harness.py:190:        crew_instance = 
+MedicineInteractionCrew().crew(user_id=user_id)
+MediSarthi\backend\src\agents\eval_harness.py:220:def run_triage_suite(user_id):
+MediSarthi\backend\src\agents\eval_harness.py:225:        results.append(run_triage_case(label, text, expected, 
+user_id))
+MediSarthi\backend\src\agents\eval_harness.py:229:def run_interaction_suite(user_id):
+MediSarthi\backend\src\agents\eval_harness.py:234:        results.append(run_interaction_case(label, meds, expect, 
+user_id))
+MediSarthi\backend\src\agents\eval_harness.py:284:        help="Existing Mongo user_id — required for 
+triage/interactions suites",
+MediSarthi\backend\src\agents\eval_harness.py:289:    if need_llm and not args.user_id:
+MediSarthi\backend\src\agents\eval_harness.py:298:        summaries.append(summarize("triage", 
+run_triage_suite(args.user_id)))
+MediSarthi\backend\src\agents\eval_harness.py:301:        summaries.append(summarize("interactions", 
+run_interaction_suite(args.user_id)))
+MediSarthi\backend\src\agents\health_records.py:29:    if "user_id" in doc:
+MediSarthi\backend\src\agents\health_records.py:30:        doc["user_id"] = str(doc["user_id"])
+MediSarthi\backend\src\agents\health_records.py:63:    user_id: str,
+MediSarthi\backend\src\agents\health_records.py:82:        "user_id": user_id,
+MediSarthi\backend\src\agents\health_records.py:99:def get_vitals(user_id: str, vital_type: str = None, limit: int = 
+30) -> list:
+MediSarthi\backend\src\agents\health_records.py:104:    query = {"user_id": user_id}
+MediSarthi\backend\src\agents\health_records.py:112:def delete_vital(user_id: str, vital_id: str) -> bool:
+MediSarthi\backend\src\agents\health_records.py:114:    Ek saved vital record permanently delete karta hai. Same 
+user_id-scoped
+MediSarthi\backend\src\agents\health_records.py:129:    result = collection.delete_one({"_id": oid, "user_id": 
+user_id})
+MediSarthi\backend\src\agents\health_records.py:136:    user_id: str,
+MediSarthi\backend\src\agents\health_records.py:147:        "user_id": user_id,
+MediSarthi\backend\src\agents\health_records.py:160:def get_prescriptions(user_id: str, limit: int = 20) -> list:
+MediSarthi\backend\src\agents\health_records.py:165:    cursor = collection.find({"user_id": user_id}, sort=[("date", 
+-1)], limit=limit)
+MediSarthi\backend\src\agents\health_records.py:169:def delete_prescription(user_id: str, prescription_id: str) -> 
+bool:
+MediSarthi\backend\src\agents\health_records.py:172:    user_id-scoped delete pattern as 
+delete_vital/delete_lab_report_analysis.
+MediSarthi\backend\src\agents\health_records.py:193:    result = collection.delete_one({"_id": oid, "user_id": 
+user_id})
+MediSarthi\backend\src\agents\health_records.py:203:    user_id: str,
+MediSarthi\backend\src\agents\health_records.py:216:        "user_id": user_id,
+MediSarthi\backend\src\agents\health_records.py:231:def get_prescription_analyses(user_id: str, limit: int = 20) -> 
+list:
+MediSarthi\backend\src\agents\health_records.py:236:    cursor = collection.find({"user_id": user_id}, sort=[("date", 
+-1)], limit=limit)
+MediSarthi\backend\src\agents\health_records.py:240:def get_prescription_analysis_by_id(user_id: str, analysis_id: 
+str) -> dict:
+MediSarthi\backend\src\agents\health_records.py:250:    doc = collection.find_one({"_id": oid, "user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:261:    user_id: str,
+MediSarthi\backend\src\agents\health_records.py:276:        user_id: konsa user.
+MediSarthi\backend\src\agents\health_records.py:297:        "user_id": user_id,
+MediSarthi\backend\src\agents\health_records.py:314:def get_lab_report_analyses(user_id: str, limit: int = 20) -> list:
+MediSarthi\backend\src\agents\health_records.py:322:    cursor = collection.find({"user_id": user_id}, sort=[("date", 
+-1)], limit=limit)
+MediSarthi\backend\src\agents\health_records.py:326:def get_lab_report_analysis_by_id(user_id: str, analysis_id: str) 
+-> dict:
+MediSarthi\backend\src\agents\health_records.py:336:    doc = collection.find_one({"_id": oid, "user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:340:def delete_lab_report_analysis(user_id: str, analysis_id: str) -> 
+bool:
+MediSarthi\backend\src\agents\health_records.py:344:    `user_id` bhi query mein include hai — matlab koi user apna 
+analysis_id
+MediSarthi\backend\src\agents\health_records.py:364:    result = collection.delete_one({"_id": oid, "user_id": 
+user_id})
+MediSarthi\backend\src\agents\health_records.py:368:def get_test_trends(user_id: str, min_points: int = 2) -> list:
+MediSarthi\backend\src\agents\health_records.py:390:    cursor = collection.find({"user_id": user_id}, sort=[("date", 
+1)])
+MediSarthi\backend\src\agents\health_records.py:439:def get_annotated_trends(user_id: str, min_points: int = 2) -> 
+list:
+MediSarthi\backend\src\agents\health_records.py:449:    by GET /health/trends/{user_id}. Adding a new function means 
+that
+MediSarthi\backend\src\agents\health_records.py:484:    trends = get_test_trends(user_id, min_points=min_points)
+MediSarthi\backend\src\agents\health_records.py:493:    prescriptions = get_prescriptions(user_id, limit=1000)
+MediSarthi\backend\src\agents\health_records.py:524:def get_full_timeline(user_id: str, limit: int = 50) -> list:
+MediSarthi\backend\src\agents\health_records.py:531:    vitals_cursor = db["health_vitals"].find({"user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:532:    prescriptions_cursor = 
+db["health_prescriptions"].find({"user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:570:    user_id: str,
+MediSarthi\backend\src\agents\health_records.py:584:        "user_id": user_id,
+MediSarthi\backend\src\agents\health_records.py:596:        {"user_id": user_id},
+MediSarthi\backend\src\agents\health_records.py:602:def get_emergency_profile(user_id: str) -> dict:
+MediSarthi\backend\src\agents\health_records.py:609:    doc = db["emergency_profiles"].find_one({"user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:613:        token_doc = db["emergency_qr_tokens"].find_one({"user_id": 
+user_id})
+MediSarthi\backend\src\agents\health_records.py:629:    profile = profile_collection.find_one({"user_id": 
+token_doc["user_id"]})
+MediSarthi\backend\src\agents\health_records.py:633:def generate_qr_token(user_id: str) -> str:
+MediSarthi\backend\src\agents\health_records.py:641:        {"user_id": user_id},
+MediSarthi\backend\src\agents\health_records.py:643:            "user_id": user_id,
+MediSarthi\backend\src\agents\health_records.py:690:def create_doctor_qr_token(user_id: str, snapshot: dict, 
+expiry_hours: int = 24) -> str:
+MediSarthi\backend\src\agents\health_records.py:722:        "user_id": user_id,
+MediSarthi\backend\src\agents\jwt_utils.py:5:whatever `user_id` a client sent (as a path param, form field, or body
+MediSarthi\backend\src\agents\jwt_utils.py:9:identification (a user_id string) but no authentication or authorization.
+MediSarthi\backend\src\agents\jwt_utils.py:16:field names (still `/health/vitals/{user_id}`, still `user_id` in request
+MediSarthi\backend\src\agents\jwt_utils.py:18:CHECKS that the token's user matches the user_id being requested/acted 
+on,
+MediSarthi\backend\src\agents\jwt_utils.py:21:is the new source of truth for "who is this," the existing user_id fields
+MediSarthi\backend\src\agents\jwt_utils.py:63:def create_access_token(user_id: str, expires_minutes: Optional[int] = 
+None) -> str:
+MediSarthi\backend\src\agents\jwt_utils.py:64:    """Issues a signed JWT for this user_id. Called right after 
+signup/login succeeds."""
+MediSarthi\backend\src\agents\jwt_utils.py:70:        "sub": user_id,
+MediSarthi\backend\src\agents\jwt_utils.py:79:    Verifies a token's signature and expiry, returns the embedded 
+user_id.
+MediSarthi\backend\src\agents\jwt_utils.py:91:def get_current_user_id(authorization: str = Header(None)) -> str:
+MediSarthi\backend\src\agents\jwt_utils.py:94:    verifies it, and returns the user_id it belongs to. Use as:
+MediSarthi\backend\src\agents\jwt_utils.py:95:        current_user_id: str = Depends(get_current_user_id)
+MediSarthi\backend\src\agents\jwt_utils.py:107:def verify_owner(current_user_id: str, target_user_id: str) -> None:
+MediSarthi\backend\src\agents\jwt_utils.py:110:    user_id whose data is being requested/modified. Small shared helper 
+so
+MediSarthi\backend\src\agents\jwt_utils.py:114:    if current_user_id != target_user_id:
+MediSarthi\backend\src\agents\schemas.py:35:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:43:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:55:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:63:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:74:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:84:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:97:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:102:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:107:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:116:    user_id: str
+MediSarthi\backend\src\agents\schemas.py:125:    requester_user_id: str
+MediSarthi\backend\src\agents\routes\auth.py:22:        return {"user_id": profile["ID"], "name": profile["Name"], 
+"user": profile, "access_token": token}
+MediSarthi\backend\src\agents\routes\auth.py:37:        return {"user_id": profile["ID"], "name": profile["Name"], 
+"user": profile, "access_token": token}
+MediSarthi\backend\src\agents\routes\calls.py:4:from agents.jwt_utils import get_current_user_id
+MediSarthi\backend\src\agents\routes\calls.py:16:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\calls.py:20:    outbound AI phone call) — no user_id field on CallRequest to check
+MediSarthi\backend\src\agents\routes\consultation.py:4:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\consultation.py:17:    user_id: str = Form(...),
+MediSarthi\backend\src\agents\routes\consultation.py:18:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\consultation.py:20:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\consultation.py:41:        crew_instance = SpeechCrew().crew(user_id=user_id)
+MediSarthi\backend\src\agents\routes\consultation.py:71:    user_id: str = Form(...),
+MediSarthi\backend\src\agents\routes\consultation.py:72:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\consultation.py:74:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\consultation.py:95:        crew_instance = FileCrew().crew(user_id=user_id)
+MediSarthi\backend\src\agents\routes\consultation.py:125:    user_id: str = Form(...),
+MediSarthi\backend\src\agents\routes\consultation.py:126:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\consultation.py:128:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\consultation.py:133:        result = 
+general_que().crew(user_id=user_id).kickoff(inputs={"question": question})
+MediSarthi\backend\src\agents\routes\demo.py:23:    user_id: str
+MediSarthi\backend\src\agents\routes\demo.py:53:            "user_id": session["user_id"],
+MediSarthi\backend\src\agents\routes\doctor_qr.py:2:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\doctor_qr.py:17:@router.post("/health/doctor-qr/{user_id}")
+MediSarthi\backend\src\agents\routes\doctor_qr.py:19:    user_id: str,
+MediSarthi\backend\src\agents\routes\doctor_qr.py:21:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\doctor_qr.py:23:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\doctor_qr.py:25:        lab_reports = get_lab_report_analyses(user_id, limit=20)
+MediSarthi\backend\src\agents\routes\doctor_qr.py:26:        trends = get_annotated_trends(user_id)
+MediSarthi\backend\src\agents\routes\doctor_qr.py:27:        prescriptions = get_prescriptions(user_id, limit=20)
+MediSarthi\backend\src\agents\routes\doctor_qr.py:78:        crew_instance = 
+ClinicalSummaryCrew().crew(user_id=user_id)
+MediSarthi\backend\src\agents\routes\doctor_qr.py:92:        token = create_doctor_qr_token(user_id, snapshot, 
+expiry_hours=expiry_hours)
+MediSarthi\backend\src\agents\routes\donor.py:2:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\donor.py:7:    get_donor_by_user_id,
+MediSarthi\backend\src\agents\routes\donor.py:20:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\donor.py:22:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\donor.py:25:            request.user_id, request.name, request.blood_group,
+MediSarthi\backend\src\agents\routes\donor.py:35:@router.get("/donor/{user_id}")
+MediSarthi\backend\src\agents\routes\donor.py:37:    user_id: str,
+MediSarthi\backend\src\agents\routes\donor.py:38:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\donor.py:40:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\donor.py:42:        return {"donor": get_donor_by_user_id(user_id)}
+MediSarthi\backend\src\agents\routes\donor.py:49:@router.post("/donor/{user_id}/record-donation")
+MediSarthi\backend\src\agents\routes\donor.py:51:    user_id: str,
+MediSarthi\backend\src\agents\routes\donor.py:52:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\donor.py:54:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\donor.py:56:        return {"donor": record_donation(user_id)}
+MediSarthi\backend\src\agents\routes\donor.py:63:@router.post("/donor/{user_id}/availability")
+MediSarthi\backend\src\agents\routes\donor.py:65:    user_id: str,
+MediSarthi\backend\src\agents\routes\donor.py:67:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\donor.py:69:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\donor.py:71:        return {"donor": toggle_availability(user_id, available)}
+MediSarthi\backend\src\agents\routes\donor.py:81:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\donor.py:83:    verify_owner(current_user_id, request.requester_user_id)
+MediSarthi\backend\src\agents\routes\donor.py:86:            request.requester_user_id, request.blood_group,
+MediSarthi\backend\src\agents\routes\donor.py:99:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\donor.py:101:    """No user_id on this request — only "must be logged in" is 
+enforced."""
+MediSarthi\backend\src\agents\routes\emergency.py:2:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\emergency.py:18:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\emergency.py:20:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\emergency.py:23:            request.user_id, request.name, request.blood_group,
+MediSarthi\backend\src\agents\routes\emergency.py:33:@router.get("/health/emergency-profile/{user_id}")
+MediSarthi\backend\src\agents\routes\emergency.py:35:    user_id: str,
+MediSarthi\backend\src\agents\routes\emergency.py:36:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\emergency.py:38:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\emergency.py:40:        profile = get_emergency_profile(user_id)
+MediSarthi\backend\src\agents\routes\emergency.py:50:@router.post("/health/generate-qr/{user_id}")
+MediSarthi\backend\src\agents\routes\emergency.py:52:    user_id: str,
+MediSarthi\backend\src\agents\routes\emergency.py:53:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\emergency.py:55:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\emergency.py:57:        token = generate_qr_token(user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:3:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\health_records.py:25:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:27:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:30:            request.user_id, request.vital_type,
+MediSarthi\backend\src\agents\routes\health_records.py:42:@router.get("/health/vitals/{user_id}")
+MediSarthi\backend\src\agents\routes\health_records.py:44:    user_id: str,
+MediSarthi\backend\src\agents\routes\health_records.py:47:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:49:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:51:        records = get_vitals(user_id, vital_type, limit)
+MediSarthi\backend\src\agents\routes\health_records.py:57:@router.delete("/health/vitals/{user_id}/{vital_id}")
+MediSarthi\backend\src\agents\routes\health_records.py:59:    user_id: str,
+MediSarthi\backend\src\agents\routes\health_records.py:61:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:63:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:65:        deleted = delete_vital(user_id, vital_id)
+MediSarthi\backend\src\agents\routes\health_records.py:81:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:83:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:86:            request.user_id, request.medicines,
+MediSarthi\backend\src\agents\routes\health_records.py:94:@router.get("/health/prescriptions/{user_id}")
+MediSarthi\backend\src\agents\routes\health_records.py:96:    user_id: str,
+MediSarthi\backend\src\agents\routes\health_records.py:98:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:100:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:102:        records = get_prescriptions(user_id, limit)
+MediSarthi\backend\src\agents\routes\health_records.py:108:@router.delete("/health/prescriptions/{user_id}/{prescriptio
+n_id}")
+MediSarthi\backend\src\agents\routes\health_records.py:110:    user_id: str,
+MediSarthi\backend\src\agents\routes\health_records.py:112:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:114:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:116:        deleted = delete_prescription(user_id, 
+prescription_id)
+MediSarthi\backend\src\agents\routes\health_records.py:132:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:134:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:137:            request.user_id,
+MediSarthi\backend\src\agents\routes\health_records.py:150:@router.get("/health/prescription-analyses/{user_id}")
+MediSarthi\backend\src\agents\routes\health_records.py:152:    user_id: str,
+MediSarthi\backend\src\agents\routes\health_records.py:154:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:156:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:158:        records = get_prescription_analyses(user_id, limit)
+MediSarthi\backend\src\agents\routes\health_records.py:164:@router.get("/health/prescription-analysis/{user_id}/{analys
+is_id}")
+MediSarthi\backend\src\agents\routes\health_records.py:166:    user_id: str,
+MediSarthi\backend\src\agents\routes\health_records.py:168:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:170:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:172:        record = get_prescription_analysis_by_id(user_id, 
+analysis_id)
+MediSarthi\backend\src\agents\routes\health_records.py:182:@router.get("/health/timeline/{user_id}")
+MediSarthi\backend\src\agents\routes\health_records.py:184:    user_id: str,
+MediSarthi\backend\src\agents\routes\health_records.py:186:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\health_records.py:188:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\health_records.py:190:        records = get_full_timeline(user_id, limit)
+MediSarthi\backend\src\agents\routes\hospitals.py:2:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\hospitals.py:5:from agents.auth import get_user_by_id
+MediSarthi\backend\src\agents\routes\hospitals.py:15:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\hospitals.py:17:    verify_owner(current_user_id, location.user_id)
+MediSarthi\backend\src\agents\routes\hospitals.py:23:            user_profile = get_user_by_id(location.user_id)
+MediSarthi\backend\src\agents\routes\hospitals.py:24:            city = user_profile.get("City")
+MediSarthi\backend\src\agents\routes\hospitals.py:25:            state = user_profile.get("State")
+MediSarthi\backend\src\agents\routes\hospitals.py:37:        result = 
+Nearbyhospitals().crew(user_id=location.user_id).kickoff(inputs=inputs)
+MediSarthi\backend\src\agents\routes\lab.py:3:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\lab.py:23:    user_id: str = Form(...),
+MediSarthi\backend\src\agents\routes\lab.py:24:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\lab.py:26:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\lab.py:43:        crew_instance = LabReportCrew().crew(user_id=user_id)
+MediSarthi\backend\src\agents\routes\lab.py:64:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\lab.py:66:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\lab.py:69:            request.user_id,
+MediSarthi\backend\src\agents\routes\lab.py:85:@router.get("/lab/analyses/{user_id}")
+MediSarthi\backend\src\agents\routes\lab.py:87:    user_id: str,
+MediSarthi\backend\src\agents\routes\lab.py:89:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\lab.py:91:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\lab.py:93:        records = get_lab_report_analyses(user_id, limit)
+MediSarthi\backend\src\agents\routes\lab.py:99:@router.delete("/lab/analyses/{user_id}/{analysis_id}")
+MediSarthi\backend\src\agents\routes\lab.py:101:    user_id: str,
+MediSarthi\backend\src\agents\routes\lab.py:103:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\lab.py:105:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\lab.py:107:        deleted = delete_lab_report_analysis(user_id, analysis_id)
+MediSarthi\backend\src\agents\routes\lab.py:120:@router.get("/health/trends/{user_id}")
+MediSarthi\backend\src\agents\routes\lab.py:122:    user_id: str,
+MediSarthi\backend\src\agents\routes\lab.py:123:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\lab.py:125:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\lab.py:127:        trends = get_test_trends(user_id)
+MediSarthi\backend\src\agents\routes\lab.py:133:@router.get("/health/trends-annotated/{user_id}")
+MediSarthi\backend\src\agents\routes\lab.py:135:    user_id: str,
+MediSarthi\backend\src\agents\routes\lab.py:136:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\lab.py:138:    verify_owner(current_user_id, user_id)
+MediSarthi\backend\src\agents\routes\lab.py:140:        trends = get_annotated_trends(user_id)
+MediSarthi\backend\src\agents\routes\medicine.py:2:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\medicine.py:16:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\medicine.py:18:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\medicine.py:26:        crew_instance = 
+MedicineInteractionCrew().crew(user_id=request.user_id)
+MediSarthi\backend\src\agents\routes\medicine.py:42:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\medicine.py:44:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\medicine.py:60:        crew_instance = 
+MedicineEffectivenessCrew().crew(user_id=request.user_id)
+MediSarthi\backend\src\agents\routes\medicine.py:78:    NOT user-scoped (no user_id in the request today) — left 
+unauthenticated
+MediSarthi\backend\src\agents\routes\medicine.py:80:        current_user_id: str = Depends(get_current_user_id) here 
+too.
+MediSarthi\backend\src\agents\routes\triage.py:2:from agents.jwt_utils import get_current_user_id, verify_owner
+MediSarthi\backend\src\agents\routes\triage.py:15:    current_user_id: str = Depends(get_current_user_id),
+MediSarthi\backend\src\agents\routes\triage.py:17:    verify_owner(current_user_id, request.user_id)
+MediSarthi\backend\src\agents\routes\triage.py:27:        crew_instance = 
+SymptomTriageCrew().crew(user_id=request.user_id)
+MediSarthi\backend\src\agents\tools\google_cal.py:14:    user_id: str = Field(..., description="Unique ID for the user 
+(e.g. 'mom', 'dad'). This selects the specific 'token_{user_id}.json' file.")
+MediSarthi\backend\src\agents\tools\google_cal.py:26:    def _run(self, user_id: str, summary: str, start_time: str, 
+end_time: str, description: str = None, location: str = None) -> str:
+MediSarthi\backend\src\agents\tools\google_cal.py:31:        TOKEN_PATH = os.path.join(BASE_DIR, 
+f'token_{user_id}.json')
+MediSarthi\backend\src\agents\tools\google_cal.py:38:                creds = 
+Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+MediSarthi\backend\src\agents\tools\google_cal.py:42:                    print(f"🔄 Refreshing token for user: 
+{user_id}")
+MediSarthi\backend\src\agents\tools\google_cal.py:45:                    print(f"👤 Initiating new login for user: 
+{user_id}")
+MediSarthi\backend\src\agents\tools\google_cal.py:74:            return f"✅ Success: Scheduled '{summary}' for ID 
+'{user_id}'. Link: {event_result.get('htmlLink')}"
+MediSarthi\backend\src\agents\tools\google_cal.py:77:            return f"❌ Error scheduling event for '{user_id}': 
+{str(e)}"
+
+
