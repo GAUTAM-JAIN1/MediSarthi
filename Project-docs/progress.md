@@ -1,4 +1,4 @@
-# progress.md
+rogress.md
 
 ## 🆕 Latest session — Docker adaptability fixes: ngrok binary, hardcoded Windows paths removed, Ollama container networking confirmed, Groq model swap surfaces a new TPM rate-limit issue
 
