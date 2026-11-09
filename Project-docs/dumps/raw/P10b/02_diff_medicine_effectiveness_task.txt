@@ -1,0 +1,12 @@
+diff --git a/backend/src/agents/config/medicine_effectiveness_task.yaml b/backend/src/agents/config/medicine_effectiveness_task.yaml
+index 8435794..b25ff0b 100644
+--- a/backend/src/agents/config/medicine_effectiveness_task.yaml
++++ b/backend/src/agents/config/medicine_effectiveness_task.yaml
+@@ -46,6 +46,7 @@ effectiveness_task:
+         — "Too early to tell" or an honest admission of uncertainty about the
+         exact typical pace for this pair is always better than a fabricated
+         number of weeks.
++      - GROUNDING RULE: Base every statement on the knowledge source and the patient's own data provided above. If the knowledge source does not contain the information needed to answer, say so plainly (for example: 'This is not covered in the reference material I have') instead of answering from memory. Never state a dose, timing, interaction, or reference range that is not in the source. Do not guess.
+       - Base direction_correct strictly on which way the numbers actually moved
+         in the data given, not on assumptions.
+       - Do not diagnose any underlying condition — you're assessing medicine

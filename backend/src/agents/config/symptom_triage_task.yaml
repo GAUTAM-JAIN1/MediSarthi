@@ -42,8 +42,8 @@ triage_task:
     Step 6 — Home care tips (if applicable):
       If urgency is "Home Care" or "See a Doctor Soon", give 3-5 practical, India-relevant
       home care tips. Examples: "Stay hydrated — ORS or nimbu paani if feeling weak.",
-      "Rest — avoid school/work for 1-2 days.", "Paracetamol for fever/pain as per dosage
-      on pack.", "Avoid cold drinks and outside food if stomach is upset."
+      "Rest — avoid school/work for 1-2 days.", "Consult a doctor or pharmacist for
+      any medication.", "Avoid cold drinks and outside food if stomach is upset."
       Leave empty list for "Visit Emergency / Go Now".
 
     Step 7 — Warning signs (ALWAYS required):
@@ -59,6 +59,8 @@ triage_task:
 
     IMPORTANT:
       - Never diagnose a specific disease. Triage and advise — do not diagnose.
+      - GROUNDING RULE: Base every statement on the knowledge source and the patient's own data provided above. If the knowledge source does not cover the symptoms or condition described, say so plainly ('This is not covered in the reference material I have'), do not name a condition, do not suggest any medicine or dose, and advise the patient to see a doctor. Never state a timing, dose, or reference range that is not in the source. Do not guess.
+      - Never specify any medication dose, milligram (mg), milliliter (ml), or dosing frequency in home_care_tips or explanation. Do not recommend or prescribe medications.
       - When in doubt, assign the higher urgency level. It is better to recommend
         seeing a doctor than to miss something serious.
       - Be India-aware: mention PHC/clinic/government hospital as options where relevant,

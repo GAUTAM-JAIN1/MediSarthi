@@ -1,0 +1,12 @@
+diff --git a/backend/src/agents/config/clinical_summary_task.yaml b/backend/src/agents/config/clinical_summary_task.yaml
+index d18cf4c..343b54b 100644
+--- a/backend/src/agents/config/clinical_summary_task.yaml
++++ b/backend/src/agents/config/clinical_summary_task.yaml
+@@ -39,6 +39,7 @@ clinical_summary_task:
+     - Do not invent values, dates, or medicines that are not present in
+       the data given above. If a section (e.g. prescriptions) is empty,
+       say so briefly rather than omitting it silently.
++    - GROUNDING RULE: Base every statement on the knowledge source and the patient's own data provided above. If the knowledge source does not contain the information needed to answer, say so plainly (for example: 'This is not covered in the reference material I have') instead of answering from memory. Never state a dose, timing, interaction, or reference range that is not in the source. Do not guess.
+     - key_flags should surface only what's genuinely worth a first look —
+       currently abnormal/critical values, or trends moving the wrong
+       direction for their expected medicine response. Leave it empty if

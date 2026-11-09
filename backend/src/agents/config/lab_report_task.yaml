@@ -61,6 +61,7 @@ lab_analysis_task:
         be incomplete. Set report_date to null in this case too, since any "date" found in
         garbled text would be unreliable.
       - Never invent test values. Only report what is present in the text.
+      - GROUNDING RULE: Base every statement on the knowledge source and the patient's own data provided above. If the knowledge source does not contain the information needed to answer, say so plainly (for example: 'This is not covered in the reference material I have') instead of answering from memory. Never state a dose, timing, interaction, or reference range that is not in the source. Do not guess.
       - Never invent a report_date. Null is correct and expected when no date is present.
       - Never diagnose a disease. Explain what the values mean, not what disease the person has.
 

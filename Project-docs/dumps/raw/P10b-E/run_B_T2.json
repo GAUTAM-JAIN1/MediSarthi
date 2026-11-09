@@ -1,0 +1,37 @@
+{
+  "triage": {
+    "urgency_level": "See a Doctor Soon",
+    "urgency_color": "yellow",
+    "headline": "These symptoms need a doctor's evaluation — please visit a clinic or PHC within the next day or two.",
+    "explanation": "You have Fabry disease, a chronic condition that can cause burning pain in the hands. Because the appropriate medicines and doses must be chosen by a qualified doctor, self‑medicating could be unsafe. There are no emergency signs such as fever, swelling, or sudden loss of function, so an urgent but not immediate visit is appropriate.",
+    "flags": [
+      {
+        "symptom": "Burning sensation in the hands",
+        "reason": "Neuropathic pain from Fabry disease requires professional assessment for proper pain control."
+      },
+      {
+        "symptom": "Known diagnosis of Fabry disease",
+        "reason": "Chronic rare disease needs specialist input; medication choices must be tailored."
+      },
+      {
+        "symptom": "No fever, swelling, or skin infection mentioned",
+        "reason": "Absence of red‑flag signs lowers urgency to a non‑emergency level."
+      }
+    ],
+    "home_care_tips": [
+      "Avoid extreme cold or hot temperatures; keep your hands warm but not overheated.",
+      "Gentle hand massage or warm (not hot) compresses can help soothe burning sensations.",
+      "Stay well‑hydrated and maintain a balanced diet to support overall health.",
+      "Do not take any new pain medicines or change doses without talking to a doctor first.",
+      "Keep the skin of your hands moisturised to prevent cracking or secondary infection."
+    ],
+    "warning_signs": [
+      "Sudden increase in pain, swelling, or redness of the hands.",
+      "Fever or chills accompanying the hand symptoms.",
+      "Numbness spreading rapidly or loss of strength in the hand or arm.",
+      "Development of a skin ulcer, pus, or foul smell indicating infection.",
+      "Any new shortness of breath, chest pain, or dizziness."
+    ],
+    "disclaimer": "I am an AI triage tool, not a medical professional. This advice does not replace a real medical evaluation. Please see a qualified doctor or visit your nearest health centre, especially if symptoms worsen or you develop any warning signs."
+  }
+}

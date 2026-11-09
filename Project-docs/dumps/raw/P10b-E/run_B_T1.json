@@ -1,0 +1,23 @@
+{
+  "triage": {
+    "guardrail_triggered": true,
+    "matched_category": "cardiac",
+    "matched_phrase": "chest pain",
+    "urgency_level": "Visit Emergency / Go Now",
+    "urgency_color": "red",
+    "headline": "This sounds like it could be a medical emergency.",
+    "explanation": "Jo symptoms tumne describe kiye hain unmein kuch red-flag words hain jo turant medical attention maangte hain. Isse AI se analyse karwane ke bajaye abhi real help lena zyada zaroori hai.",
+    "flags": [
+      {
+        "symptom": "chest pain",
+        "reason": "Matched a red-flag phrase in our safety check."
+      }
+    ],
+    "home_care_tips": [],
+    "warning_signs": [
+      "Any worsening of the above — do not wait, go now."
+    ],
+    "disclaimer": "Ye ek automated keyword-based safety check hai, poori medical assessment nahi. Turant nearest hospital jao ya emergency services (112) ko call karo.",
+    "crisis_resource": null
+  }
+}
