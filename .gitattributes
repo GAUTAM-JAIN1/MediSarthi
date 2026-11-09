@@ -1,0 +1,3 @@
+﻿Project-docs/*.md text eol=lf
+Project-docs/**/*.txt text eol=lf
+Project-docs/**/*.json text eol=lf
