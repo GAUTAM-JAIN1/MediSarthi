@@ -3,6 +3,7 @@
 ## 1. HEADER
 - Date: 9 Nov 2026
 - Branch: `p10c-demo-seed-shape`
+- Commit SHA: `972831a P10c-R: update demo seed assertion to real medicines list (D56)`
 - Base Commit: `c05eae3 P10: Try demo entry (fictional data, honest 404/429 handling)`
 - Python: `3.11.9` / Pytest: `9.0.2`
 
@@ -35,15 +36,16 @@
 | Emergency profile seed checked | Step 1c explicit scope exclusion | **NOT CHECKED** |
 | Routes 44 unchanged & canonical OpenAPI hash identical | `09_invariants.txt` (`OPERATIONS 44`, `2c3de56b...`) | **TRUE** |
 | Full test suite 0 failed | `08_full_suite.txt` (`200 passed, 1 skipped in 18.96s`) | **TRUE** |
+| `/health-info` timeline mein BP, sugar, medicine name aur date dikhte hain | Playwright browser check (`screenshots/demo_health_info.png`, 4 cards rendered with BP, sugar, medicine name, date) | **TRUE** |
 
 ---
 
 ## 4. DEVIATIONS AND BLOCKERS
-None. Step 4 STOP on `MedicineName` regression resolved cleanly via Prompt 10c-R (D56).
+- **One Deviation (Documented in D56):** `test_demo_session.py` line 201 assertion updated from reading flat `r["MedicineName"]` to validating `r["medicines"]` list. Required because P10c aligned the demo seed to the real `add_prescription` schema (`medicines` list). Resolved via Prompt 10c-R with previous assertion preserved in code comment.
 
 ---
 
 ## 5. DEFERRED
 - Lab report and symptom demo outputs (real pipeline, human review).
 - Emergency profile seed check.
-- Frontend browser check of the timeline after this change.
+
