@@ -198,7 +198,10 @@ def test_demo_session_seeds_vitals_and_prescriptions(monkeypatch, fake_db):
     # Prescriptions
     rxs = list(fake_db["health_prescriptions"].find({"user_id": user_id}))
     assert len(rxs) == 2
-    med_names = {r["MedicineName"] for r in rxs}
+    # was: r['MedicineName'] (pre-P10c seed shape, replaced by real insert shape)
+    for r in rxs:
+        assert isinstance(r.get("medicines"), list) and len(r["medicines"]) > 0 and all(isinstance(m, str) for m in r["medicines"])
+    med_names = {m for r in rxs for m in r["medicines"]}
     assert "Paracetamol Tablets IP 650 mg" in med_names
     assert "Amlodipine" in med_names
 

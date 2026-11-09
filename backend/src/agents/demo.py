@@ -92,13 +92,24 @@ def create_demo_session(
     for v in persona.get("vitals", []):
         days_ago = v.get("days_ago", 0)
         v_created = now - timedelta(days=days_ago)
+        bp_sys = v.get("bp_systolic")
+        bp_dia = v.get("bp_diastolic")
+        if (bp_sys is None or bp_dia is None) and "BloodPressure" in v:
+            parts = str(v["BloodPressure"]).split("/")
+            if len(parts) == 2:
+                try:
+                    bp_sys = int(parts[0].strip())
+                    bp_dia = int(parts[1].strip())
+                except ValueError:
+                    pass
         db["health_vitals"].insert_one({
             "user_id": user_id,
-            "BloodPressure": v.get("BloodPressure"),
-            "HeartRate": v.get("HeartRate"),
-            "BloodSugar": v.get("BloodSugar"),
-            "Weight": v.get("Weight"),
-            "RecordedAt": v.get("RecordedAt"),
+            "bp_systolic": int(bp_sys) if bp_sys is not None else None,
+            "bp_diastolic": int(bp_dia) if bp_dia is not None else None,
+            "blood_sugar": v.get("blood_sugar"),
+            "weight": v.get("weight"),
+            "notes": v.get("notes", ""),
+            "date": v_created.isoformat(),
             "created_at": v_created,
             "is_demo": True,
         })
@@ -107,13 +118,18 @@ def create_demo_session(
     for p in persona.get("prescriptions", []):
         days_ago = p.get("days_ago", 0)
         p_created = now - timedelta(days=days_ago)
+        meds = p.get("medicines")
+        if meds is None and "MedicineName" in p:
+            meds = [p["MedicineName"]]
+        elif not isinstance(meds, list):
+            meds = [str(meds)] if meds else []
         db["health_prescriptions"].insert_one({
             "user_id": user_id,
-            "MedicineName": p.get("MedicineName"),
-            "Dosage": p.get("Dosage"),
-            "Frequency": p.get("Frequency"),
-            "Days": p.get("Days"),
-            "PrescribedBy": p.get("PrescribedBy"),
+            "medicines": meds,
+            "symptoms": p.get("symptoms", ""),
+            "doctor_notes": p.get("doctor_notes", ""),
+            "source": "demo",
+            "date": p_created.isoformat(),
             "created_at": p_created,
             "is_demo": True,
         })

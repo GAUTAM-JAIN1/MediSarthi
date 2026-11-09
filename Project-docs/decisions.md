@@ -1222,3 +1222,7 @@ future endpoint), it doesn't expose that recovery to the end user today.
 - "Demo purge removes per-user crew knowledge files, path-checked against the knowledge root, never touching medical_kb. Errors are counted and never exposed."
 - **Known Limit & Error Behavior:** If `shutil.rmtree` fails with `OSError` (e.g. read-only filesystem or locked file), the database deletion still completes, `file_errors` is incremented, and the per-user directory remains orphaned on disk until manual intervention or subsequent purge.
 - **Test Isolation Note:** `backend/tests/test_demo_purge_files.py` maintains an isolated copy of `FakeDB` to avoid editing `backend/tests/test_demo_session.py` outside the permitted commit scope.
+
+
+## D56: Demo Seed Shape Alignment & Test Assertion Update (P10c)
+- `test_demo_session.py` seed-shape assertion updated from `MedicineName` to `medicines` list, because P10c aligned the demo seed to the real `add_prescription` insert shape (`medicines` list, `symptoms`, `doctor_notes`, ISO `date`). This is the one documented edit to an existing test in P10c.

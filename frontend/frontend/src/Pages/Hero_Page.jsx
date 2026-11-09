@@ -5,6 +5,7 @@ import {
   LuPill, LuUsers, LuShuffle, LuCalendar, LuFolder, LuBot
 } from 'react-icons/lu';
 import Layout, { LogoMark } from '../components/Layout.jsx';
+import { useDemo } from '../hooks/useDemo.js';
 import './Hero_Page.css';
 
 const SEGMENTS = [
@@ -46,6 +47,7 @@ const TRUST_ITEMS = [
 ];
 
 export default function Hero_Page() {
+  const { startDemo, loading, message, isHidden } = useDemo();
   return (
     <Layout>
       <section className="ms-hero">
@@ -69,6 +71,47 @@ export default function Hero_Page() {
             Your all-in-one partner for medicines, trusted doctors, health insights
             and more — all just a search or voice away.
           </p>
+
+          {!isHidden && (
+            <div className="ms-demo-container" style={{ margin: '0.5rem 0 1rem 0' }}>
+              <button
+                type="button"
+                onClick={startDemo}
+                disabled={loading}
+                className="ms-demo-btn"
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '9999px',
+                  border: '1px solid #D7B895',
+                  backgroundColor: '#FCFAF6',
+                  color: '#9C6B45',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {loading ? 'Starting demo...' : 'Try demo (fictional data)'}
+              </button>
+              {message && (
+                <span
+                  className="ms-demo-message"
+                  style={{ marginLeft: '12px', fontSize: '0.85rem', color: '#c53030' }}
+                >
+                  {message}
+                </span>
+              )}
+            </div>
+          )}
+          {isHidden && message && (
+            <div
+              className="ms-demo-message"
+              style={{ margin: '0.5rem 0 1rem 0', fontSize: '0.85rem', color: '#718096' }}
+            >
+              {message}
+            </div>
+          )}
 
           <form className="ms-search-bar" onSubmit={(e) => e.preventDefault()}>
             <LuSearch className="ms-icon" />
