@@ -1,0 +1,33 @@
+{
+  "triage": {
+    "urgency_level": "See a Doctor Soon",
+    "urgency_color": "yellow",
+    "headline": "These symptoms need a doctor's evaluation — please see a doctor within the next day or two.",
+    "explanation": "You have a known diagnosis of Fabry disease and are experiencing burning pain in your hands. This type of neuropathic pain requires a specific treatment plan and dosage that only a qualified doctor can safely prescribe. No immediate life‑threatening signs (like chest pain, breathing difficulty, or loss of consciousness) are mentioned, so an urgent emergency visit is not required, but you should be evaluated soon.",
+    "flags": [
+      {
+        "symptom": "Burning sensation in hands",
+        "reason": "Suggests neuropathic pain that may need specific medication or dosage adjustment; cannot be safely self‑treated."
+      },
+      {
+        "symptom": "Known Fabry disease",
+        "reason": "Fabry disease requires specialist management; medication choices and doses vary and need professional oversight."
+      }
+    ],
+    "home_care_tips": [
+      "Keep your hands warm; avoid extreme hot or cold temperatures.",
+      "Apply a gentle, fragrance‑free moisturizer to prevent skin cracking.",
+      "Gentle hand massage or warm (not hot) compresses can ease discomfort.",
+      "Stay well‑hydrated and maintain a balanced diet rich in fruits and vegetables.",
+      "If pain becomes uncomfortable, you may take paracetamol 500 mg‑1 g every 6‑8 hours, not exceeding 4 g in 24 hours, until you see a doctor."
+    ],
+    "warning_signs": [
+      "Sudden severe pain that wakes you at night or worsens rapidly.",
+      "Swelling, redness, or fever in the hands or elsewhere.",
+      "Chest pain, shortness of breath, or palpitations.",
+      "Sudden weakness, numbness, or loss of sensation in any limb.",
+      "Unexplained fever, vomiting, or loss of consciousness."
+    ],
+    "disclaimer": "I am an AI triage tool, not a medical professional. This advice does not replace a real medical evaluation. Please see a qualified doctor promptly, especially if any warning signs develop or your symptoms worsen."
+  }
+}
