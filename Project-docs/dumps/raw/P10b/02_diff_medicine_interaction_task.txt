@@ -1,0 +1,12 @@
+diff --git a/backend/src/agents/config/medicine_interaction_task.yaml b/backend/src/agents/config/medicine_interaction_task.yaml
+index 4d7ed59..2e2b234 100644
+--- a/backend/src/agents/config/medicine_interaction_task.yaml
++++ b/backend/src/agents/config/medicine_interaction_task.yaml
+@@ -60,6 +60,7 @@ interaction_check_task:
+         Set interactions to empty list if no pairs exist.
+       - Never invent interactions that are not well-established. If you are unsure about
+         a pair, classify it as "None" and note uncertainty in description.
++      - GROUNDING RULE: Base every statement on the knowledge source and the patient's own data provided above. If the knowledge source does not contain the information needed to answer, say so plainly (for example: 'This is not covered in the reference material I have') instead of answering from memory. Never state a dose, timing, interaction, or reference range that is not in the source. Do not guess.
+       - Keep all language plain, calm, and actionable.
+ 
+   expected_output: >
