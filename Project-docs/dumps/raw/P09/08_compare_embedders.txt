@@ -1,0 +1,14 @@
+﻿Evaluating candidate: bge-m3 ...
+  Status: UNAVAILABLE (none)
+  Reason: Not pulled in Ollama and sentence-transformers package not installed
+Evaluating candidate: mxbai-embed-large ...
+  Status: AVAILABLE (ollama)
+  Mean latency: 2473.69 ms, p95: 7660.66 ms, Dim: 1024
+Evaluating candidate: all-minilm ...
+  Status: UNAVAILABLE (none)
+  Reason: Not pulled in Ollama and sentence-transformers package not installed
+Evaluating candidate: nomic-embed-text ...
+  Status: UNAVAILABLE (none)
+  Reason: Not pulled in Ollama and sentence-transformers package not installed
+
+Report written to: C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\..\Project-docs\dumps\raw\P09\embedder_report.json

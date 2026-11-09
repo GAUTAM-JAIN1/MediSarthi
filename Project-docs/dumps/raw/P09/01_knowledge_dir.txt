@@ -1,0 +1,15 @@
+
+FullName                                                                                                           Leng
+                                                                                                                     th
+--------                                                                                                           ----
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\medical_kb\drug_interactions.txt           5900
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\medical_kb\lab_reference_ranges.txt        4151
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\medical_kb\medicine_response_timelines.txt ...6
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\medical_kb\symptom_red_flags.txt           4686
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\medical_kb\test_direction_reference.txt    7636
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\user_6935178241472ea33282b7ac\profile.txt   142
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\user_6936b41deadbb055cb80c0fe\profile.txt   144
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\user_6a3eb01f8a389cb0844f2aa9\profile.txt   120
+C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\knowledge\user_6a4b5883db450c9e47d22218\profile.txt   128
+
+

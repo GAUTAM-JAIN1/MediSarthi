@@ -1,0 +1,7 @@
+
+MediSarthi\backend\tests\test_price_lookup.py:106:    assert computed_hash == 
+"8ae125ca82c88c78289a555f5727873a7f902f5fe37000c04185c3c23dc411e8"
+MediSarthi\backend\tests\test_routes_auth.py:48:def test_protected_route_count_is_sane():
+MediSarthi\backend\tests\test_salt_cleanup.py:53:    it431 = next(i for i in items if i["sr_no"] == 431)
+
+

@@ -51,6 +51,11 @@ def trust_proxy_headers() -> bool:
     return env_bool("TRUST_PROXY_HEADERS", False)
 
 
+def demo_mode_enabled() -> bool:
+    """Return True if demo session creation is enabled."""
+    return env_bool("DEMO_MODE_ENABLED", False)
+
+
 def missing_production_settings() -> List[str]:
     """Return list of required production setting names that are unset or whitespace only."""
     missing: List[str] = []
@@ -78,4 +83,3 @@ def validate_startup() -> None:
         missing = missing_production_settings()
         if missing:
             raise RuntimeError("Missing required settings: " + ", ".join(missing))
-

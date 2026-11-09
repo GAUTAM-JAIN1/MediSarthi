@@ -1,0 +1,70 @@
+
+MediSarthi\backend\src\agents\auth.py:103:def get_user_knowledge_profile(user_id: str):
+MediSarthi\backend\src\agents\auth.py:105:    face_recognize.py ke get_user_knowledge_profile() ka direct replacement.
+MediSarthi\backend\src\agents\auth.py:110:            aur wohi knowledge/user_<id>/profile.txt file likhta hai
+MediSarthi\backend\src\agents\auth.py:120:    profile_dir = project_root / "knowledge" / f"user_{user_data['ID']}"
+MediSarthi\backend\src\agents\crew.py:6:from agents.auth import get_user_knowledge_profile
+MediSarthi\backend\src\agents\crew.py:11:from crewai.knowledge.source.text_file_knowledge_source import 
+TextFileKnowledgeSource
+MediSarthi\backend\src\agents\crew.py:33:    Common setup for all crews - reads user profile, writes knowledge file,
+MediSarthi\backend\src\agents\crew.py:34:    optionally injects allergy info, returns (knowledge_sources, 
+embedder_config).
+MediSarthi\backend\src\agents\crew.py:37:    IMPORTANT: `crew_name` isolates each crew's ChromaDB memory storage. 
+Without
+MediSarthi\backend\src\agents\crew.py:46:    project's `knowledge/` folder, same convention as the per-user profile
+MediSarthi\backend\src\agents\crew.py:47:    file) pointing at a SHARED, non-user-specific reference knowledge base â€”
+MediSarthi\backend\src\agents\crew.py:49:    TextFileKnowledgeSource is added alongside the per-user profile source,
+MediSarthi\backend\src\agents\crew.py:57:    user_data, _ = get_user_knowledge_profile(user_id)
+MediSarthi\backend\src\agents\crew.py:68:    os.environ["EMBEDDINGS_OLLAMA_MODEL_NAME"] = "mxbai-embed-large"
+MediSarthi\backend\src\agents\crew.py:76:            full_profile_path = project_root / "knowledge" / profile_file_rel
+MediSarthi\backend\src\agents\crew.py:84:    knowledge_sources = 
+[TextFileKnowledgeSource(file_paths=[str(profile_file_rel)])]
+MediSarthi\backend\src\agents\crew.py:87:        # Separate TextFileKnowledgeSource instance (not merged into the same
+MediSarthi\backend\src\agents\crew.py:92:        
+knowledge_sources.append(TextFileKnowledgeSource(file_paths=shared_kb_files))
+MediSarthi\backend\src\agents\crew.py:95:    # "http://localhost:11434/api/embeddings", which works on bare-metal
+MediSarthi\backend\src\agents\crew.py:99:    # crews (which is now ALL crews, since embedder is always set below
+MediSarthi\backend\src\agents\crew.py:105:    # OLLAMA_EMBED_URL=http://host.docker.internal:11434/api/embeddings in
+MediSarthi\backend\src\agents\crew.py:110:    ollama_url = os.getenv("OLLAMA_EMBED_URL", 
+"http://localhost:11434/api/embeddings")
+MediSarthi\backend\src\agents\crew.py:112:    embedder = {
+MediSarthi\backend\src\agents\crew.py:115:            "model": "mxbai-embed-large",
+MediSarthi\backend\src\agents\crew.py:119:    return knowledge_sources, embedder
+MediSarthi\backend\src\agents\crew.py:327:        knowledge_sources, embedder = _build_crew_base(user_id, "speech", 
+inject_allergies=True)
+MediSarthi\backend\src\agents\crew.py:332:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:333:            embedder=embedder,
+MediSarthi\backend\src\agents\crew.py:406:        knowledge_sources, embedder = _build_crew_base(user_id, "file", 
+inject_allergies=True)
+MediSarthi\backend\src\agents\crew.py:412:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:413:            embedder=embedder,
+MediSarthi\backend\src\agents\crew.py:457:        knowledge_sources, embedder = _build_crew_base(user_id, "hospitals")
+MediSarthi\backend\src\agents\crew.py:462:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:463:            embedder=embedder,
+MediSarthi\backend\src\agents\crew.py:495:        knowledge_sources, embedder = _build_crew_base(user_id, "general")
+MediSarthi\backend\src\agents\crew.py:500:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:501:            embedder=embedder,
+MediSarthi\backend\src\agents\crew.py:543:        knowledge_sources, embedder = _build_crew_base(
+MediSarthi\backend\src\agents\crew.py:551:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:552:            embedder=embedder,
+MediSarthi\backend\src\agents\crew.py:593:        knowledge_sources, embedder = _build_crew_base(
+MediSarthi\backend\src\agents\crew.py:601:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:602:            embedder=embedder,
+MediSarthi\backend\src\agents\crew.py:645:        knowledge_sources, embedder = _build_crew_base(
+MediSarthi\backend\src\agents\crew.py:653:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:654:            embedder=embedder,
+MediSarthi\backend\src\agents\crew.py:678:    at knowledge/medical_kb/test_direction_reference.txt, matching where the
+MediSarthi\backend\src\agents\crew.py:716:        knowledge_sources, embedder = _build_crew_base(
+MediSarthi\backend\src\agents\crew.py:727:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:728:            embedder=embedder,
+MediSarthi\backend\src\agents\crew.py:783:        knowledge_sources, embedder = _build_crew_base(
+MediSarthi\backend\src\agents\crew.py:794:            knowledge_sources=knowledge_sources,
+MediSarthi\backend\src\agents\crew.py:795:            embedder=embedder,
+MediSarthi\backend\src\agents\eval_harness.py:56:`get_user_knowledge_profile`). Use any existing test account's 
+user_id.
+MediSarthi\backend\src\agents\eval_harness.py:62:  - Ollama running locally with `mxbai-embed-large` pulled — 
+`_build_crew_base()`
+MediSarthi\backend\src\agents\eval_harness.py:63:    points every crew's embedder at 
+`http://localhost:11434/api/embeddings`.
+
+

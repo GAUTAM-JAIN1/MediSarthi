@@ -1,0 +1,4 @@
+﻿p09-demo-backend
+76f653a Demo session backend (off by default), synthetic persona, embedder comparison harness
+3ac4aa5 Merge pull request #5 from GAUTAM-JAIN1/hero-24-7-claims
+13cd47b Hero: replace remaining unverified claims (24/7, booking, verified doctors) with app-backed text

@@ -25,6 +25,7 @@ from agents.routes import (
     hospitals,
     donor,
     health_records,
+    demo,
 )
 
 install_log_record_factory()
@@ -68,6 +69,7 @@ app.include_router(calls.router)
 app.include_router(hospitals.router)
 app.include_router(donor.router)
 app.include_router(health_records.router)
+app.include_router(demo.router)
 
 
 if __name__ == "__main__":

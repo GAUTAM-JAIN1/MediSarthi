@@ -1,0 +1,58 @@
+﻿
+
+    Directory: C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\backend\data\demo
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+-a----        05-11-2026     11:56            508 embedder_queries.json                                                
+-a----        05-11-2026     11:56           1591 persona.json                                                         
+=== backend/data/demo/persona.json (first 30 lines) ===
+{
+  "synthetic": true,
+  "display_name": "Rahul Kumar (demo)",
+  "note": "Fictional demo persona. No real person's data.",
+  "user": {
+    "Name": "Rahul Kumar (demo)",
+    "Age": 32,
+    "Gender": "Male",
+    "BloodGroup": "O+",
+    "Allergies": "Penicillin",
+    "ChronicConditions": "Mild hypertension",
+    "City": "Bengaluru",
+    "State": "Karnataka",
+    "EmergencyContactName": "Priya Kumar",
+    "EmergencyContactPhone": "+919876543210",
+    "EmergencyContactRelation": "Spouse"
+  },
+  "vitals": [
+    {
+      "days_ago": 14,
+      "BloodPressure": "125/82",
+      "HeartRate": 74,
+      "BloodSugar": 104,
+      "Weight": 68.0,
+      "RecordedAt": "morning"
+    },
+    {
+      "days_ago": 2,
+      "BloodPressure": "120/80",
+      "HeartRate": 70,
+=== backend/data/demo/embedder_queries.json ===
+{
+  "status": "PROPOSED - not approved",
+  "queries": [
+    "paracetamol safe for liver patient",
+    "amoxicillin 500mg daily dose",
+    "metformin empty stomach or after food",
+    "cetirizine makes me sleepy alternatives",
+    "atorvastatin side effects muscle pain",
+    "azithromycin course 3 days or 5 days",
+    "pantoprazole 40mg before breakfast",
+    "losartan potassium blood pressure normal range",
+    "ciprofloxacin interaction with milk dairy",
+    "aspirin 75mg blood thinner bruising"
+  ]
+}
+
+

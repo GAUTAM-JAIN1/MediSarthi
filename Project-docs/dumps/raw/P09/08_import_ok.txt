@@ -1,0 +1,12 @@
+﻿uv : C:\venvs\medisarthi\Lib\site-packages\google\api_core\_python_version_support.py:266: FutureWarning: You are 
+using a Python version (3.11.9) which Google will stop supporting in new releases of google.api_core once it reaches 
+its end of life (2027-10-24). Please upgrade to the latest Python version, or at least Python 3.12, to continue 
+receiving updates for google.api_core past that date.
+At line:12 char:31
++ ... t_ok.txt' { uv run python -c "from agents.main import app; print('OK' ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\venvs\medisa...past that date.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  warnings.warn(message, FutureWarning)
+OK

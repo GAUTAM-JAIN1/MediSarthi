@@ -1,0 +1,57 @@
+{
+  "timestamp": "2026-11-05T07:04:18.437568Z",
+  "device": "cpu",
+  "ollama_host": "http://127.0.0.1:11434",
+  "queries_count": 10,
+  "candidates": {
+    "bge-m3": {
+      "status": "UNAVAILABLE",
+      "backend": "none",
+      "reason": "Not pulled in Ollama and sentence-transformers package not installed",
+      "metrics": null
+    },
+    "mxbai-embed-large": {
+      "status": "AVAILABLE",
+      "backend": "ollama",
+      "reason": null,
+      "metrics": {
+        "output_dimension": 1024,
+        "cold_start_latency_ms": 10037.73,
+        "warm_latencies_ms": [
+          112.45,
+          88.23,
+          110.78,
+          4627.37,
+          4755.35,
+          107.38,
+          148.31,
+          4668.27,
+          81.01
+        ],
+        "per_query_latency_ms": {
+          "min": 81.01,
+          "max": 10037.73,
+          "mean": 2473.69,
+          "p50": 130.38,
+          "p95": 7660.66
+        },
+        "memory_rss_before_mb": 24.34,
+        "memory_rss_after_mb": 24.57,
+        "memory_rss_delta_mb": 0.23
+      }
+    },
+    "all-minilm": {
+      "status": "UNAVAILABLE",
+      "backend": "none",
+      "reason": "Not pulled in Ollama and sentence-transformers package not installed",
+      "metrics": null
+    },
+    "nomic-embed-text": {
+      "status": "UNAVAILABLE",
+      "backend": "none",
+      "reason": "Not pulled in Ollama and sentence-transformers package not installed",
+      "metrics": null
+    }
+  },
+  "note": "EVIDENCE ONLY. No winner declared. Decision on production embedder is pending."
+}

@@ -1,0 +1,15 @@
+﻿........................................................................ [ 37%]
+........................................................................ [ 75%]
+................................................                         [100%]
+============================ slowest 10 durations =============================
+14.09s call     tests/test_phase0.py::test_subprocess_import_minimal_env
+2.88s call     tests/test_demo_session.py::test_demo_session_rate_limiter
+1.43s call     tests/test_demo_session.py::test_demo_password_cannot_be_used_for_login
+1.03s call     tests/test_phase0.py::test_subprocess_import_production_fails_without_jwt_secret
+0.30s call     tests/test_demo_session.py::test_demo_session_enabled_creates_user_and_token
+0.28s call     tests/test_demo_session.py::test_demo_session_seeds_vitals_and_prescriptions
+0.16s call     tests/test_phase0.py::test_import_hermetic
+0.05s setup    tests/test_demo_session.py::test_load_persona_rejects_non_synthetic
+0.03s call     tests/test_phase0.py::test_auth_login_rate_limit
+0.02s call     tests/test_search_quality.py::test_timing_10_medicines
+192 passed in 33.54s

@@ -1,0 +1,7 @@
+﻿CHECK 1 (exactly 10 query sections): PASS
+CHECK 2 (every A top-1 id resolved to non-empty text): PASS
+CHECK 3 (every B top-1 id resolved or marked B UNAVAILABLE): PASS
+CHECK 4 (top-5 id lists identical to v2 report, no drift): PASS
+CHECK 5 (every RATING line present and empty): PASS
+
+OVERALL: ALL CHECKS PASSED

@@ -1,0 +1,3 @@
+﻿Top-level keys: timestamp, doc_count, A_model, B_status, per_query, summary, note
+per_query[0] keys: query, a_top_k, b_top_k, overlap, a_top_1_snippet, b_top_1_snippet
+per_query count: 10

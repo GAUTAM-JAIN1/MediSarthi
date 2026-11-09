@@ -1,0 +1,69 @@
+﻿git : warning: in the working copy of 'backend/src/agents/config.py', LF will be replaced by CRLF the next time Git 
+touches it
+At line:11 char:38
++ ... oken.txt' { git diff backend/src/agents/config.py backend/src/agents/ ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'backend/src/agents/jwt_utils.py', LF will be replaced by CRLF the next time Git 
+touches it
+diff --git a/backend/src/agents/config.py b/backend/src/agents/config.py
+index 0eef632..2caa84a 100644
+--- a/backend/src/agents/config.py
++++ b/backend/src/agents/config.py
+@@ -51,6 +51,11 @@ def trust_proxy_headers() -> bool:
+     return env_bool("TRUST_PROXY_HEADERS", False)
+ 
+ 
++def demo_mode_enabled() -> bool:
++    """Return True if demo session creation is enabled."""
++    return env_bool("DEMO_MODE_ENABLED", False)
++
++
+ def missing_production_settings() -> List[str]:
+     """Return list of required production setting names that are unset or whitespace only."""
+     missing: List[str] = []
+@@ -78,4 +83,3 @@ def validate_startup() -> None:
+         missing = missing_production_settings()
+         if missing:
+             raise RuntimeError("Missing required settings: " + ", ".join(missing))
+-
+diff --git a/backend/src/agents/jwt_utils.py b/backend/src/agents/jwt_utils.py
+index 75bdd5a..77cc27d 100644
+--- a/backend/src/agents/jwt_utils.py
++++ b/backend/src/agents/jwt_utils.py
+@@ -25,6 +25,7 @@ Requires: pip install pyjwt
+ """
+ 
+ import os
++from typing import Optional
+ from dotenv import load_dotenv
+ 
+ load_dotenv()
+@@ -59,12 +60,16 @@ ALGORITHM = "HS256"
+ TOKEN_EXPIRE_HOURS = int(os.getenv("JWT_EXPIRE_HOURS", "168"))
+ 
+ 
+-def create_access_token(user_id: str) -> str:
++def create_access_token(user_id: str, expires_minutes: Optional[int] = None) -> str:
+     """Issues a signed JWT for this user_id. Called right after signup/login succeeds."""
++    if expires_minutes is not None:
++        exp = datetime.utcnow() + timedelta(minutes=expires_minutes)
++    else:
++        exp = datetime.utcnow() + timedelta(hours=TOKEN_EXPIRE_HOURS)
+     payload = {
+         "sub": user_id,
+         "iat": datetime.utcnow(),
+-        "exp": datetime.utcnow() + timedelta(hours=TOKEN_EXPIRE_HOURS),
++        "exp": exp,
+     }
+     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+ 
+@@ -110,4 +115,4 @@ def verify_owner(current_user_id: str, target_user_id: str) -> None:
+         raise HTTPException(
+             status_code=403,
+             detail="Ye data tumhara nahi hai ΓÇö access denied."
+-        )
+\ No newline at end of file
++        )

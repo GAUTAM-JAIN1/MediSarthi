@@ -1,0 +1,5 @@
+﻿p09-demo-backend
+ecb8862 P09c: review pack for embedder decision (text only, ratings pending)
+9375139 P09b: embedder harness to retrieval-overlap spec (evidence only, decision pending)
+76f653a Demo session backend (off by default), synthetic persona, embedder comparison harness
+?? Project-docs/dumps/raw/P09d/

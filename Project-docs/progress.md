@@ -1,4 +1,4 @@
-﻿# progress.md
+# progress.md
 
 ## 🆕 Latest session — Docker adaptability fixes: ngrok binary, hardcoded Windows paths removed, Ollama container networking confirmed, Groq model swap surfaces a new TPM rate-limit issue
 
@@ -970,3 +970,56 @@ Status: CLOSED. Dump: dumps\P08f_dump.md. Raw evidence: dumps\raw\P08f\.
 - Open product decision: mixed-route results (cream, nasal spray, inhaler) under one medicine name. Route should be shown.
 - Also open (P08f): "throat" leftover (sr 1866), clinician review of safety copy, Playwright/browser-use package cleanup.
 - Note (P08f raw evidence): RAW FILE INDEX hashes in P08f_dump refer to the original UTF-16 files (commit d946d3b). The files were converted to UTF-8 in commit a6f712f; decoded content verified identical.
+
+
+---
+
+## Prompt 09 - Demo session backend & embedder comparison harness (5 Nov 2026)
+Status: CLOSED. Dump: dumps\P09_dump.md. Raw evidence: dumps\raw\P09\.
+- **Demo Session Endpoint:** `POST /demo/session` added and registered unconditionally in OpenAPI. Returns 403 when `DEMO_MODE_ENABLED` is false.
+- **Rate Limit & Security:** 10 requests/min sliding window rate limit per client IP. Generates discarded bcrypt password (login via `/auth/login` rejected with 401).
+- **Synthetic Persona:** Seeded with Rahul Kumar (demo) vitals (2 entries), prescriptions (2 entries: Paracetamol Tablets IP 650 mg, Amlodipine), and emergency profile.
+- **Token Expiry:** 120 minutes (2 hours) vs standard 7-day user token.
+- **Expiry Purge:** Automatic opportunistic purge of expired demo records across `Members` and all 8 user-associated collections (`health_vitals`, `health_prescriptions`, `emergency_profiles`, `emergency_qr_tokens`, `prescription_analyses`, `lab_report_analyses`, `blood_donors`, `doctor_qr_tokens`).
+- **Tests:** 8 new tests in `test_demo_session.py`. Full suite: 192 passed, 0 failed in 33.54s.
+- **Invariants:** 44 operations (was 43). Canonical OpenAPI SHA256 (separators `(',', ':')`): `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42`. Indent=2 hash in `test_price_lookup.py`: `c2836fbe8a1a893c4e7f40c5485c16f4b6402347a2b6f100b4d02691ac8bdd67`.
+- **Embedder Harness:** `scripts/compare_embedders.py` executed across 10 proposed queries. Measured `mxbai-embed-large` via local Ollama (1024 dim, mean 2473.69 ms, p95 7660.66 ms). Other candidates (`bge-m3`, `all-minilm`, `nomic-embed-text`) recorded as UNAVAILABLE (not pulled in Ollama / sentence-transformers not installed).
+- **Pending Decision:** Production embedder choice remains PENDING Gautam's review (D54).
+
+
+---
+
+## Prompt 09b - Embedder harness retrieval overlap rewrite (5 Nov 2026)
+Status: CLOSED. Dump: dumps\P09b_dump.md. Raw evidence: dumps\raw\P09b\.
+- **Harness Rewrite:** `backend/scripts/compare_embedders.py` completely rewritten to measure top-5 document retrieval overlap and top-1 snippets on the MediSarthi knowledge base (126 chunks across 5 files in `backend/knowledge/medical_kb`).
+- **Results:**
+  - Queries: 10
+  - Chunks indexed: 126
+  - Candidate A: `chromadb-default`
+  - Candidate B status: `mxbai-embed-large` (available via Ollama)
+  - Mean top-5 overlap: 2.5
+  - Runtime: 32.4 seconds
+- **Invariants:** 44 operations; OpenAPI SHA256 `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42` verified identical to P09.
+- **Decision:** PENDING Gautam's review of top-1 snippets.
+
+
+---
+
+## Prompt 09c - Review pack for embedder decision (6 Nov 2026)
+Status: CLOSED. Dump: dumps\P09c_dump.md. Raw evidence: dumps\raw\P09c\.
+- **Review Pack Generator:** `backend/scripts/review_pack.py` created to resolve all A and B top-1 retrieved documents to full chunk text from the reference knowledge base (`backend/knowledge/medical_kb`).
+- **Review Pack Output:** `Project-docs/dumps/raw/P09c/review_pack.md` with all 10 query sections, full top-5 ID listings, top-1 texts, and empty `RATING_A: ____   RATING_B: ____   (sahi / partial / galat)` evaluation lines.
+- **Verification:** 10 of 10 queries resolved without drift. 0 ratings filled.
+- **Decision:** PENDING Gautam's rating input on `review_pack.md`.
+
+
+---
+
+## Prompt 09d - Demo purge removes per-user knowledge files & D54 embedder decision (9 Nov 2026)
+Status: CLOSED. Dump: dumps\P09d_dump.md. Raw evidence: dumps\raw\P09d\.
+- **Per-User Knowledge File Purge:** `_user_knowledge_targets()` in `backend/src/agents/demo.py` safely identifies per-user knowledge directories (`knowledge/user_<id>/`) and files (`profile.txt`) strictly matching valid 24-char ObjectId format. Prevents path traversal (`..` rejected) and guards `medical_kb` from deletion.
+- **Safe Purge Deletion:** `purge_expired_demo_users()` cleans up per-user knowledge targets with `shutil.rmtree()` / `unlink()`, trapping `OSError` without escaping exceptions or leaking paths. Returns `PurgeResult` dict (`users_purged`, `files_removed`, `file_errors`) maintaining int-equality backward compatibility with existing tests.
+- **Unit Tests:** `backend/tests/test_demo_purge_files.py` added with 5 test scenarios (12 passed, 1 skipped on Windows due to symlink privilege, 0 failed across purge and session tests).
+- **Invariants:** 44 OpenAPI operations; canonical SHA256 `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42` unchanged. Zero diff on `crew.py` or `routes/`.
+- **Decisions Recorded:** D54 (Option A provisional decision with 4 recorded known limits) and D55 (knowledge file deletion and error semantics).
+- **Blockers & Deviations:** None.

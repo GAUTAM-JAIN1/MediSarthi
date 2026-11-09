@@ -1,0 +1,66 @@
+
+MediSarthi\backend\src\agents\auth.py:25:def _get_collection():
+MediSarthi\backend\src\agents\auth.py:27:    return db[COLLECTION_NAME]
+MediSarthi\backend\src\agents\auth.py:58:    collection = _get_collection()
+MediSarthi\backend\src\agents\auth.py:60:    if collection.find_one({"Email": email}):
+MediSarthi\backend\src\agents\auth.py:74:    result = collection.insert_one(doc)
+MediSarthi\backend\src\agents\auth.py:81:    collection = _get_collection()
+MediSarthi\backend\src\agents\auth.py:82:    doc = collection.find_one({"Email": email})
+MediSarthi\backend\src\agents\auth.py:92:    collection = _get_collection()
+MediSarthi\backend\src\agents\auth.py:97:    doc = collection.find_one({"_id": oid})
+MediSarthi\backend\src\agents\db_connect.py:41:    db["doctor_qr_tokens"].create_index("expires_at", 
+expireAfterSeconds=0)
+MediSarthi\backend\src\agents\donor.py:60:    if col.find_one({"user_id": user_id}):
+MediSarthi\backend\src\agents\donor.py:75:    col.insert_one(doc)
+MediSarthi\backend\src\agents\donor.py:83:    doc = col.find_one({"user_id": user_id})
+MediSarthi\backend\src\agents\donor.py:98:    donor = col.find_one({"user_id": user_id})
+MediSarthi\backend\src\agents\donor.py:105:    col.update_one(
+MediSarthi\backend\src\agents\donor.py:119:    col.update_one({"user_id": user_id}, {"$set": {"available": available}})
+MediSarthi\backend\src\agents\donor.py:141:    result = col.insert_one(doc)
+MediSarthi\backend\src\agents\health_records.py:79:    collection = db["health_vitals"]
+MediSarthi\backend\src\agents\health_records.py:95:    result = collection.insert_one(doc)
+MediSarthi\backend\src\agents\health_records.py:102:    collection = db["health_vitals"]
+MediSarthi\backend\src\agents\health_records.py:122:    collection = db["health_vitals"]
+MediSarthi\backend\src\agents\health_records.py:129:    result = collection.delete_one({"_id": oid, "user_id": 
+user_id})
+MediSarthi\backend\src\agents\health_records.py:144:    collection = db["health_prescriptions"]
+MediSarthi\backend\src\agents\health_records.py:156:    result = collection.insert_one(doc)
+MediSarthi\backend\src\agents\health_records.py:163:    collection = db["health_prescriptions"]
+MediSarthi\backend\src\agents\health_records.py:186:    collection = db["health_prescriptions"]
+MediSarthi\backend\src\agents\health_records.py:193:    result = collection.delete_one({"_id": oid, "user_id": 
+user_id})
+MediSarthi\backend\src\agents\health_records.py:213:    collection = db["prescription_analyses"]
+MediSarthi\backend\src\agents\health_records.py:227:    result = collection.insert_one(doc)
+MediSarthi\backend\src\agents\health_records.py:234:    collection = db["prescription_analyses"]
+MediSarthi\backend\src\agents\health_records.py:243:    collection = db["prescription_analyses"]
+MediSarthi\backend\src\agents\health_records.py:250:    doc = collection.find_one({"_id": oid, "user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:294:    collection = db["lab_report_analyses"]
+MediSarthi\backend\src\agents\health_records.py:310:    result = collection.insert_one(doc)
+MediSarthi\backend\src\agents\health_records.py:320:    collection = db["lab_report_analyses"]
+MediSarthi\backend\src\agents\health_records.py:329:    collection = db["lab_report_analyses"]
+MediSarthi\backend\src\agents\health_records.py:336:    doc = collection.find_one({"_id": oid, "user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:357:    collection = db["lab_report_analyses"]
+MediSarthi\backend\src\agents\health_records.py:364:    result = collection.delete_one({"_id": oid, "user_id": 
+user_id})
+MediSarthi\backend\src\agents\health_records.py:387:    collection = db["lab_report_analyses"]
+MediSarthi\backend\src\agents\health_records.py:531:    vitals_cursor = db["health_vitals"].find({"user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:532:    prescriptions_cursor = 
+db["health_prescriptions"].find({"user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:581:    collection = db["emergency_profiles"]
+MediSarthi\backend\src\agents\health_records.py:595:    collection.update_one(
+MediSarthi\backend\src\agents\health_records.py:609:    doc = db["emergency_profiles"].find_one({"user_id": user_id})
+MediSarthi\backend\src\agents\health_records.py:613:        token_doc = db["emergency_qr_tokens"].find_one({"user_id": 
+user_id})
+MediSarthi\backend\src\agents\health_records.py:622:    qr_collection = db["emergency_qr_tokens"]
+MediSarthi\backend\src\agents\health_records.py:624:    token_doc = qr_collection.find_one({"token": token})
+MediSarthi\backend\src\agents\health_records.py:628:    profile_collection = db["emergency_profiles"]
+MediSarthi\backend\src\agents\health_records.py:629:    profile = profile_collection.find_one({"user_id": 
+token_doc["user_id"]})
+MediSarthi\backend\src\agents\health_records.py:636:    collection = db["emergency_qr_tokens"]
+MediSarthi\backend\src\agents\health_records.py:640:    collection.update_one(
+MediSarthi\backend\src\agents\health_records.py:715:    collection = db["doctor_qr_tokens"]
+MediSarthi\backend\src\agents\health_records.py:721:    collection.insert_one({
+MediSarthi\backend\src\agents\health_records.py:749:    collection = db["doctor_qr_tokens"]
+MediSarthi\backend\src\agents\health_records.py:751:    doc = collection.find_one({"token": token})
+
+

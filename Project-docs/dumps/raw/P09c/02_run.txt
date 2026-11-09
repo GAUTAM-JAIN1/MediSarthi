@@ -1,0 +1,1 @@
+﻿review_pack.py: generated 10 query sections at: C:\Users\gauta\OneDrive\Desktop\MediSarthi\MediSarthi\Project-docs\dumps\raw\P09c\review_pack.md

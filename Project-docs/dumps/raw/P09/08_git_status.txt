@@ -1,0 +1,11 @@
+﻿ M backend/src/agents/config.py
+ M backend/src/agents/jwt_utils.py
+ M backend/src/agents/main.py
+ M backend/tests/test_price_lookup.py
+ M backend/tests/test_routes_auth.py
+?? Project-docs/dumps/raw/P09/
+?? backend/data/demo/
+?? backend/scripts/compare_embedders.py
+?? backend/src/agents/demo.py
+?? backend/src/agents/routes/demo.py
+?? backend/tests/test_demo_session.py

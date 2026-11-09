@@ -1,0 +1,3 @@
+﻿p09-demo-backend
+9375139 P09b: embedder harness to retrieval-overlap spec (evidence only, decision pending)
+76f653a Demo session backend (off by default), synthetic persona, embedder comparison harness

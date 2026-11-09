@@ -1,0 +1,4 @@
+﻿
+MediSarthi\backend\.gitignore:12:knowledge/user_*/
+
+

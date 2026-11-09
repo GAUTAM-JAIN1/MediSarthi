@@ -25,6 +25,7 @@ Requires: pip install pyjwt
 """
 
 import os
+from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -59,12 +60,16 @@ ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = int(os.getenv("JWT_EXPIRE_HOURS", "168"))
 
 
-def create_access_token(user_id: str) -> str:
+def create_access_token(user_id: str, expires_minutes: Optional[int] = None) -> str:
     """Issues a signed JWT for this user_id. Called right after signup/login succeeds."""
+    if expires_minutes is not None:
+        exp = datetime.utcnow() + timedelta(minutes=expires_minutes)
+    else:
+        exp = datetime.utcnow() + timedelta(hours=TOKEN_EXPIRE_HOURS)
     payload = {
         "sub": user_id,
         "iat": datetime.utcnow(),
-        "exp": datetime.utcnow() + timedelta(hours=TOKEN_EXPIRE_HOURS),
+        "exp": exp,
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 

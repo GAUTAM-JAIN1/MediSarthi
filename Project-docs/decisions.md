@@ -1191,3 +1191,34 @@ future endpoint), it doesn't expose that recovery to the end user today.
 - Route count 43 is unchanged. Earlier parity checks (P03 to P08) each compared before and after inside one environment, so those results stay valid.
 - uv.lock was regenerated with uv 0.13.7 (lock revision 3 to 5). Against the committed lock, cmake, dlib, face-recognition and face-recognition-models were removed (already absent from pyproject.toml; the committed lock was stale), and pyobjc-framework-pubsub 12.1 was added (macOS-only marker). No version of fastapi, pydantic, starlette or any other runtime package changed.
 - Follow-up: pin uv to 0.13.7 in the CI install step so the lock format stays consistent.
+
+
+## D54: Demo Session Architecture and Embedder Decision Process (P09)
+- **Context:** MediSarthi needs a frictionless demo mode so evaluators can try the app without creating personal accounts, while ensuring zero collision with real patient data. In parallel, the knowledge base embedder must be upgraded from legacy CrewAI default embeddings.
+- **Demo Session Decision:**
+  - Route: `POST /demo/session`, gated behind `DEMO_MODE_ENABLED` env flag (default: `false` in production).
+  - Rate limited to 10 requests / minute per client IP.
+  - Generates a synthetic persona (`Rahul Kumar (demo)`), random discarded password (cannot log in via `/auth/login`), unique demo email, and seeds vitals, prescriptions, and emergency profile with `is_demo: true`.
+  - Issues a 2-hour JWT (120 minutes) vs standard 7-day user token.
+  - Opportunistic purge on each session creation removes expired demo users across all 8 user-data collections.
+- **Embedder Candidate Decision Status:** PENDING Gautam's review. Candidate comparison harness (`scripts/compare_embedders.py`) measures latency, memory, and dimension without declaring a winner. Evidence recorded in `Project-docs/dumps/raw/P09/embedder_report.json`.
+
+
+## D54b: Embedder Retrieval Comparison Harness Rewritten to Spec (P09b)
+- **Context:** The initial comparison script in P09 measured embedder latency and process memory rather than retrieval relevance and document overlap. Retrieval accuracy on health queries is the critical medical and safety metric.
+- **Decision & Implementation:**
+  - `backend/scripts/compare_embedders.py` was rewritten to evaluate retrieval overlap and extract top-1 document snippets across the MediSarthi reference knowledge base (`backend/knowledge/medical_kb`, 126 chunks across 5 reference documents).
+  - Evaluates Collection A (`chromadb-default` / ONNX MiniLM-L6-v2) vs Collection B (`mxbai-embed-large` via local Ollama).
+  - No HuggingFace or sentence-transformers dependencies are used.
+  - Harness execution metrics: `doc_count=126`, `queries=10`, `B_status=mxbai-embed-large`, `runtime=32.4s`, `mean_top_5_overlap=2.5`.
+- **Decision Status:** PENDING human review of top-1 snippets by Gautam. No winner declared. Production embedder code remains untouched.
+
+
+## D54: Embedder Decision - chromadb-default (Option A) (P09d)
+- "D54 - Embedder decision: chromadb-default (Option A), 3 Nov 2026. Decided by Gautam from raw/P09b/embedder_report_v2.json. Known limits: (1) The 10 top-1 ratings (sahi/partial/galat) were NOT recorded before the decision, so the decision is PROVISIONAL until they are. (2) Chroma's default ONNX model downloads on first use. P11 must bake it into the image, or cold start depends on the network. (3) Production crews still use the Ollama embedder config. Changing them is P11, not P09d. (4) Grounding is PARTIAL: task YAML has 'do not invent' rules (raw evidence), but no rule restricts answers to the knowledge source, and general_que_task allows general knowledge. A grounding instruction for lab, triage, interactions and effectiveness is P10b."
+
+
+## D55: Demo Purge Removes Per-User Knowledge Files (P09d)
+- "Demo purge removes per-user crew knowledge files, path-checked against the knowledge root, never touching medical_kb. Errors are counted and never exposed."
+- **Known Limit & Error Behavior:** If `shutil.rmtree` fails with `OSError` (e.g. read-only filesystem or locked file), the database deletion still completes, `file_errors` is incremented, and the per-user directory remains orphaned on disk until manual intervention or subsequent purge.
+- **Test Isolation Note:** `backend/tests/test_demo_purge_files.py` maintains an isolated copy of `FakeDB` to avoid editing `backend/tests/test_demo_session.py` outside the permitted commit scope.
