@@ -2,6 +2,8 @@ frontend/frontend/node_modules/
 frontend/frontend/dist/
 frontend/frontend/dump.txt
 
+hf-space-build/
+
 full_dump.txt
 ui_redesign_bundle.txt
 *.txt.bak

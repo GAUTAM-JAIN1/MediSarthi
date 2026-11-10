@@ -1023,3 +1023,20 @@ Status: CLOSED. Dump: dumps\P09d_dump.md. Raw evidence: dumps\raw\P09d\.
 - **Invariants:** 44 OpenAPI operations; canonical SHA256 `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42` unchanged. Zero diff on `crew.py` or `routes/`.
 - **Decisions Recorded:** D54 (Option A provisional decision with 4 recorded known limits) and D55 (knowledge file deletion and error semantics).
 - **Blockers & Deviations:** None.
+
+---
+
+## Prompt 11 - Free deployment prep (Hugging Face Space + Cloudflare Pages + Atlas M0) (10 Nov 2026)
+Status: CLOSED. Dump: dumps\P11_dump.md. Raw evidence: dumps\raw\P11\.
+- **Dockerfile Rewrite:** Rewritten to Hugging Face Space specification (`python:3.11-slim`, non-root uid 1000, `EXPOSE 7860`, `CMD uvicorn agents.main:app --host 0.0.0.0 --port 7860 --app-dir src`, tesseract/poppler/portaudio system dependencies, default embedder pre-warmed).
+- **Dependency Cleanup:** `browser-use` and `playwright` removed from `pyproject.toml` and `uv.lock`. Runtime pins verified unchanged: `fastapi 0.124.0`, `pydantic 2.12.5`, `starlette 0.50.0`. `groq` and `python-multipart` explicitly retained.
+- **Hugging Face Space Packaging Script:** `backend/scripts/build_hf_space.ps1` created. Copies only image assets into `hf-space-build/` (gitignored), writes `README.md` with HF YAML front matter, and performs automated secret scans before build.
+- **Static Deploy Test:** `backend/tests/test_deploy_config.py` added with 5 assertions (EXPOSE 7860, port 7860, no playwright/browser, no COPY .env, USER != root, no browser-use/playwright in pyproject.toml). Full suite: 211 passed, 1 skipped, 0 failed in 18.16s.
+- **Deployment Guide:** `deploy/DEPLOY.md` created covering Groq key, MongoDB Atlas M0, Hugging Face Space, Cloudflare Pages, CORS configuration, environment variable reference, smoke test procedures, and known limits.
+- **Decisions Recorded:** D57 (Free deployment decision, Cloud Run / Render rejection, browser package removal, production tracing disabled).
+- **Invariants:** 44 OpenAPI operations; canonical SHA256 `2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42` verified identical.
+- **Open Items:**
+  - Hugging Face Space 48h sleep and cold start mitigation.
+  - Groq free tier 8000 TPM limit during live evaluation.
+  - Docker build not verified locally (Docker daemon not running); CI docker-build job is the verification.
+
