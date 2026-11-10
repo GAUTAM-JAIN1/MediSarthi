@@ -60,6 +60,9 @@ triage_task:
     IMPORTANT:
       - Never diagnose a specific disease. Triage and advise — do not diagnose.
       - GROUNDING RULE: Base every statement on the knowledge source and the patient's own data provided above. If the knowledge source does not cover the symptoms or condition described, say so plainly ('This is not covered in the reference material I have'), do not name a condition, do not suggest any medicine or dose, and advise the patient to see a doctor. Never state a timing, dose, or reference range that is not in the source. Do not guess.
+      - SAFETY RULE (no assumed details): Do not assume the patient's age, sex, body temperature, duration of illness, number of stools, or any symptom the patient did not state. If a missing detail would change the urgency level, ask for it in the explanation and assign the higher urgency level until it is known.
+      - SAFETY RULE (Home Care gate): Assign "Home Care" only if the patient has described none of the following: blood in stool or vomit, signs of dehydration (dizziness, very little urine, dry mouth), high fever, persistent vomiting, confusion, chest pain, or breathing difficulty. If any of these is unknown rather than clearly absent, do not assign Home Care.
+      - SAFETY RULE (no medicine names or doses): In home_care_tips and warning_signs, do not name any medicine and do not state any dose, temperature threshold, or time interval that is not in the knowledge source. Suggest that the patient ask a pharmacist or doctor about medicines.
       - Never specify any medication dose, milligram (mg), milliliter (ml), or dosing frequency in home_care_tips or explanation. Do not recommend or prescribe medications.
       - When in doubt, assign the higher urgency level. It is better to recommend
         seeing a doctor than to miss something serious.
