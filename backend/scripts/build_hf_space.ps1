@@ -81,10 +81,10 @@ $secretPatterns = @(
 )
 
 foreach ($pattern in $secretPatterns) {
-    $matches = Get-ChildItem -Path $targetDir -Recurse -File | Select-String -Pattern $pattern
-    if ($matches) {
+    $hits = Get-ChildItem -Path $targetDir -Recurse -File | Select-String -Pattern $pattern
+    if ($hits) {
         Write-Host "SECRET SCAN FAILED: Match found for pattern $pattern"
-        $matches | ForEach-Object { Write-Host "  File: $($_.Filename):$($_.LineNumber)" }
+        $hits | ForEach-Object { Write-Host "  File: $($_.Filename):$($_.LineNumber)" }
         $secretFound = $true
     }
 }
@@ -97,3 +97,4 @@ if ($secretFound) {
 
 Write-Host "Secret scan passed: 0 secrets found."
 Write-Host "Hugging Face Space build directory successfully prepared: $targetDir"
+
