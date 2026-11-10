@@ -123,11 +123,7 @@ def check_emergency(text: str) -> dict | None:
         )
     else:
         headline = "This sounds like it could be a medical emergency."
-        explanation = (
-            "Jo symptoms tumne describe kiye hain unmein kuch red-flag words hain jo turant "
-            "medical attention maangte hain. Isse AI se analyse karwane ke bajaye abhi real "
-            "help lena zyada zaroori hai."
-        )
+        explanation = "This sounds like a possible emergency. Go to the nearest hospital now or call 112. Do not wait."
         disclaimer = (
             "Ye ek automated keyword-based safety check hai, poori medical assessment nahi. "
             "Turant nearest hospital jao ya emergency services (112) ko call karo."
