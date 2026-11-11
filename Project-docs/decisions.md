@@ -1226,3 +1226,29 @@ future endpoint), it doesn't expose that recovery to the end user today.
 
 ## D56: Demo Seed Shape Alignment & Test Assertion Update (P10c)
 - `test_demo_session.py` seed-shape assertion updated from `MedicineName` to `medicines` list, because P10c aligned the demo seed to the real `add_prescription` insert shape (`medicines` list, `symptoms`, `doctor_notes`, ISO `date`). This is the one documented edit to an existing test in P10c.
+
+---
+
+## D57: Free-Tier Production Deployment Architecture (HF Space, Pages, Atlas M0) (10 Nov 2026)
+
+**Status:** Built and verified (Prompt 11, 10 Nov 2026). OpenAPI 44 operations and canonical SHA256 (`2c3de56bfa32bf13518faeae6b9fb81377344dccbb188dcd2a779c0b6ba6ca42`) verified unchanged. 211 tests passed, 0 failed.
+
+**Decisions:**
+1. **Target Infrastructure Stack:**
+   - **Backend:** Hugging Face Spaces (Docker SDK, CPU basic: 2 vCPU, 16GB RAM, Free Tier). Runs non-root user (uid 1000), port 7860.
+   - **Frontend:** Cloudflare Pages (Connected to GitHub repo, root `frontend/frontend`, build `npm run build`, output `dist`, Free Tier).
+   - **Database:** MongoDB Atlas M0 (Shared cluster, 512MB storage, free tier).
+   - **LLM:** Groq API (Free Tier: `openai/gpt-oss-120b` and `llama-3.3-70b-versatile`).
+2. **Rejected Alternatives:**
+   - **Google Cloud Run:** Rejected due to billing requirements (credit card required, cold start billing risks, container egress limits).
+   - **Render (Free Web Service):** Rejected due to strict 512MB RAM cap on free tier (FastAPI + PyTorch/Chroma embedder + CrewAI dependencies exceed 512MB and OOM kill container on boot) and aggressive 15-minute spin-down with 50s+ spin-up delays.
+3. **Browser Automation Packages Removal:**
+   - `browser-use` and `playwright` removed from `backend/pyproject.toml` and locked out in `uv.lock`.
+   - Rationale: Chromium binaries and browser drivers require ~400MB disk space, heavy system dependencies, and are incompatible with lightweight container builds on free-tier CPU spaces. Price comparison uses catalog lookup without live scraping.
+   - Direct dependencies `groq` and `python-multipart` explicitly declared in `pyproject.toml` (previously imported transitively through browser-use).
+4. **Telemetry and Tracing Disabled in Production:**
+   - `CREWAI_TRACING_ENABLED=false` set in Dockerfile and production environment variables.
+   - Rationale: Silences interactive tracing prompts ("view execution traces? [y/N]") which stall non-interactive container environments for up to 20s and eliminates unnecessary external network telemetry overhead.
+5. **Image Embedder Model Pre-Warming:**
+   - Chroma default ONNX model (`all-MiniLM-L6-v2`) is warmed during image build (`RUN python -c "from chromadb.utils import embedding_functions as e; e.DefaultEmbeddingFunction()(['warmup'])"`), saving into `/home/user/.cache/chroma` so cold starts do not depend on external model downloads.
+
